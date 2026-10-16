@@ -21,6 +21,8 @@ import { decisionPoints } from "../../src/calc/decisionPoints.js";
 import { reform2028 } from "../../src/calc/reform2028.js";
 import { verdict3 } from "../../src/calc/verdict3.js";
 import { Fold } from "./Fold.js";
+import { sensitivityText } from "./sensitivityText.js";
+import { DEATH_LABEL } from "./verdictLabels.js";
 import { hasActionableGap, nextStepLines, reducibleSentence } from "./nextStep.js";
 import {
   bandWidenedNote,
@@ -106,17 +108,6 @@ const AMOUNT_NOTE: Record<string, string> = {
     "※ 収入・資産で支出はまかなえる見込みです。これは不足額ではなく、手続きや当面の暮らしのために手元に置いておく目安（葬儀・予備費と生活費1〜2年分）です。",
   ample: "※ 収入・資産が支出を大きく上回る見込みです。上乗せの保障は要りません。",
   not_needed: "※ 扶養するご家族がいないため、大きな死亡保障は要りません。",
-};
-
-/**
- * **過不足軸**（`Verdict3`）のラベルと文。診断表のバッジと同じ enum をバインドする。
- * ニーズ軸（`ample` 等）とは別物なので、名前に軸を入れて取り違えを防ぐ。
- */
-const DEATH_VERDICT_LABEL: Record<string, string> = {
-  reducible: "減らせる可能性",
-  uncertain: "圏内・要精査",
-  shortage: "不足の可能性",
-  pending: "判定は保留",
 };
 
 const SHORTFALL_TONE: Record<string, "ok" | "check" | "short" | "none"> = {
@@ -331,7 +322,7 @@ function CaseCard({
    */
   const v3 = verdict3(coverage, r.range.low, r.range.high);
   const shortfallVerdict = {
-    label: DEATH_VERDICT_LABEL[v3],
+    label: DEATH_LABEL[v3],
     tone: SHORTFALL_TONE[v3],
     body: shortfallBody(v3, r.range.low !== r.range.high),
   };
@@ -715,12 +706,6 @@ export default async function ResultPage({
   });
   const bySc = Object.fromEntries(sims.map((x) => [x.scenario, x]));
   const TONE = { reducible: "ok", uncertain: "check", shortage: "short" } as const;
-  const DEATH_LABEL = {
-    reducible: "減らせる可能性",
-    uncertain: "圏内・要精査",
-    shortage: "不足の可能性",
-    pending: "判定できません",
-  } as const;
   const SAVINGS_LABEL = {
     reducible: "大丈夫のめやす",
     uncertain: "圏内・要精査",
@@ -742,49 +727,7 @@ export default async function ResultPage({
    */
   const sensitivityFor = (who: "self" | "spouse"): { text: string } | null => {
     const sv = survivorIncomeSensitivity(params, input, who, asOfDate, ri.bands);
-    if (!sv) return null;
-
-    const label = who === "self" ? "遺されたご家族" : "あなた";
-    const total = `約${money(sv.workTotal)}`;
-    const bare = (yen: number) => money(yen).replace("万円", "");
-    /**
-     * **括弧の掛け算が読者の手元で合うようにする。**
-     * 末子独立後に下限（年100万円）が効く世帯は単純な掛け算にならないので、2本立てで書く。
-     */
-    const breakdown =
-      sv.annualNet === sv.netAfter
-        ? `手取り 年${bare(sv.annualNet)}万円×${sv.yearsTotal}年`
-        : `手取り 年${bare(sv.annualNet)}万円×${sv.yearsDependent}年＋年${bare(sv.netAfter)}万円×${sv.yearsAlone}年`;
-    const lead = `この判定を支えているのは、${label}の就労収入 ${total}（${breakdown}）です。`;
-    /**
-     * **半額の軸を裸にしない。** 直前の括弧が「手取り 年560万円」なので、
-     * ここで「年350万円」とだけ書くと、額面の半分なのか手取りなのかを読者が決められない
-     * （手取りの半分だと思って検算すると 280万 になり、文が崩れる）。
-     * 動かしているのは**回答された年収（額面）**なので、そう書く。
-     * `half` は常に額面側・「年収」の語を添える
-     * （折りたたみ1項目目の「年収＝答えた値、手取り＝計算に使う値」という役割分担と揃える）。
-     */
-    const halfGross = `年収が半分（${bare(sv.annualGross / 2)}万円）`;
-
-    /**
-     * **判定が動かなくても「影響が無い」ではない。**
-     * この世帯では必要額が 約200万円 → 約800〜1,200万円 と4〜6倍に動くのに、
-     * 承認された文型だと「変わりません」だけで数字が消える。
-     * 数字の検算が通らない開示は無いより悪いので、必要額の移動を必ず添える（2026-09-21）。
-     */
-    if (sv.branch === "no_verdict_change") {
-      return {
-        text: `${lead}収入がなくなると必要額は${formatRange(sv.needNow.low, sv.needNow.high)}から${formatRange(sv.needAtZero.low, sv.needAtZero.high)}に増えますが、いまの保障が上回るため判定は変わりません。`,
-      };
-    }
-    if (sv.branch === "zero_only") {
-      return {
-        text: `${lead}${halfGross}になっても判定は変わりませんが、働けない場合は「${DEATH_LABEL[sv.verdictAtZero]}」に変わります。`,
-      };
-    }
-    return {
-      text: `${lead}${halfGross}になると「${DEATH_LABEL[sv.verdictAtHalf]}」、働けない場合は「${DEATH_LABEL[sv.verdictAtZero]}」に変わります。`,
-    };
+    return sv ? { text: sensitivityText(sv, who) } : null;
   };
 
   /** 死亡の1行を作る。本人と配偶者で同じ形にする */
