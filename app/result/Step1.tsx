@@ -169,7 +169,7 @@ export function Step1({ chips, estimations, terms, editHref }: Step1Props) {
             幅仮置き（D-01 の完全実装）は `docs/TICKETS.md` の T-H に起票した。
           */}
           <p className={s.estimatesFoot}>
-            未回答は当社基準の仮置き額で計算し、仮置きであることをここに残します。
+            未回答の項目と、答えどおりでは置けない前提（答えた年収0円のときの就労など）は、当社基準の仮置き額で計算し、仮置きであることをここに残します。
           </p>
         </div>
       )}

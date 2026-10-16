@@ -1127,6 +1127,7 @@ export default async function ResultPage({
           tone: HERO_TONE[hh.verdict],
           needText: formatRange(hh.totalNeed.low, hh.totalNeed.high),
           coverageText: heroCoverageText(figures),
+          totalLabel: heroTotalLabel(figures),
         }}
         values={placeholderValues(result)}
       />

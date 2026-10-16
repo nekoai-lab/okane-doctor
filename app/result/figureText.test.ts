@@ -119,6 +119,6 @@ describe("1点の必要額は、何の額かを名乗る（UX レビュー #5）
     expect(heroNeedQualifier(f)).toBe("（葬儀・予備費の定額）");
   });
   it("幅がある世帯は（幅）", () => {
-    expect(heroNeedQualifier(figuresOf(SHORT))).toBe("（幅）");
+    expect(heroNeedQualifier(figuresOf(SHORT))).toBe("（幅・2人分の合計）");
   });
 });

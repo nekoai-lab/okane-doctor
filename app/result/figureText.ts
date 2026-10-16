@@ -121,9 +121,11 @@ export function heroCoverageText(f: ResultFigures): string {
  */
 export function heroNeedQualifier(f: ResultFigures): string {
   const h = f.household.totalNeed;
-  if (h.low !== h.high) return "（幅）";
   const floorOnly = people(f).every(
     (x) => x.point.verdict === "ample" || x.point.verdict === "not_needed",
   );
-  return floorOnly ? "（葬儀・予備費の定額）" : "";
+  const kind = h.low !== h.high ? "幅" : floorOnly ? "葬儀・予備費の定額" : "";
+  // 括弧を重ねない（「（幅）（2人分の合計）」ではなく「（幅・2人分の合計）」）
+  const parts = [kind, heroTotalLabel(f) ?? ""].filter((x) => x !== "");
+  return parts.length > 0 ? `（${parts.join("・")}）` : "";
 }

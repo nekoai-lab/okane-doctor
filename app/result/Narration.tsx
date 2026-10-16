@@ -56,7 +56,14 @@ export function Narration({
    * その数字を明朝で見せれば、この区間には本来アンカーがある。
    * 冒頭1文の散文だけを出していたのは、**持っている数字を使っていなかった**だけ。
    */
-  summary: { verdict: string; tone: string; needText: string; coverageText: string };
+  summary: {
+    verdict: string;
+    tone: string;
+    needText: string;
+    coverageText: string;
+    /** 金額が2人分を足したものなら「2人分の合計」（ヒーローと同じ呼び名）。無ければ省略 */
+    totalLabel?: string | null;
+  };
 }) {
   const [template, setTemplate] = useState("");
   const [text, setText] = useState(initialText);
@@ -151,7 +158,9 @@ export function Narration({
       <div className={s.narrationSummary}>
         <span className={`${s.narrationBadge} ${s[summary.tone] ?? ""}`}>{summary.verdict}</span>
         <span className={s.narrationStat}>
-          <span className={s.narrationStatLabel}>必要額</span>
+          <span className={s.narrationStatLabel}>
+            必要額{summary.totalLabel ? `（${summary.totalLabel}）` : ""}
+          </span>
           <span className={s.narrationStatValue}>{summary.needText}</span>
         </span>
         <span className={s.narrationStat}>
