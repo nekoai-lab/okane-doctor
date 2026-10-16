@@ -114,4 +114,15 @@ describe("判断ポイント：世帯ごとに導出する", () => {
       expect(labels).toContain("就労収入は見込んでいません");
     }
   });
+
+  it("答えた年収が0円で就労収入が入る世帯は、当社基準の見立てだと名乗る（UX レビュー #4）", () => {
+    const withSpouse = GOLDEN.find((g) => g.input.spouse && g.input.children.length > 0);
+    if (!withSpouse?.input.spouse) throw new Error("配偶者と子のいる世帯が無い");
+    const input = { ...withSpouse.input, spouse: { ...withSpouse.input.spouse, income: 0 } };
+    const r = diagnose(P, input, AS_OF).self;
+    expect(r.income.survivorWork).toBeGreaterThan(0);
+    const third = build(input).at(-1);
+    expect(third?.label).toContain("当社基準の見立て");
+    expect(third?.body).toContain("答えた年収は0円");
+  });
 });

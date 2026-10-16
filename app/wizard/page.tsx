@@ -9,7 +9,13 @@
  */
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { decodeSelections, encodeSelections } from "../../src/wizard/url.js";
+import {
+  DEFAULT_LIVING_LEVEL,
+  decodeLivingLevel,
+  type LivingLevel,
+  wizardQuery,
+} from "../../src/wizard/dial.js";
+import { decodeSelections } from "../../src/wizard/url.js";
 import { isComplete } from "../../src/wizard/complete.js";
 import { jstYear } from "../../src/time/jstYear.js";
 import type {
@@ -145,19 +151,23 @@ export default function WizardPage() {
   const [mounted, setMounted] = useState(false);
   const [step, setStep] = useState(0);
   const [sel, setSel] = useState<Partial<WizardSelections>>({});
+  // 暮らし方の目盛り（結果画面で選んだもの）。回答を直しても落とさない（設計レビュー #18）
+  const [level, setLevel] = useState<LivingLevel>(DEFAULT_LIVING_LEVEL);
 
   // URL から復元（クライアントでのみ実行。SSR とのズレを避けるため mounted 後に描画）
   useEffect(() => {
-    setSel(decodeSelections(window.location.search.replace(/^\?/, "")));
+    const search = window.location.search.replace(/^\?/, "");
+    setSel(decodeSelections(search));
+    setLevel(decodeLivingLevel(search));
     setMounted(true);
   }, []);
 
   // 変更のたびに URL へ写す（履歴を汚さないよう replace）
   useEffect(() => {
     if (!mounted) return;
-    const qs = encodeSelections(sel);
+    const qs = wizardQuery(sel, level);
     window.history.replaceState(null, "", `${window.location.pathname}?${qs}`);
-  }, [sel, mounted]);
+  }, [sel, level, mounted]);
 
   if (!mounted) return null;
 
@@ -249,7 +259,7 @@ export default function WizardPage() {
     }
   };
 
-  const goResult = () => router.push(`/result?${encodeSelections(sel)}`);
+  const goResult = () => router.push(`/result?${wizardQuery(sel, level)}`);
 
   return (
     <main className={s.page}>

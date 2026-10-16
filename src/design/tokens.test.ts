@@ -6,7 +6,7 @@
  * 2026-09-21、配偶者死亡ケースの前提開示で実際にこの表示が出た。
  */
 import { describe, expect, it } from "vitest";
-import { formatMan, formatRange } from "./tokens.js";
+import { formatMan, formatManApprox, formatRange } from "./tokens.js";
 
 const man = (n: number) => n * 10_000;
 
@@ -46,5 +46,13 @@ describe("formatRange", () => {
   it("**下端と上端で単位が変わるときは、下端にも単位を残す**", () => {
     // 「約8,000〜1億2,000万円」。下端を裸にすると 8,000 が億の一部に読める
     expect(formatRange(man(8000), man(12_000))).toBe("約8,000万〜1億2,000万円");
+  });
+});
+
+describe("formatManApprox（内訳の中間値・UX レビュー #5）", () => {
+  it("渡した単位で丸めて「約」を付ける", () => {
+    expect(formatManApprox(72_760_000, 1_000_000)).toBe("約7,300万円");
+    expect(formatManApprox(83_550_000, 1_000_000)).toBe("約8,400万円");
+    expect(formatManApprox(110_680_000, 1_000_000)).toBe("約1億1,100万円");
   });
 });

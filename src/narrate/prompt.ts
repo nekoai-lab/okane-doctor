@@ -83,9 +83,12 @@ function topDrivers(d: HouseholdDiagnosis): string[] {
  */
 export function buildUserContent(d: HouseholdDiagnosis): string {
   const pending = d.self.gap.kind === "pending";
+  const uncertain = d.householdHeadline.kind === "uncertain";
   const placeholderNote = pending
     ? "この世帯は今の保険が分かっていないため過不足を出していません。{{gapAmount}} は使わないでください。過不足を断定せず、証券が見つかれば比べられることを伝えてください。"
-    : "この世帯は過不足が出ています。{{gapAmount}} を使えます。";
+    : uncertain
+      ? "この世帯は、必要額の幅がいまの保障を跨いでいます。減らせるとも足りないとも言い切らないでください。{{gapAmount}} は使わないでください。"
+      : "この世帯は過不足が出ています。{{gapAmount}} を使えます。";
 
   const period: string[] = [];
   if (d.self.years.dependent > 0) period.push("{{yearsDependent}} が使えます");

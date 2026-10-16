@@ -132,6 +132,17 @@ export function formatMan(yen: number): string {
     : `${sign}${oku.toLocaleString("ja-JP")}億${rest.toLocaleString("ja-JP")}万円`;
 }
 
+/**
+ * **内訳の中間値を、精度を装わない粒度で出す**（2026-10-17・UX レビュー #5）。
+ *
+ * 滝グラフや逓減カーブの値は代表値1点の計算で、「約7,276万円」のように1万円単位で出すと
+ * 必要額（100万円単位のレンジ）より精密に見える。表示のときだけ `unit` で丸めて「約」を付ける。
+ * `unit` は呼び出し側が params の丸め単位（`roundUnit`）を渡す ── ここに数字を持たない。
+ */
+export function formatManApprox(yen: number, unit: number): string {
+  return `約${formatMan(Math.round(yen / unit) * unit)}`;
+}
+
 const OKU_IN_MAN = 10_000;
 
 /**

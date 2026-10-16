@@ -144,7 +144,12 @@ function statutory(
   const si: ScenarioInput = {
     annualIncome: a.self.income,
     employment: a.self.employment,
-    monthlyLiving: a.monthlyLiving,
+    /**
+     * **暮らし方の目盛りを生活費に掛ける**（設計レビュー #9・2026-10-17）。仕様 §4-6 は「生活費水準に作用し、全出力が連動」。
+     * 以前は死亡だけに目盛りを渡し、失業の生活費は元の値のままだったので、目盛りを動かしても失業の必要額が動かなかった。
+     * 倍率は死亡と同じ `dialFor`（params）から引く
+     */
+    monthlyLiving: a.monthlyLiving * dialFor(p, input.assumptions?.livingLevel),
     age: a.self.age,
     insuredYears,
   };

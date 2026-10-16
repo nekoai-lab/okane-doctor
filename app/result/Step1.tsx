@@ -104,7 +104,8 @@ export function Step1({ chips, estimations, terms, editHref }: Step1Props) {
         DoD (b)（金額は明朝で主役に）と同じ組版を、金額以外の要約数にも当てる。
       */}
       <p className={s.counter}>
-        <span className={s.counterNum}>{chips.length - estimations.length}</span>
+        {/* 回答の数は、推定に回らなかったチップの数（当社基準の見立てはチップを持たないので引かない） */}
+        <span className={s.counterNum}>{answered.length}</span>
         <span className={s.counterUnit}>問に回答</span>
         <span className={s.counterSep}>／</span>
         <span className={s.counterNum}>{estimations.length}</span>
@@ -168,7 +169,7 @@ export function Step1({ chips, estimations, terms, editHref }: Step1Props) {
             幅仮置き（D-01 の完全実装）は `docs/TICKETS.md` の T-H に起票した。
           */}
           <p className={s.estimatesFoot}>
-            未回答は当社基準の仮置き額で計算し、仮置きであることをここに残します。
+            未回答の項目と、答えどおりでは置けない前提（答えた年収0円のときの就労など）は、当社基準の仮置き額で計算し、仮置きであることをここに残します。
           </p>
         </div>
       )}
