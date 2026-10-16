@@ -18,6 +18,9 @@ const CONCLUSION: Record<string, string> = {
   reducible: "減らせる余地がありそうです",
   rebalanceable: "世帯全体で見直せそうです",
   shortage: "足りない可能性があります",
+  // 以下2つは結果画面が最終の必要額から結論を書き戻したときだけ来る（src/calc/figures.ts）
+  uncertain: "いまの保障は必要額の幅の中にあり、多い・少ないは言い切れません",
+  pending: "過不足はまだ出していません",
 };
 
 /**
@@ -31,18 +34,29 @@ const CONCLUSION: Record<string, string> = {
  * 「配偶者側に余剰があって世帯としては減らせる」世帯で **「0万円ほど減らせる」** という
  * 壊れた文が出ていた（2026-08-30 の実物レビューで発覚）。結論と同じ粒度で揃える。
  */
-function householdGapAmount(d: HouseholdDiagnosis): number {
+function householdGapAmount(d: HouseholdDiagnosis): string {
   const h = d.householdHeadline;
-  if (h.kind === "shortage") return h.totalShortage;
-  if (h.kind === "reducible" || h.kind === "rebalanceable") return h.totalExcess;
-  return 0;
+  /**
+   * **幅があれば幅で出す**（2026-10-17・UX）。結果画面は差額を幅で出しているので、
+   * よみときだけ下端の1点を言うと、同じ差額が2つの形で出る
+   */
+  const r =
+    h.kind === "shortage"
+      ? h.totalShortageRange
+      : h.kind === "reducible" || h.kind === "rebalanceable"
+        ? h.totalExcessRange
+        : undefined;
+  if (r) return formatRange(r.low, r.high);
+  if (h.kind === "shortage") return formatMan(h.totalShortage);
+  if (h.kind === "reducible" || h.kind === "rebalanceable") return formatMan(h.totalExcess);
+  return formatMan(0);
 }
 
 export function placeholderValues(d: HouseholdDiagnosis): PlaceholderValues {
   return {
     conclusion: CONCLUSION[d.householdHeadline.kind] ?? "",
     selfRange: formatRange(d.self.range.low, d.self.range.high),
-    gapAmount: formatMan(householdGapAmount(d)),
+    gapAmount: householdGapAmount(d),
     // 年数も「数値」なので AI には書かせない。いつまで必要かが抜けると金額だけが独り歩きする
     yearsDependent: `約${d.self.years.dependent}年`,
     yearsAlone: `約${d.self.years.alone}年`,
@@ -116,6 +130,9 @@ export function narrateStub(d: HouseholdDiagnosis): string {
       return `いまの前提では、{{conclusion}}。${range}。世帯全体で見ると、いまの保険は {{gapAmount}} ほど減らせる余地がありそうで、保険料が浮くのは良い知らせです。`;
     case "rebalanceable":
       return `いまの前提では、{{conclusion}}。${range}。ご夫婦のどちらかが多め・どちらかが少なめなので、世帯全体で見ると合計の保険料を増やさずに整えられそうです。`;
+    case "uncertain":
+      // 圏内：多い・少ないを言い切らない（G-4 に触れる「足りない」も使わない）
+      return `いまの前提では、${range}。{{conclusion}}。答えた区分の幅や推定で補った項目がはっきりすると、判定も定まります。`;
     default:
       return `いまの前提では、{{conclusion}}。${range}。いまの備えで大きな不足はなさそうです。`;
   }
@@ -138,6 +155,7 @@ const FALLBACK_TAIL: Record<string, string> = {
   reducible: "世帯全体で見ると、いまの保険は減らせる余地がありそうです。",
   rebalanceable: "世帯全体で見直せそうです。",
   shortage: "いまの備えでは足りない可能性があります。",
+  uncertain: "いまの保障は必要額の幅の中にあり、多い・少ないは言い切れません。",
 };
 
 /**

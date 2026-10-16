@@ -11,8 +11,9 @@
  * 検査そのものは `src/narrate/narrateStream.ts`（テストできる形にしてある）。
  * ここが持つのは HTTP と鍵とタイムアウトだけ。
  */
-import { OutOfScopeError, diagnose } from "../../../src/calc/index.js";
-import { dialFor } from "../../../src/calc/simulate.js";
+import type { HouseholdDiagnosis } from "../../../src/calc/index.js";
+import { OutOfScopeError, outOfScope } from "../../../src/calc/index.js";
+import { resultFigures } from "../../../src/calc/figures.js";
 import { checkApiKey, narrationModel, streamGeminiText } from "../../../src/narrate/gemini.js";
 import {
   fallbackEvent,
@@ -23,7 +24,7 @@ import { buildUserContent, systemPrompt } from "../../../src/narrate/prompt.js";
 import { loadParams } from "../../../src/params/index.js";
 import { toCompleteSelections } from "../../../src/wizard/complete.js";
 import { decodeLivingLevel } from "../../../src/wizard/dial.js";
-import { normalize } from "../../../src/wizard/normalize.js";
+import { resultInputs } from "../../../src/wizard/resultInputs.js";
 import { decodeSelections } from "../../../src/wizard/url.js";
 
 export const runtime = "nodejs";
@@ -44,13 +45,19 @@ export async function GET(req: Request): Promise<Response> {
     return Response.json({ error: "incomplete_input" }, { status: 400 });
   }
 
-  let diagnosis: ReturnType<typeof diagnose>;
+  let diagnosis: HouseholdDiagnosis;
   try {
     const params = loadParams();
-    const { input } = normalize(params, complete, new Date());
-    // 暮らし方の目盛りも結果画面と同じに復元する。落とすと、退避文の金額だけ目盛り1になる（2026-10-16・QA）
-    const lifestyleDial = dialFor(params, decodeLivingLevel(q));
-    diagnosis = diagnose(params, { ...input, lifestyleDial });
+    const asOf = new Date();
+    /**
+     * **結果画面と同じ入口で、同じ「最終の金額と判定」を作る**（2026-10-17・設計レビュー #1）。
+     * 暮らし方の目盛りも回答の幅も `resultInputs` が画面と同じに組む。
+     * 代表値だけで回すと、よみときの必要額と結論だけが画面と食い違う。
+     */
+    const ri = resultInputs(params, complete, decodeLivingLevel(q), asOf);
+    const notCovered = outOfScope(params, ri.rawInput);
+    if (notCovered) throw new OutOfScopeError(notCovered);
+    diagnosis = resultFigures(params, ri.input, ri.bands, asOf).diagnosis;
   } catch (e) {
     // 算定できない世帯（src/calc/scope.ts）。金額が無いので言語化もしない
     if (e instanceof OutOfScopeError) {

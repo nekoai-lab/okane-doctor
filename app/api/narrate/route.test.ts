@@ -4,12 +4,12 @@
  * 鍵が無い環境では退避文が返るので、その本文で確かめる（通常生成も同じ diagnosis を使う）。
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { diagnose } from "../../../src/calc/index.js";
-import { dialFor } from "../../../src/calc/simulate.js";
+import { resultFigures } from "../../../src/calc/figures.js";
 import { fallbackEvent } from "../../../src/narrate/narrateStream.js";
+import { formatRange } from "../../../src/design/tokens.js";
 import { loadParams } from "../../../src/params/index.js";
 import { toCompleteSelections } from "../../../src/wizard/complete.js";
-import { normalize } from "../../../src/wizard/normalize.js";
+import { resultInputs } from "../../../src/wizard/resultInputs.js";
 import { decodeSelections } from "../../../src/wizard/url.js";
 import { GET } from "./route.js";
 
@@ -30,8 +30,10 @@ function expectedText(query: string, level: "tight" | "asis" | "roomy"): string 
   const q = new URLSearchParams(query);
   const sel = toCompleteSelections(decodeSelections(q));
   if (!sel) throw new Error("代表世帯の URL が完全な回答になっていない");
-  const { input } = normalize(p, sel, new Date());
-  const d = diagnose(p, { ...input, lifestyleDial: dialFor(p, level) });
+  // 結果画面と同じ入口（回答の幅・目盛り込みの最終の金額と判定）で作る（2026-10-17・設計レビュー #1）
+  const asOf = new Date();
+  const ri = resultInputs(p, sel, level, asOf);
+  const d = resultFigures(p, ri.input, ri.bands, asOf).diagnosis;
   const e = fallbackEvent(d, "ai_unavailable");
   if (e.type !== "fallback") throw new Error("退避文のイベントではない");
   return e.text;
@@ -51,6 +53,18 @@ describe("GET /api/narrate と暮らし方の目盛り", () => {
     const text = await fallbackText(`${BASE}&dial=roomy`);
     expect(text).toBe(expectedText(BASE, "roomy"));
     expect(text).not.toBe(expectedText(BASE, "asis"));
+  });
+
+  it("退避文の必要額は、結果画面のカードと同じ回答の幅のレンジ（代表値ではない）", async () => {
+    const text = await fallbackText(BASE);
+    const p = loadParams();
+    const sel = toCompleteSelections(decodeSelections(BASE));
+    if (!sel) throw new Error("代表世帯の URL が完全な回答になっていない");
+    const asOf = new Date();
+    const ri = resultInputs(p, sel, "asis", asOf);
+    const f = resultFigures(p, ri.input, ri.bands, asOf);
+    expect(f.self.need).not.toEqual(f.self.point.range);
+    expect(text).toContain(formatRange(f.self.need.low, f.self.need.high));
   });
 
   it("dial なしは目盛り1.0（いま通り）", async () => {

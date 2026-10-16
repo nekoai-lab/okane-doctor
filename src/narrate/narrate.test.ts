@@ -3,14 +3,20 @@
  */
 import { describe, expect, it } from "vitest";
 import { GOLDEN } from "../__tests__/households.js";
+import { resultFigures } from "../calc/figures.js";
 import { diagnose } from "../calc/index.js";
+import { formatRange } from "../design/tokens.js";
 import { loadParams } from "../params/index.js";
+import { toCompleteSelections } from "../wizard/complete.js";
+import { resultInputs } from "../wizard/resultInputs.js";
+import { decodeSelections } from "../wizard/url.js";
 import {
   fallbackNarration,
   fillPlaceholders,
   hasNoRawNumbers,
   narrate,
   narrateStub,
+  placeholderValues,
 } from "./narrate.js";
 
 const P = loadParams("2026-08");
@@ -106,4 +112,39 @@ describe("保険内容が分からない人がいるときは、過不足を断�
       }
     });
   }
+});
+
+describe("よみときは結果画面と同じ「最終の金額と判定」を読む（2026-10-17・設計レビュー #1）", () => {
+  const AS_OF_1017 = new Date("2026-10-17T12:00:00+09:00");
+  const figuresOf = (query: string) => {
+    const complete = toCompleteSelections(decodeSelections(query));
+    if (!complete) throw new Error("入力が足りない");
+    const ri = resultInputs(P, complete, "asis", AS_OF_1017);
+    return resultFigures(P, ri.input, ri.bands, AS_OF_1017);
+  };
+
+  it("回答の幅で圏内の世帯：本文も退避文も「減らせる」「不足はなさそう」と言わない", () => {
+    const f = figuresOf(
+      "v=1&sb=1988&emp=employee&sp=1&spb=1990&spe=employee&ch=2021-2024&edu=public&inc=lt600&sinc=lt400&as=lt300&liv=lt30&ho=rent&cvs=m1000&cvsp=m300",
+    );
+    expect(f.diagnosis.householdHeadline.kind).toBe("uncertain");
+    for (const n of [narrate(f.diagnosis), fallbackNarration(f.diagnosis)]) {
+      expect(n.text).toContain("言い切れません");
+      expect(n.text).not.toContain("減らせる");
+      expect(n.text).not.toContain("不足はなさそう");
+    }
+    // 必要額は画面のカードと同じ幅
+    expect(placeholderValues(f.diagnosis).selfRange).toBe(
+      formatRange(f.self.need.low, f.self.need.high),
+    );
+  });
+
+  it("不足世帯：差額は1点ではなく、画面のヒーローと同じ幅", () => {
+    const f = figuresOf(
+      "v=1&sb=1986&emp=self&sp=1&spb=1988&spe=none&ch=2018-2021&edu=private&inc=lt400&sinc=none&as=lt100&liv=lt35&ho=rent&cvs=none&cvsp=none",
+    );
+    expect(placeholderValues(f.diagnosis).gapAmount).toBe(
+      formatRange(f.household.shortageRange.low, f.household.shortageRange.high),
+    );
+  });
 });
