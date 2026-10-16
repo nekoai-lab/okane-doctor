@@ -89,15 +89,18 @@ export interface SimulateResult {
  * まだ計算式を持っていないシナリオ。**空欄であることを結果として返す**。
  * 仕様 §5.3 のとおり、いま空欄なのは**障害だけ**。
  */
-const NOT_IMPLEMENTED: Record<"disability", string> = {
+const NOT_IMPLEMENTED: Record<"disability" | "unemployment", string> = {
   disability:
     "傷病手当金が切れた先の領域です。障害年金と団信の特約が鍵になります。根拠なく数字を置かないため、いまは空欄です。",
+  // 雇用保険の対象外の人の失業（2026-10-16・QA で blocking）。基本手当は雇用保険の給付なので受け取れない
+  unemployment:
+    "自営・フリーランスと公務員には雇用保険の基本手当がありません。収入が止まったときの生活資金の計算は準備中のため、いまは空欄です。",
 };
 
 /** シナリオごとの既定の期間（仕様 §5.3／モック check.html） */
 const DEFAULT_MONTHS = { sick_short: 3, sick_long: 12 } as const;
 
-function notSupported(scenario: "disability"): SimulateResult {
+function notSupported(scenario: "disability" | "unemployment"): SimulateResult {
   return {
     scenario,
     status: "not_supported",
@@ -127,6 +130,13 @@ function statutory(
   scenario: "sick_short" | "sick_long" | "unemployment",
 ): SimulateResult {
   const a = input.answers;
+  /**
+   * **雇用保険の対象外（自営・フリーランス・公務員）の失業は計算しない**（2026-10-16・QA で blocking）。
+   * 失業の試算は雇用保険の基本手当で生活費を相殺する作りなので、加入していない人に当てると
+   * 受け取れない給付で必要額を小さく見せてしまう。給付なしの期間を決める根拠が無いので、空欄にする。
+   */
+  const insured = a.self.unemploymentInsured ?? a.self.employment === "employee";
+  if (scenario === "unemployment" && !insured) return notSupported(scenario);
   // 雇用保険の加入年数は設問に無いので、就業開始の年齢を置いて年齢から推定する
   // （値は当社基準 `workStartAge`。2026-09-22 まで 22 を直書きしていた）
   const workStartAge = v(p, "workStartAge");

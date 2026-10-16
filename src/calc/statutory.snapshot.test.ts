@@ -99,6 +99,17 @@ describe("T-G：給付制限 2→1 か月（適用済み）", () => {
    */
   it("ゴールデン10世帯の needHigh が 20.0〜40.0万円 下がる。needLow と過不足の判定は動かない", () => {
     for (const g of GOLDEN) {
+      /**
+       * **雇用保険の対象外（GT-06 自営）は失業を計算しない**（2026-10-16・オーナー確認済み）。
+       * 給付制限の改正の被験体ではなくなったので、比べずに「計算しない」ことだけ確かめる。
+       * 残る9世帯で、この検査はまだ失敗しうる。
+       */
+      if (g.input.self.employment === "self") {
+        expect(simulate(P, { answers: g.input, asOf: AS_OF }, "unemployment").status, g.id).toBe(
+          "not_supported",
+        );
+        continue;
+      }
       const after = simulate(P, { answers: g.input, asOf: AS_OF }, "unemployment");
       const before = simulate(BEFORE, { answers: g.input, asOf: AS_OF }, "unemployment");
       const drop = (before.amounts?.needHigh ?? 0) - (after.amounts?.needHigh ?? 0);

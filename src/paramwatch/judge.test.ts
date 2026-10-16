@@ -99,11 +99,17 @@ describe("assessImpact：死亡＋statutory 3行を軸名つきで比べる（D2
    */
   const BASE = PRE_TG;
 
-  it("T-G：失業の needHigh が全10世帯で 20.0〜40.0万円 下がり、needLow と過不足の判定は動かない", () => {
+  it("T-G：失業の needHigh が9世帯（自営の GT-06 を除く）で 20.0〜40.0万円 下がり、needLow と過不足の判定は動かない", () => {
     const r = assessImpact(BASE, TG, WITH_EXPECT, AS_OF);
     for (const h of r.households) {
       const u = h.rows?.find((x) => x.scenario === "unemployment");
       if (!u) throw new Error(h.id);
+      // GT-06（自営）は雇用保険の対象外で、失業を計算しない（2026-10-16・オーナー確認済み）。前後とも空欄
+      if (h.id === "GT-06") {
+        expect(u.verdictBefore).toBeNull();
+        expect(u.verdictAfter).toBeNull();
+        continue;
+      }
       const drop = u.needBefore.high - u.needAfter.high;
       expect(drop).toBeGreaterThanOrEqual(200_000);
       expect(drop).toBeLessThanOrEqual(400_000);
@@ -122,7 +128,8 @@ describe("assessImpact：死亡＋statutory 3行を軸名つきで比べる（D2
   it("報告は軸名つきで、失業の行に変化の幅と「過不足の判定が変わる世帯 0/10」が出る", () => {
     const lines = summarizeRows(assessImpact(BASE, TG, WITH_EXPECT, AS_OF));
     const u = lines.find((l) => l.startsWith("失業："));
-    expect(u).toContain("必要額（ニーズ軸）が動く世帯 10/10");
+    // GT-06（自営）は失業を計算しないので動かない（2026-10-16）
+    expect(u).toContain("必要額（ニーズ軸）が動く世帯 9/10");
     expect(u).toContain("needLow 変化なし");
     expect(u).toContain("過不足の判定（過不足軸）が変わる世帯 0/10");
     expect(lines.find((l) => l.startsWith("死亡："))).toContain(

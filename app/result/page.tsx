@@ -888,6 +888,28 @@ export default async function ResultPage({
   };
 
   /** 制度式で概算する行（病気・けが・失業）。受け皿は保険ではなく貯蓄 */
+  const unsupportedRow = (
+    key: string,
+    title: string,
+    subtitle: string,
+    sim: (typeof sims)[number],
+  ): RiskRow => ({
+    key,
+    title,
+    subtitle,
+    tone: "none",
+    verdictLabel: "未診断",
+    precisionLabel: "計算未対応",
+    precisionTone: "unsupported",
+    figures: null,
+    scale: null,
+    note: sim.notSupported?.detail ?? "",
+    assumptions: [],
+    premiseWeight: null,
+    premiseSensitivity: null,
+    link: { pending: "もしもラボで見る（準備中）" },
+  });
+
   const savingsRow = (
     key: string,
     title: string,
@@ -895,6 +917,8 @@ export default async function ResultPage({
     sim: (typeof sims)[number],
     lead: string,
   ): RiskRow => {
+    // 計算未対応（例：自営の失業）は、空欄の行として出す。0円や「大丈夫」と読ませない
+    if (sim.status === "not_supported") return unsupportedRow(key, title, subtitle, sim);
     const v = sim.verdict ?? "pending";
     const range = sim.amounts ? formatRange(sim.amounts.needLow, sim.amounts.needHigh) : "—";
     // 受け皿は貯蓄。`simulate` に幅を渡していないので、いまは1点（`assumptions[]` にそう書いてある）
@@ -958,22 +982,7 @@ export default async function ResultPage({
       bySc.sick_long,
       "傷病手当金は通算1年6か月で切れます。",
     ),
-    {
-      key: "disability",
-      title: "就業不能・障害",
-      subtitle: "1年半を超えて働けない",
-      tone: "none",
-      verdictLabel: "未診断",
-      precisionLabel: "計算未対応",
-      precisionTone: "unsupported",
-      figures: null,
-      scale: null,
-      note: bySc.disability.notSupported?.detail ?? "",
-      assumptions: [],
-      premiseWeight: null,
-      premiseSensitivity: null,
-      link: { pending: "もしもラボで見る（準備中）" },
-    },
+    unsupportedRow("disability", "就業不能・障害", "1年半を超えて働けない", bySc.disability),
     savingsRow(
       "unemployment",
       "失業",

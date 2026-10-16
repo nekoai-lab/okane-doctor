@@ -34,7 +34,12 @@ const base: WizardSelections = {
 describe("normalize：レンジ→代表値の写像", () => {
   it("区分を代表値・年齢・子年齢に写像する", () => {
     const { input, estimations } = normalize(P, base, AS_OF);
-    expect(input.self).toEqual({ age: 37, income: 5_000_000, employment: "employee" });
+    expect(input.self).toEqual({
+      age: 37,
+      income: 5_000_000,
+      employment: "employee",
+      unemploymentInsured: true,
+    });
     expect(input.spouse).toEqual({ age: 35, income: 2_000_000, employment: "employee" });
     expect(input.children).toEqual([2]);
     expect(input.assets).toBe(4_000_000);
@@ -43,6 +48,12 @@ describe("normalize：レンジ→代表値の写像", () => {
     expect(input.coverageSelf).toBe(10_000_000); // m1000
     expect(input.coverageSpouse).toBe(0); // none = 加入していない
     expect(estimations).toEqual([]);
+  });
+
+  it("公務員は年金では会社員と同じ扱いだが、雇用保険の対象外（失業の行を空欄にする）", () => {
+    const { input } = normalize(P, { ...base, selfEmployment: "civil_servant" }, AS_OF);
+    expect(input.self.employment).toBe("employee");
+    expect(input.self.unemploymentInsured).toBe(false);
   });
 
   it("保険が分からないなら coverage は null（過不足を pending にする）", () => {

@@ -44,6 +44,11 @@ export interface Person {
   /** 年収（円） */
   income: number;
   employment: Employment;
+  /**
+   * 雇用保険（基本手当）の対象か。省略時は `employment === "employee"` で決める。
+   * **公務員は年金では `employee` だが、雇用保険の対象外**なので、ここで分けて持つ（2026-10-16）。
+   */
+  unemploymentInsured?: boolean;
 }
 
 export interface Housing {

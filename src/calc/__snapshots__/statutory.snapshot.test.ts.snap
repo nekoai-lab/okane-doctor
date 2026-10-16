@@ -384,24 +384,13 @@ exports[`statutory 3行のスナップショット（T-C） > GT-06：3シナリ
     "verdictShortfall": "uncertain",
   },
   {
-    "assumptions": [
-      "年齢45歳の日額上限（9,110円）で頭打ちにした",
-      "給付率を60%として概算した（実際は賃金日額に応じ50〜80%。60〜64歳のみ45〜80%）",
-      "自己都合など一般の受給資格者の給付日数で計算した（会社都合ならこれより長い）",
-      "所定給付日数150日（約5か月）を受け取る前提",
-      "幅の下端は会社都合（給付制限なし）、上端は自己都合（給付制限1か月は無収入）を想定した",
-      "再就職までの期間は給付日数と同じと置いた（それより長引く場合は足りない）",
-      "貯蓄は幅ではなく1点として比べた（回答の幅が渡されていないため）",
-      "雇用保険の加入年数は設問に無いため、22歳就業開始として23年と置いた",
-    ],
-    "needHigh": 433500,
-    "needLow": 133500,
-    "precision": "statutory_estimate",
+    "assumptions": [],
+    "needHigh": undefined,
+    "needLow": undefined,
+    "precision": "not_supported",
     "scenario": "unemployment",
-    "sources": [
-      "雇用保険法／厚生労働省「基本手当の所定給付日数」",
-    ],
-    "verdictShortfall": "reducible",
+    "sources": [],
+    "verdictShortfall": null,
   },
 ]
 `;

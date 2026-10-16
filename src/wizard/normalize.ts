@@ -50,6 +50,8 @@ export function normalize(p: ParamSet, sel: WizardSelections, asOf: Date): Norma
     age: age(sel.selfBirthYear),
     income: selfIncome,
     employment: toEmployment(sel.selfEmployment),
+    // 公務員は年金では会社員と同じ扱いだが、雇用保険の基本手当は無い（失業の行を空欄にする）
+    unemploymentInsured: sel.selfEmployment === "employee",
   };
 
   // ---------- 配偶者 ----------

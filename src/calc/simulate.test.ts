@@ -75,8 +75,11 @@ describe("simulate('death')：既存 diagnose への委譲", () => {
 
   it("**目盛りを動かすと結果が変わる**（切り詰める < いま通り < ゆとり）", () => {
     const total = (level: "tight" | "asis" | "roomy") =>
-      simulate(P, { answers: GOLDEN[0].input, asOf: AS_OF, assumptions: { livingLevel: level } }, "death")
-        .death?.self.expense.total ?? 0;
+      simulate(
+        P,
+        { answers: GOLDEN[0].input, asOf: AS_OF, assumptions: { livingLevel: level } },
+        "death",
+      ).death?.self.expense.total ?? 0;
     expect(total("tight")).toBeLessThan(total("asis"));
     expect(total("asis")).toBeLessThan(total("roomy"));
   });
@@ -84,7 +87,9 @@ describe("simulate('death')：既存 diagnose への委譲", () => {
 
 describe("計算未対応は正規の診断結果（いま空欄なのは障害だけ）", () => {
   it("障害 ─ 例外を投げずに not_supported を返す", () => {
-    expect(() => simulate(P, { answers: GOLDEN[0].input, asOf: AS_OF }, "disability")).not.toThrow();
+    expect(() =>
+      simulate(P, { answers: GOLDEN[0].input, asOf: AS_OF }, "disability"),
+    ).not.toThrow();
     const r = simulate(P, { answers: GOLDEN[0].input, asOf: AS_OF }, "disability");
     expect(r.status).toBe("not_supported");
     expect(r.precision).toBe("not_supported");
@@ -145,6 +150,22 @@ describe("制度式で概算するシナリオ", () => {
     const r = simulate(P, { answers: GOLDEN[0].input, asOf: AS_OF }, "unemployment");
     expect(r.assumptions.join()).toContain("会社都合");
     expect(r.assumptions.join()).toContain("給付制限");
+  });
+
+  it("**自営の失業は計算しない。** 受け取れない基本手当で必要額を小さく見せない（2026-10-16・QA）", () => {
+    const self = { ...GOLDEN[0].input.self, employment: "self" as const };
+    const r = simulate(P, { answers: { ...GOLDEN[0].input, self }, asOf: AS_OF }, "unemployment");
+    expect(r.status).toBe("not_supported");
+    expect(r.amounts).toBeNull();
+    expect(r.verdict).toBeNull();
+    expect(r.notSupported?.detail).toContain("雇用保険の基本手当がありません");
+  });
+
+  it("**公務員の失業も計算しない。** 年金では会社員と同じでも、雇用保険の対象外", () => {
+    const self = { ...GOLDEN[0].input.self, unemploymentInsured: false };
+    const r = simulate(P, { answers: { ...GOLDEN[0].input, self }, asOf: AS_OF }, "unemployment");
+    expect(r.status).toBe("not_supported");
+    expect(r.amounts).toBeNull();
   });
 
   it("雇用保険の加入年数は設問に無いので、推定したことを前提に残す", () => {
