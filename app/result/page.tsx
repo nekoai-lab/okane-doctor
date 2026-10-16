@@ -21,6 +21,7 @@ import { decisionPoints } from "../../src/calc/decisionPoints.js";
 import { reform2028 } from "../../src/calc/reform2028.js";
 import { verdict3 } from "../../src/calc/verdict3.js";
 import { Fold } from "./Fold.js";
+import { hasActionableGap, nextStepLines, reducibleSentence } from "./nextStep.js";
 import {
   bandWidenedNote,
   gapSentence,
@@ -686,8 +687,12 @@ export default async function ResultPage({
 
   const hh = figures.household;
 
-  // 減らせる箇所（無ければ「見つかりませんでした」と明示する＝沈黙で誤解させない）
-  const totalExcess = result.householdHeadline.totalExcess;
+  /**
+   * 減らせる箇所（無ければ「見つかりませんでした」と明示する＝沈黙で誤解させない）。
+   * **ヒーローと同じ `figures` から作る**（設計レビュー #2）。旧 `householdHeadline` は過剰の閾値が
+   * 上端の1.5倍で、ヒーローが「減らせる可能性」でもここが「見つかりませんでした」になっていた
+   */
+  const reducibleText = reducibleSentence(figures);
 
   /**
    * リスク別健康診断表の6行（仕様 §5.3）。
@@ -1190,12 +1195,11 @@ export default async function ResultPage({
         **0件のときは必ず出す。** 「見つかりませんでした」を沈黙で置き換えない。
       */}
       <div className={s.section}>
-        {totalExcess > 0 && heroShowsReducible ? null : totalExcess > 0 ? (
+        {reducibleText && heroShowsReducible ? null : reducibleText ? (
           <div className={s.reduce}>
             {/* **既にある金額を、あるべき声量にする**（DoD (b) の組版を (a) の解に使う） */}
-            <strong>減らせそうな箇所：</strong> 世帯全体で、いまの保障を
-            <span className={s.reduceAmount}>約{money(totalExcess)}</span>
-            減らせる余地があります。保険料が浮くのは良い知らせです（いまの前提では）。
+            <strong>減らせそうな箇所：</strong> {reducibleText}
+            保険料が浮くのは良い知らせです（いまの前提では）。
           </div>
         ) : (
           <div className={s.reduceNone}>減らせる箇所は、今回の前提では見つかりませんでした。</div>
@@ -1365,7 +1369,9 @@ export default async function ResultPage({
             {HERO_BADGE[hh.verdict]}
           </span>
           <span className={s.narrationStat}>
-            <span className={s.narrationStatLabel}>必要額のめやす</span>
+            <span className={s.narrationStatLabel}>
+              必要額のめやす{heroTotalLabel(figures) ? `（${heroTotalLabel(figures)}）` : ""}
+            </span>
             <span className={s.narrationStatValue}>
               {formatRange(hh.totalNeed.low, hh.totalNeed.high)}
             </span>
@@ -1377,25 +1383,21 @@ export default async function ResultPage({
             </span>
           </span>
         </div>
-        {(result.householdHeadline.kind === "reducible" ||
-          result.householdHeadline.kind === "rebalanceable") && (
-          <p className={s.meta}>
-            いまの保険は減らせる余地がありそうです。契約している保険会社・代理店の窓口で「減額（保障を下げる）」の相談ができます。
+        {/*
+          **人ごとの過不足の判定（過不足軸）から組み立てる**（UX #2・設計レビュー #2）。
+          不足の入口は被保険者の働き方で変える（勤め先が無い人に団体保険を案内しない）。
+        */}
+        {nextStepLines(figures, {
+          self: input.self.employment,
+          spouse: input.spouse?.employment ?? null,
+        }).map((line) => (
+          <p className={s.meta} key={line}>
+            {line}
           </p>
-        )}
-        {result.householdHeadline.kind === "shortage" && (
-          <p className={s.meta}>
-            足りない可能性があります。まず、お勤め先に
-            <strong>団体保険（会社を通じて入れる保険）</strong>
-            があるかを、総務・人事の窓口で確認してみてください。受付時期は勤務先により異なります。
-          </p>
-        )}
-        {result.householdHeadline.kind === "all_covered" && (
-          <p className={s.meta}>いまの前提では、特に手続きは必要ありません。</p>
-        )}
+        ))}
 
         {/* 選ぶ基準（もっと知りたい）。押したときだけ開く。押下記録は T-09（計測）で対応 */}
-        {result.householdHeadline.kind !== "all_covered" && (
+        {hasActionableGap(figures) && (
           <Fold count="（4点）" label="もっと知りたい：保険を選ぶときの基準">
             <ul className={s.list}>
               <li>いくらの保障が必要か（この診断の目安）</li>

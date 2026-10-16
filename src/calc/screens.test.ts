@@ -320,7 +320,8 @@ describe("⑤ 減らせる額はページに1箇所だけ、かつ必ず1箇所�
         : []),
     ]);
     const heroShowsReducible = hh.verdict === "reducible" || hh.verdict === "rebalanceable";
-    const totalExcess = d.householdHeadline.totalExcess;
+    // 画面は旧 householdHeadline ではなく、ヒーローと同じ世帯集約の減らせる額を使う（設計レビュー #2）
+    const totalExcess = hh.totalReducible;
     return {
       hero: heroShowsReducible && hh.totalReducible > 0 ? 1 : 0,
       // 単独セクション：ヒーローが出していないときだけ出す。0円なら「見つかりませんでした」を出す
