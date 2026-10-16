@@ -12,12 +12,20 @@ import { loadParams } from "../../../../src/params/index.js";
 import { toCompleteSelections } from "../../../../src/wizard/complete.js";
 import { normalize } from "../../../../src/wizard/normalize.js";
 import { decodeSelections } from "../../../../src/wizard/url.js";
+import { SAVE_ENABLED } from "../../../../src/watch/availability.js";
 import { createFirestoreWatchStore } from "../../../../src/watch/store.firestore.js";
 import { ConsentRequestSchema } from "./schema.js";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request): Promise<Response> {
+  // 削除の道を渡せないうちは保存しない（src/watch/availability.ts）。画面を通らない直叩きもここで止める
+  if (!SAVE_ENABLED) {
+    return NextResponse.json(
+      { error: "save_disabled", message: "お知らせを受け取る機能は、いま準備中です。" },
+      { status: 503 },
+    );
+  }
   let body: unknown;
   try {
     body = await req.json();

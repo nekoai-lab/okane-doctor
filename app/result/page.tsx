@@ -40,6 +40,8 @@ import { normalize } from "../../src/wizard/normalize.js";
 import { crossingDrivers, normalizeEnds } from "../../src/wizard/uncertainty.js";
 import { LIVING_LEVELS, decodeLivingLevel, withLivingLevel } from "../../src/wizard/dial.js";
 import { decodeSelections } from "../../src/wizard/url.js";
+import { outOfScope } from "../../src/wizard/scope.js";
+import { SAVE_ENABLED } from "../../src/watch/availability.js";
 import s from "./page.module.css";
 
 /**
@@ -578,6 +580,21 @@ export default async function ResultPage({
   }
 
   const params = loadParams();
+  // 算定できない世帯では、金額も判定も出さずに止める（src/wizard/scope.ts）
+  if (outOfScope(params, complete, jstYear(new Date())) === "single_parent") {
+    return (
+      <main className={s.page}>
+        <h1 className={s.h3}>この世帯は、まだ診断できません</h1>
+        <p>
+          配偶者がいなくて、独立前のお子さんがいる世帯の計算は、いま準備中です。
+          お子さんの生活費を正しく計算できないため、金額と判定は出していません。
+        </p>
+        <Link className={s.link} href={`/wizard?${q.toString()}`}>
+          入力に戻る
+        </Link>
+      </main>
+    );
+  }
   /**
    * 暮らし方の目盛り（#4・D-02・ADR-022）。**URL が状態そのもの**なので、
    * 押すたびにサーバで全部計算し直す ── 部分更新の取り残しが原理的に起きない。
@@ -1450,14 +1467,20 @@ export default async function ResultPage({
             </span>
           </p>
         )}
-        <p className={s.watchLead}>
-          お子さんの進学など、必要な保障が変わる時期にだけ一言お知らせします。
-          保存するのは今日の入力（範囲）と結果の要点だけで、
-          <strong>お知らせに金額は書きません</strong>。いつでも削除できます。
-        </p>
-        <Link className={s.watchButton} href={`/save?${q.toString()}`}>
-          この結果を保存してお知らせを受け取る
-        </Link>
+        {SAVE_ENABLED ? (
+          <>
+            <p className={s.watchLead}>
+              お子さんの進学など、必要な保障が変わる時期にだけ一言お知らせします。
+              保存するのは今日の入力（範囲）と結果の要点だけで、
+              <strong>お知らせに金額は書きません</strong>。いつでも削除できます。
+            </p>
+            <Link className={s.watchButton} href={`/save?${q.toString()}`}>
+              この結果を保存してお知らせを受け取る
+            </Link>
+          </>
+        ) : (
+          <p className={s.watchLead}>お知らせを受け取る機能は、いま準備中です。</p>
+        )}
         <p className={s.basis}>※ 保存しなくても、この結果はURLをブックマークすれば見返せます。</p>
       </div>
 

@@ -6,6 +6,7 @@
  */
 import Link from "next/link";
 import { toCompleteSelections } from "../../src/wizard/complete.js";
+import { SAVE_ENABLED } from "../../src/watch/availability.js";
 import { decodeSelections } from "../../src/wizard/url.js";
 import { SaveConsent } from "./SaveConsent.js";
 import s from "./page.module.css";
@@ -19,6 +20,18 @@ export default async function SavePage({
   const q = new URLSearchParams();
   for (const [k, val] of Object.entries(sp)) {
     if (typeof val === "string") q.set(k, val);
+  }
+
+  // 削除の道を渡せないうちは保存を受け付けない（src/watch/availability.ts）
+  if (!SAVE_ENABLED) {
+    return (
+      <main className={s.page}>
+        <p>お知らせを受け取る機能は、いま準備中です。</p>
+        <Link className={s.link} href={`/result?${q.toString()}`}>
+          結果に戻る
+        </Link>
+      </main>
+    );
   }
 
   const complete = toCompleteSelections(decodeSelections(q));
