@@ -21,6 +21,13 @@ export interface HeroProps {
   caption: string;
   /** 見出しに差し込む差額。`reducible` / `shortage` / `rebalanceable` のときだけ使う */
   diffText: string | null;
+  /**
+   * 見出しの差額が2人分の合計のときに添える内訳の1行（2026-10-17・UX）。無ければ null。
+   * 合計だと書かないと、カード（1人分）の金額と食い違って見える
+   */
+  breakdownNote?: string | null;
+  /** 3列の金額が2人分を足したものなら、その呼び名（「2人分の合計」）。1人なら null */
+  totalLabel?: string | null;
   /** 必要額が葬儀費用だけになる世帯に添える1行（仕様 §5.3）。無ければ null */
   funeralOnlyNote: string | null;
   /**
@@ -90,6 +97,8 @@ export function Hero(props: HeroProps) {
     verdict,
     caption,
     diffText,
+    breakdownNote,
+    totalLabel,
     funeralOnlyNote,
     rebalanceNote,
     coverageText,
@@ -113,6 +122,9 @@ export function Hero(props: HeroProps) {
         {headline(verdict, diffText)}
       </h1>
 
+      {/* 見出しの差額が2人分の合計なら、そう書いて内訳を出す（2026-10-17・UX） */}
+      {breakdownNote && <p className={s.funeral}>{breakdownNote}</p>}
+
       {/* 必要額が葬儀費用だけの世帯は、その理由を先に言う（仕様 §5.3） */}
       {funeralOnlyNote && <p className={s.funeral}>{funeralOnlyNote}</p>}
 
@@ -121,12 +133,17 @@ export function Hero(props: HeroProps) {
 
       <div className={s.stats}>
         <div>
-          <p className={s.statLabel}>いまの死亡保障</p>
+          <p className={s.statLabel}>
+            いまの死亡保障{totalLabel ? `（${totalLabel}）` : ""}
+          </p>
           <p className={s.statValue}>{coverageText}</p>
         </div>
         <div>
           {/* **幅のないものを幅と呼ばない**（J1・数直線や滝の帯／目盛りの出し分けと同じ規約） */}
-          <p className={s.statLabel}>必要額のめやす{needHasRange ? "（幅）" : ""}</p>
+          <p className={s.statLabel}>
+            必要額のめやす{needHasRange ? "（幅）" : ""}
+            {totalLabel ? `（${totalLabel}）` : ""}
+          </p>
           <p className={`${s.statValue} ${s.need}`}>{needText}</p>
         </div>
         <div>

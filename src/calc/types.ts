@@ -154,9 +154,22 @@ export interface HouseholdHeadline {
     /** 減らせる箇所がある */
     | "reducible"
     /** 片方が過剰・片方が不足＝合計保険料を増やさずに解決できる（ADR-007c） */
-    | "rebalanceable";
+    | "rebalanceable"
+    /**
+     * 必要額の幅がいまの保障を跨いでいる（過不足軸の「圏内・要精査」）。
+     * **`headline()` は返さない。** 結果画面が最終の必要額から結論を書き戻すとき（`figures.ts`）だけ使う
+     */
+    | "uncertain"
+    /** だれの保障も分からないので過不足を出していない。`figures.ts` だけが使う */
+    | "pending";
   /** 世帯合計の減額余地（円） */
   totalExcess: number;
   /** 世帯合計の不足（円） */
   totalShortage: number;
+  /**
+   * 減らせる額・不足額の幅（円）。`figures.ts` が最終の必要額から書き戻すときだけ入る。
+   * よみときは、あればこちらを幅で出す（1点で「約400万円」と言わない・2026-10-17・UX）
+   */
+  totalExcessRange?: { low: number; high: number };
+  totalShortageRange?: { low: number; high: number };
 }

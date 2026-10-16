@@ -68,6 +68,14 @@ export interface HouseholdSummary {
   totalCoverage: number | null;
   /** 世帯合計の必要額レンジ（円） */
   totalNeed: { low: number; high: number };
+  /**
+   * 減らせる額の幅（円）。`reducible` の人について `[coverage − needHigh, coverage − needLow]` を合計した額。
+   * **下端は `totalReducible` と同じ値**（判定の規則は動かさず、画面に出す幅だけを足す）。
+   * 1点で「約400万円ぶん減らせる」と書くと、必要額の幅のうち厳しめの端だけを見せることになる（2026-10-17・UX）。
+   */
+  reducibleRange: { low: number; high: number };
+  /** 不足額の幅（円）。`shortage` の人について `[needLow − coverage, needHigh − coverage]` の合計。下端は `totalShortage` */
+  shortageRange: { low: number; high: number };
 }
 
 /**
@@ -84,10 +92,18 @@ export function householdSummary(
   const verdicts = people.map((x) => verdict3(x.coverage, x.needLow, x.needHigh));
   let totalReducible = 0;
   let totalShortage = 0;
+  let reducibleHigh = 0;
+  let shortageHigh = 0;
   people.forEach((x, i) => {
     // coverage が null の人は verdict3 が pending を返すので、ここには入ってこない
-    if (verdicts[i] === "reducible") totalReducible += (x.coverage as number) - x.needHigh;
-    if (verdicts[i] === "shortage") totalShortage += x.needLow - (x.coverage as number);
+    if (verdicts[i] === "reducible") {
+      totalReducible += (x.coverage as number) - x.needHigh;
+      reducibleHigh += (x.coverage as number) - x.needLow;
+    }
+    if (verdicts[i] === "shortage") {
+      totalShortage += x.needLow - (x.coverage as number);
+      shortageHigh += x.needHigh - (x.coverage as number);
+    }
   });
 
   // **1人でも未入力なら世帯合計は出さない。** 欠けたまま足すと、実際より小さい保障額になる
@@ -114,6 +130,8 @@ export function householdSummary(
       low: people.reduce((sum, x) => sum + x.needLow, 0),
       high: people.reduce((sum, x) => sum + x.needHigh, 0),
     },
+    reducibleRange: { low: totalReducible, high: reducibleHigh },
+    shortageRange: { low: totalShortage, high: shortageHigh },
   };
 }
 

@@ -284,6 +284,17 @@ describe("householdSummary：世帯4値と差額を同じ規則から出す", ()
     expect(r.totalCoverage).toBeNull();
   });
 
+  it("差額の幅：下端は既存の差額、上端は必要額の下端から測った差額（2026-10-17・UX）", () => {
+    const r = householdSummary([
+      { coverage: man(3000), needLow: man(1000), needHigh: man(2000) },
+      { coverage: man(0), needLow: man(200), needHigh: man(400) },
+    ]);
+    expect(r.reducibleRange).toEqual({ low: man(1000), high: man(2000) });
+    expect(r.shortageRange).toEqual({ low: man(200), high: man(400) });
+    expect(r.reducibleRange.low).toBe(r.totalReducible);
+    expect(r.shortageRange.low).toBe(r.totalShortage);
+  });
+
   it("全員が未入力なら世帯も pending。差額は出さない", () => {
     const r = householdSummary([{ coverage: null, needLow: man(1000), needHigh: man(2000) }]);
     expect(r.verdict).toBe("pending");

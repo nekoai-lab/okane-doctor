@@ -14,12 +14,21 @@ import { coverageCurve, projectDeath } from "../../src/calc/projection.js";
 import { narrate, placeholderValues } from "../../src/narrate/narrate.js";
 import { jstDate, jstYear } from "../../src/time/jstYear.js";
 import { dialFor, simulateAll } from "../../src/calc/simulate.js";
-import { crossingNote, envelope } from "../../src/calc/envelope.js";
+import { crossingNote } from "../../src/calc/envelope.js";
+import { resultFigures } from "../../src/calc/figures.js";
 import { survivorIncomeSensitivity } from "../../src/calc/sensitivity.js";
 import { decisionPoints } from "../../src/calc/decisionPoints.js";
 import { reform2028 } from "../../src/calc/reform2028.js";
-import { householdSummary, verdict3 } from "../../src/calc/verdict3.js";
+import { verdict3 } from "../../src/calc/verdict3.js";
 import { Fold } from "./Fold.js";
+import {
+  bandWidenedNote,
+  gapSentence,
+  heroBreakdownNote,
+  heroDiffText,
+  heroTotalLabel,
+  rebalanceNote,
+} from "./figureText.js";
 import { SoloCase } from "./SoloCase.js";
 import { HERO_BADGE, HERO_TONE, Hero } from "./Hero.js";
 import { LivingDial } from "./LivingDial.js";
@@ -36,12 +45,8 @@ import { loadParams, v } from "../../src/params/index.js";
 import { formatMan, formatRange } from "../../src/design/tokens.js";
 import { toCompleteSelections } from "../../src/wizard/complete.js";
 import type { Estimation } from "../../src/wizard/types.js";
-import { normalize } from "../../src/wizard/normalize.js";
-import {
-  bandInputsFor,
-  crossingDrivers,
-  normalizeEnds,
-} from "../../src/wizard/uncertainty.js";
+import { crossingDrivers } from "../../src/wizard/uncertainty.js";
+import { resultInputs } from "../../src/wizard/resultInputs.js";
 import { LIVING_LEVELS, decodeLivingLevel, withLivingLevel } from "../../src/wizard/dial.js";
 import { decodeSelections } from "../../src/wizard/url.js";
 import { SAVE_ENABLED } from "../../src/watch/availability.js";
@@ -134,13 +139,6 @@ function shortfallBody(v: string, hasRange: boolean): string {
       return "いまの保障が分からないため、過不足は出していません。証券が見つかったら再診断できます。";
   }
 }
-
-const VERDICT: Record<string, { label: string; tone: "good" | "warn" | "muted" }> = {
-  shortage: { label: "いまの前提では、備えが足りない可能性があります", tone: "warn" },
-  sufficient: { label: "いまの前提では、おおむね足りています", tone: "good" },
-  ample: { label: "いまの前提では、十分に足りています（上乗せも不要）", tone: "good" },
-  not_needed: { label: "扶養するご家族がいないため、大きな死亡保障は不要です", tone: "muted" },
-};
 
 function money(yen: number): string {
   return formatMan(yen);
@@ -286,6 +284,8 @@ function CaseCard({
   estimations,
   terms,
   editHref,
+  gapText,
+  bandNote,
 }: {
   title: string;
   r: DeathResult;
@@ -312,6 +312,10 @@ function CaseCard({
   terms: string[];
   /** 入力に戻るリンク */
   editHref: string;
+  /** いまの保障との差の1文（`gapSentence`）。最終の必要額から作る */
+  gapText: string;
+  /** 滝の最終行が代表値より広い幅のとき、その旨の1文（`bandWidenedNote`）。無ければ null */
+  bandNote: string | null;
 }) {
   /**
    * STEP4 の判定カード。**過不足軸**（`Verdict3`）を使う ── バッジと同じ軸。
@@ -371,20 +375,8 @@ function CaseCard({
       <p className={s.basis}>{AMOUNT_NOTE[r.verdict] ?? AMOUNT_NOTE.sufficient}</p>
 
       {/* 現在の保障との比較 */}
-      {r.gap.kind === "pending" && (
-        <p className={s.meta}>
-          現在の保険が未入力のため、過不足の判定は保留しています。証券が見つかったら再診断できます。
-        </p>
-      )}
-      {r.gap.kind === "shortage" && (
-        <p className={s.meta}>いまの保障より、約{money(r.gap.amount)} 足りていません。</p>
-      )}
-      {r.gap.kind === "excess" && (
-        <p className={s.meta}>いまの保障は、約{money(r.gap.amount)} 減らせそうです。</p>
-      )}
-      {r.gap.kind === "adequate" && (
-        <p className={s.meta}>いまの保障は、過不足なく足りています。</p>
-      )}
+      {/* 現在の保障との比較。**最終の必要額との差**を幅で言う（`figures.ts`・2026-10-17） */}
+      <p className={s.meta}>{gapText}</p>
 
       {/* 子の年齢での時間軸（見落としの可視化） */}
       {r.years.total > 0 && (
@@ -479,7 +471,7 @@ function CaseCard({
           high: r.range.high,
           // モックの言い方（「＝ 民間保険で備える額」）に揃え、中身の性質を括弧で添える
           label: `民間保険で備える額${RESULT_QUALIFIER[r.verdict] ?? ""}`,
-          note: RESULT_NOTE[r.verdict] ?? RESULT_NOTE.sufficient,
+          note: `${RESULT_NOTE[r.verdict] ?? RESULT_NOTE.sufficient}${bandNote ?? ""}`,
         }}
         /* **手元のお金に読ませない。** 上回る分の大半は、これから算定期間をかけて入る就労収入（2026-10-15） */
         surplusNote={`この上回る分は、${survivorLabel}の就労収入（約${money(r.income.survivorWork)}）の前提の上にあります。いま手元にあるお金ではなく、${r.years.total}年かけて入る将来の収入を含みます。`}
@@ -589,8 +581,13 @@ export default async function ResultPage({
    * 既定（いま通り）は URL に書かない。
    */
   const livingLevel = decodeLivingLevel(q);
-  const dial = dialFor(params, livingLevel);
-  const { input: rawInput, estimations } = normalize(params, complete, new Date());
+  /**
+   * **基準日を1つにする。** 算定・幅・感度・診断表で別々に `new Date()` を読むと、
+   * 日付をまたいだ瞬間に年齢が1歳違う結果を並べてしまう
+   */
+  const asOfDate = new Date();
+  const ri = resultInputs(params, complete, livingLevel, asOfDate);
+  const { dial, rawInput, estimations, input } = ri;
   // 算定できない世帯では、金額も判定も出さずに止める（src/calc/scope.ts。diagnose も同じ所で止まる）
   if (outOfScope(params, rawInput) === "single_parent") {
     return (
@@ -606,25 +603,23 @@ export default async function ResultPage({
       </main>
     );
   }
-  const input = { ...rawInput, lifestyleDial: dial };
-  const result = diagnose(params, input);
 
   /**
-   * **答えの幅をエンジンに通す（T-H・2026-09-23）。**
+   * **金額と判定はここで1組だけ作る**（`src/calc/figures.ts`・2026-10-17）。
    *
-   * 回答は区分で受けているので、点1つで出すと「幅で計算した」と言えない。
-   * 緩め端・厳しめ端の2回（連動する世帯は4回）まわして**包絡**を取り、
-   * **端で判定が変わるときは、そのことを露出部に文として出す**（畳まない）。
-   * 生活費のダイヤル（lifestyleDial）は本人が動かす前提なので、ここでは点のまま扱う。
+   * 回答は区分で受けているので、最終の必要額は**答えの幅を包絡したレンジ**（T-H）。
+   * ヒーロー・診断表・STEP3/4・よみとき・次の一歩は、すべてこの `figures` を読む。
+   * `result` は代表値の算定結果に最終の必要額と過不足を書き戻したもので、
+   * 支出・収入・年数（内訳）だけが代表値のまま残る。
    */
-  // 幅の両端にも同じ目盛りを渡す。渡さないと、カードの必要額と判定だけ目盛り1のまま残る（2026-10-16・QA）
-  const bandInputs = bandInputsFor(normalizeEnds(params, complete, new Date()), dial);
+  const figures = resultFigures(params, input, ri.bands, asOfDate);
+  const result = figures.diagnosis;
   const envFor = (who: "self" | "spouse") => {
-    if (who === "spouse" && !result.spouse) return null;
-    const r = envelope(params, bandInputs, new Date(), who);
+    const f = who === "self" ? figures.self : figures.spouse;
+    if (!f?.band) return null;
     return {
-      ...r,
-      note: crossingNote(r, crossingDrivers(params, complete, new Date(), who, dial)[0]),
+      ...f.band,
+      note: crossingNote(f.band, crossingDrivers(params, complete, asOfDate, who, dial)[0]),
     };
   };
   const bandSelf = envFor("self");
@@ -665,7 +660,7 @@ export default async function ResultPage({
 
   // 年次キャッシュフロー（US-04b）。総額と同じ係数・同じ前提で、合計する前の姿を出す。
   // 変動率は既定の0（実値への切り替えはパラメータ版の更新でやる。SPEC 参照）。
-  const asOfYear = jstYear(new Date());
+  const asOfYear = jstYear(asOfDate);
   /**
    * **`Household` を手で組まない。** `toHousehold` を通す（src/calc）。
    * 2026-09-21、ここで `lifestyleDial` を1つ落としており、必要額だけ動いて
@@ -689,22 +684,7 @@ export default async function ResultPage({
     (input.housing.loan ?? 0) > 0 &&
     input.housing.danshin !== false;
 
-  const hh = householdSummary([
-    {
-      coverage: input.coverageSelf,
-      needLow: result.self.range.low,
-      needHigh: result.self.range.high,
-    },
-    ...(result.spouse
-      ? [
-          {
-            coverage: input.coverageSpouse,
-            needLow: result.spouse.range.low,
-            needHigh: result.spouse.range.high,
-          },
-        ]
-      : []),
-  ]);
+  const hh = figures.household;
 
   // 減らせる箇所（無ければ「見つかりませんでした」と明示する＝沈黙で誤解させない）
   const totalExcess = result.householdHeadline.totalExcess;
@@ -716,8 +696,6 @@ export default async function ResultPage({
    * 軸が違うのでここには混ぜない（世帯の結論は下の死亡詳細セクションに出る）。
    * **所見の文言はモック `docs/design-mock/check.html` が正で、金額だけ実計算値に差し替える。**
    */
-  // **同じ日付で回す。** 感度文と診断表で asOf がずれると、年齢が1歳違う結果を並べてしまう
-  const asOfDate = new Date();
   const sims = simulateAll(params, {
     answers: input,
     asOf: asOfDate,
@@ -1065,23 +1043,6 @@ export default async function ResultPage({
     return null;
   })();
 
-  const rebalanceNote = (() => {
-    if (hh.verdict !== "rebalanceable") return null;
-    const shortSides = [
-      verdict3(input.coverageSelf, result.self.range.low, result.self.range.high) === "shortage"
-        ? "あなたの保障"
-        : null,
-      result.spouse &&
-      verdict3(input.coverageSpouse ?? null, result.spouse.range.low, result.spouse.range.high) ===
-        "shortage"
-        ? "配偶者の保障"
-        : null,
-    ].filter((x): x is string => x !== null);
-    // 名指す相手が取れないときは、どこに足りないのかを言えないので出さない
-    if (shortSides.length === 0) return null;
-    const where = shortSides.join("と");
-    return `約${money(hh.totalReducible)}は減らせる一方、${where}に約${money(hh.totalShortage)}足りません。`;
-  })();
 
   /**
    * 使った前提と出典（照合表 #9）。**ラベルとURLは `params` から取る。**
@@ -1143,15 +1104,11 @@ export default async function ResultPage({
       <Hero
         verdict={hh.verdict}
         caption={caption}
-        diffText={
-          hh.verdict === "shortage"
-            ? `約${money(hh.totalShortage)}`
-            : hh.totalReducible > 0
-              ? `約${money(hh.totalReducible)}`
-              : null
-        }
+        diffText={heroDiffText(figures)}
+        breakdownNote={heroBreakdownNote(figures)}
         funeralOnlyNote={funeralOnlyNote}
-        rebalanceNote={rebalanceNote}
+        rebalanceNote={rebalanceNote(figures)}
+        totalLabel={heroTotalLabel(figures)}
         coverageText={hh.totalCoverage === null ? "未入力" : `約${money(hh.totalCoverage)}`}
         needText={formatRange(hh.totalNeed.low, hh.totalNeed.high)}
         needHasRange={hh.totalNeed.low !== hh.totalNeed.high}
@@ -1176,7 +1133,7 @@ export default async function ResultPage({
       <p className={s.meta}>
         これは<strong>概算・要精査</strong>です ／ 算定基準日{" "}
         {/* 日本時間の日付（UTC で切ると Cloud Run では JST 0〜9時に前日になる・2026-09-22） */}
-        <span className={s.metaValue}>{jstDate(new Date())}</span> ／ 使用パラメータ版{" "}
+        <span className={s.metaValue}>{jstDate(asOfDate)}</span> ／ 使用パラメータ版{" "}
         <span className={s.metaValue}>{result.paramVersion}</span>
       </p>
 
@@ -1297,6 +1254,8 @@ export default async function ResultPage({
             reform2028Reason={result.reform2028.reason}
             survivorLabel="配偶者"
             title="あなたが亡くなった場合"
+            gapText={gapSentence(figures.self)}
+            bandNote={bandWidenedNote(figures.self)}
             workFrom={input.spouse && input.spouse.income > 0 ? "配偶者の年収" : null}
           />
         )}
@@ -1314,11 +1273,7 @@ export default async function ResultPage({
                   矛盾した1行になる（実際になった）。要約では行動につながる過不足を優先し、
                   過不足が出ていないときだけ判定を出す。両方の意味は開けば書いてある。 */}
               <span className={s.spouseSummaryVerdict}>
-                {result.spouse.gap.kind === "shortage"
-                  ? `いまの保障より 約${money(result.spouse.gap.amount)} 足りていません`
-                  : result.spouse.gap.kind === "excess"
-                    ? `いまの保障は 約${money(result.spouse.gap.amount)} 減らせそうです`
-                    : (VERDICT[result.spouse.verdict]?.label ?? VERDICT.sufficient.label)}
+                {figures.spouse ? gapSentence(figures.spouse) : null}
               </span>
             </summary>
             <CaseCard
@@ -1346,6 +1301,8 @@ export default async function ResultPage({
               loan={input.housing.loan ?? null}
               survivorLabel="あなた"
               title="配偶者が亡くなった場合"
+              gapText={figures.spouse ? gapSentence(figures.spouse) : ""}
+              bandNote={figures.spouse ? bandWidenedNote(figures.spouse) : null}
               workFrom={input.self.income > 0 ? "あなたの年収" : null}
             />
           </details>
