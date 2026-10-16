@@ -1,0 +1,81 @@
+# GitHub の main に push されたら、ビルドして Cloud Run に出す。
+#
+# gemini-case-navi と同じ形（Cloud Build トリガー）。手元に Docker は要らない ─
+# ビルドはここで走る。トリガーの作成は README ではなく docs/本番前チェックリスト.md「G」に書く。
+#
+# **okane-doctor は、審査中の提出版 okane-kenko と同じ GCP プロジェクトで動く。**
+# 本番（サービス okane-kenko）に触らないために、このファイルで次の4つを固定している：
+#   - サービス名の既定値は okane-doctor（トリガーの置換変数を入れ忘れても本番を上書きしない）
+#   - 実行アカウントは okane-doctor 専用（本番のアカウントを使い回さない）
+#   - Firestore は名前つきデータベース okane-doctor（既定のデータベースには本番の記録がある）
+#   - 秘密は Gemini の鍵（共有）と okane-doctor の合言葉だけ。Slack 通知・定期監視の秘密はつながない
+#     （つなぐと本番と同じ通知が2回飛ぶ。WATCH_CRON_SECRET が無いので /api/*/run は 401 を返す）
+#
+# 注意：**参照している Secret が1つでも無いと deploy ステップで落ちる。**
+# 初回のデプロイ前に、admin-password-doctor を Secret Manager に作り、実行アカウントに accessor を付けておくこと。
+#
+# 注意：**検証ビルドの間は verified:false のパラメータが残っている。**
+# 本番として開ける（strictVerified を有効にする）のは、A〜C を潰してから。
+
+substitutions:
+  _SERVICE: okane-doctor
+  _REGION: asia-northeast1
+  # Artifact Registry のリポジトリは提出版と共有する（イメージ名がサービス名で分かれるので混ざらない）
+  _REPO: okane-kenko
+
+steps:
+  # 1. イメージを作る。$SHORT_SHA で「どのコミットが動いているか」を後から追えるようにする
+  - name: gcr.io/cloud-builders/docker
+    id: build
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:latest
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    id: push
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}
+
+  # 2. Cloud Run に出す。
+  #    GEMINI_API_KEY は Secret Manager から渡す（値をこのファイルにも環境変数にも書かない）。
+  #    鍵が未設定でも診断は成立する（AI言語化が定型文に退避するだけ）ので、
+  #    秘密が用意できていない段階でもデプロイできる。
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: deploy
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=8080
+      - --cpu=1
+      - --memory=512Mi
+      - --min-instances=0
+      - --max-instances=3
+      - --service-account=${_SERVICE}-run@$PROJECT_ID.iam.gserviceaccount.com
+      - --set-secrets=GEMINI_API_KEY=gemini-api-key:latest,ADMIN_PASSWORD=admin-password-doctor:latest
+      # --set-env-vars ではなく --update-env-vars（下の WATCH_BASE_URL の注意を参照）
+      - --update-env-vars=FIRESTORE_DATABASE_ID=okane-doctor
+      # WATCH_BASE_URL（通知リンク /notice/{token} を組み立てる公開URL）はここで渡さない。
+      # 公開リポジトリに本番URLを書かないため、サービス側に一度だけ設定してある値を使う
+      # （gcloud run deploy は、指定しない環境変数を前のリビジョンから引き継ぐ）。
+      # 設定し直すとき：gcloud run services update <サービス名> --update-env-vars=WATCH_BASE_URL=<公開URL>
+      # ここに --set-env-vars を足すと環境変数が丸ごと置き換わり、WATCH_BASE_URL が消える。
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8

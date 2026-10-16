@@ -1,25 +1,41 @@
-# 鍵（.env.example だけはコミットしてよい）
+.DS_Store
+node_modules/
+coverage/
+*.log
+
+# Next.js / Vercel
+.next/
+next-env.d.ts
+.vercel
+*.tsbuildinfo
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# 秘密情報の実値は commit できないようにする。.env.example だけを Git に含める。
 .env
 .env.*
 !.env.example
 
-# 依存・ビルド成果物
-node_modules/
+.claude/settings.local.json
+
+# ベイクオフの生成物（採点材料）。結論だけを docs/レポート品質_評価基準.md §7 に残す。
+bakeoff-out/
+
+# ブレインストーミング用ビジュアルコンパニオンの一時モックアップ
+.superpowers/
+
+# ai-dev-harness のテンプレートから足したもの
 dist/
 build/
-.next/
 out/
-coverage/
 .venv/
 __pycache__/
 *.pyc
-
-# エディタ・OS
-.DS_Store
 .idea/
 .vscode/*
 !.vscode/extensions.json
-
-# ログ
-*.log
 npm-debug.log*

@@ -10,12 +10,16 @@
 
 ## 現状
 
-- new-project で作成した直後（2026-10-16）
+- new-project で作成（2026-10-16）
+- 提出版 `nekoai-lab/okane-kenko@e35a072` の中身を取り込む PR（ハーネスとの統合・本番に触る箇所の直し）
 
 ## やり残し
 
 - PRODUCT.md を人が書く
+- GCP の初回セットアップ（`docs/本番前チェックリスト.md`「G-0」。人の操作）
+- 初回デプロイの URL で `params/watch-sources.yaml` の罠ページ（`demoTrap`）を差し替える
+- 最終課題の4日間の計画：プロジェクトの共有フォルダ `okane-kenko/2026-10-16_final-assignment-plan.md`
 
 ## 次の1手
 
-- PRODUCT.md が書けたら、ARCHITECTURE.md と CLAUDE.md のコマンドを埋める
+- 取り込み PR をマージ → G-0 のセットアップ → 初回デプロイ
