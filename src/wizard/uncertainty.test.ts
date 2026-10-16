@@ -84,19 +84,38 @@ describe("連動：生活費を年収から推定した世帯", () => {
     expect(e.loose.monthlyLiving).toBeGreaterThan(e.strict.monthlyLiving);
   });
 
-  it("**単調と言い切れないので、年収を逆向きにした候補も混ぜる**", () => {
-    const e = normalizeEnds(P, ESTIMATE, AS_OF);
-    expect(e.extra).toHaveLength(2);
+  it("**単調と言い切れないので、年収の端を本人・配偶者で独立に組んだ候補も混ぜる**", () => {
+    const e = normalizeEnds(
+      P,
+      { ...ESTIMATE, spouseEmployment: "employee", spouseIncome: "lt400" },
+      AS_OF,
+    );
+    // 2026-10-17（QA）：2人の年収をそろって逆向きにするだけでは、「本人は上端・配偶者は下端」を取りこぼす
+    const mixedIncome = [e.loose, e.strict, ...e.extra].some(
+      (x) =>
+        x.self.income === 6_000_000 && x.spouse?.income === P.ownStandard.incomeBandFloor.value,
+    );
+    expect(mixedIncome).toBe(true);
     const r = envelope(P, [e.loose, e.strict, ...e.extra], AS_OF);
-    // 4候補すべてが包絡の内側にある
+    // 候補すべてが包絡の内側にある
     for (const end of r.ends) {
       expect(end.low).toBeGreaterThanOrEqual(r.low);
       expect(end.high).toBeLessThanOrEqual(r.high);
     }
   });
+});
 
-  it("区分で答えた世帯では、逆向きの候補は作らない（2回で足りる）", () => {
-    expect(normalizeEnds(P, BASE, AS_OF).extra).toHaveLength(0);
+describe("帯の角：入力ごとに端を独立に選んだ組み合わせを、すべて候補に入れる（2026-10-17・QA）", () => {
+  it("区分で答えた世帯でも角を入れる（必要額の枝が変わると、端の向きに単調ではない）", () => {
+    // BASE で帯があるのは本人の年収・生活費・資産の3つ（配偶者は収入なし・ローンなし）→ 角は8組
+    const e = normalizeEnds(P, BASE, AS_OF);
+    expect(e.extra).toHaveLength(8 - 2);
+  });
+
+  it("帯の無い入力では角が重なるので、同じ入力を2回回さない", () => {
+    const e = normalizeEnds(P, BASE, AS_OF);
+    const keys = [e.loose, e.strict, ...e.extra].map((x) => JSON.stringify(x));
+    expect(new Set(keys).size).toBe(keys.length);
   });
 });
 

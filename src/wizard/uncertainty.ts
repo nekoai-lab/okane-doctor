@@ -8,6 +8,9 @@
  *
  * **方向表は2回で済ませるための最適化であって、正しさの根拠ではない**（2026-09-23 オーナー裁定）。
  * 方向が単調と言い切れない入力（下の「連動」）は、その入力だけ**両方向に動かして包絡**を取る。
+ * 2026-10-17（QA）からは、**入力ごとに端を独立に選んだ組み合わせ（帯の角）をすべて**包絡に入れる。
+ * 本人と配偶者の年収を1つの向きに束ねると、「本人は上端・配偶者は下端」のような最悪の組を取りこぼすため
+ * （詳しくは `normalizeEnds`）。
  *
  * ## 方向表
  *
@@ -62,8 +65,9 @@ export interface Ends {
    * **方向が単調と言い切れない組み合わせ**の入力（2026-09-23 裁定）。
    * 年収は「上げると遺族年金が増えて必要額が減る」が、
    * **生活費を年収から推定している世帯では支出も同時に上がる**。
-   * どちらが勝つかは世帯による（GT-02 では年金が勝つ）ので、
-   * **年収だけ逆向きに動かした入力も候補に混ぜて包絡を取る**
+   * どちらが勝つかは世帯による（GT-02 では年金が勝つ）。区分で答えた世帯でも、
+   * 必要額の枝が変わると端の向きに単調でなくなる。だから**入力ごとに端を独立に選んだ組み合わせ（帯の角）**を
+   * すべて候補に混ぜて包絡を取る（2026-10-17）。緩め端・厳しめ端と重なる組は入れない
    */
   extra: DiagnoseInput[];
   /** 幅を持てた入力（画面の開示に使う）。**未回答はここに入らない** */
@@ -98,57 +102,78 @@ function livingEnd(band: AnswerBand | undefined, end: End, fallback: number): nu
   return band.high ?? fallback;
 }
 
+/** 生活費を「年収から推定」したときの月額（§4.2.1 の式。`normalize` と同じ式を端の年収に当てる） */
+function estimatedLiving(p: ParamSet, householdIncome: number): number {
+  const net = householdIncome * p.ownStandard.netIncomeRatio.value;
+  return Math.round((net * p.ownStandard.livingCostEstimateRatio.value) / 12);
+}
+
 /**
  * 片方の端の入力を作る。
  *
  * **`normalize` を書き換えない。** 区分コードから点を作る道は1つのままにして、
  * ここは「その点を帯の端に差し替える」層として重ねる（写しを2本にしない）。
  */
+/**
+ * 入力ごとの端の指定。指定しない入力は `atEnd` の `end` にそろえる。
+ * **方向表の「連動」は入力ごとに独立**なので、組み合わせは入力単位で選べるようにしておく
+ * （検査で全組み合わせを総当たりし、包絡が取りこぼしていないことを確かめるためにも使う）
+ */
+export type FieldEnds = Partial<
+  Record<"selfIncome" | "spouseIncome" | "living" | "assets" | "loan", End>
+>;
+
 function atEnd(
   p: ParamSet,
   sel: WizardSelections,
   asOf: Date,
   end: End,
-  opts: { flipIncome?: boolean } = {},
+  per: FieldEnds = {},
 ): { input: DiagnoseInput; fields: UncertainField[] } {
   const base = normalize(p, sel, asOf);
   const fields: UncertainField[] = [];
-  const incomeEnd: End = opts.flipIncome ? (end === "loose" ? "strict" : "loose") : end;
 
   const floor = p.ownStandard.incomeBandFloor.value;
   const selfIncome = bandEnd(
     p.inputRanges.incomeBand[sel.selfIncome],
-    incomeEnd,
+    per.selfIncome ?? end,
     base.input.self.income,
     floor,
   );
   const spouseCode = sel.spouseIncome;
   const spouseIncome =
     base.input.spouse && spouseCode
-      ? bandEnd(p.inputRanges.incomeBand[spouseCode], incomeEnd, base.input.spouse.income, floor)
+      ? bandEnd(
+          p.inputRanges.incomeBand[spouseCode],
+          per.spouseIncome ?? end,
+          base.input.spouse.income,
+          floor,
+        )
       : (base.input.spouse?.income ?? 0);
 
   // 生活費：区分で答えたなら帯の端。年収から推定なら**年収の端に連動させて**組み直す
   let monthlyLiving: number;
   if (sel.livingCost === "estimate") {
-    const household = selfIncome + (base.input.spouse ? spouseIncome : 0);
-    const net = household * p.ownStandard.netIncomeRatio.value;
-    monthlyLiving = Math.round((net * p.ownStandard.livingCostEstimateRatio.value) / 12);
+    monthlyLiving = estimatedLiving(p, selfIncome + (base.input.spouse ? spouseIncome : 0));
   } else {
     monthlyLiving = livingEnd(
       p.inputRanges.monthlyLivingBand[sel.livingCost],
-      end,
+      per.living ?? end,
       base.input.monthlyLiving,
     );
   }
 
   let housing = base.input.housing;
   if (housing.type === "own" && sel.loan && housing.loan) {
-    const loan = livingEnd(p.inputRanges.loanBand[sel.loan], end, housing.loan);
+    const loan = livingEnd(p.inputRanges.loanBand[sel.loan], per.loan ?? end, housing.loan);
     housing = { ...housing, loan };
   }
 
-  const assets = bandEnd(p.inputRanges.assetsBand[sel.assets], end, base.input.assets);
+  const assets = bandEnd(
+    p.inputRanges.assetsBand[sel.assets],
+    per.assets ?? end,
+    base.input.assets,
+  );
 
   if (p.inputRanges.incomeBand[sel.selfIncome]) {
     fields.push({
@@ -201,6 +226,19 @@ function atEnd(
   };
 }
 
+/**
+ * 入力ごとに端を選んだ1組の入力（検査用）。**画面の経路は `normalizeEnds` だけを通る。**
+ * 包絡が全組み合わせの最悪・最良を取りこぼしていないかを、総当たりで確かめるために外へ出す。
+ */
+export function inputAtEnds(
+  p: ParamSet,
+  sel: WizardSelections,
+  asOf: Date,
+  ends: Required<FieldEnds>,
+): DiagnoseInput {
+  return atEnd(p, sel, asOf, "loose", ends).input;
+}
+
 /** 未回答（区分が無いので幅を作れないもの）を拾う。**黙って点にしない** */
 function pointOnlyFields(sel: WizardSelections): string[] {
   const out: string[] = [];
@@ -225,14 +263,43 @@ export function normalizeEnds(p: ParamSet, sel: WizardSelections, asOf: Date): E
   const loose = atEnd(p, sel, asOf, "loose");
   const strict = atEnd(p, sel, asOf, "strict");
 
-  // 年収と生活費が連動する世帯だけ、年収を逆向きにした候補も混ぜる（包絡のため）
-  const extra: DiagnoseInput[] =
-    sel.livingCost === "estimate"
-      ? [
-          atEnd(p, sel, asOf, "loose", { flipIncome: true }).input,
-          atEnd(p, sel, asOf, "strict", { flipIncome: true }).input,
-        ]
-      : [];
+  /**
+   * **入力ごとに端を独立に選んだ組み合わせ（帯の角）を、すべて候補に混ぜる**（2026-10-17・QA で blocking）。
+   *
+   * それまでは「緩め端・厳しめ端」の2組に、年収と生活費が連動する世帯だけ「2人の年収をそろって逆向きにした」
+   * 2組を足していた。どちらも**入力を1つの向きに束ねて**動かしており、次を取りこぼしていた。
+   * - **本人の年収は上端・配偶者の年収は下端**（生活費を年収から推定する世帯）。本人の年収が高いと推定生活費が上がり、
+   *   配偶者の年収が低いと遺された側の就労収入が下がる ── 両方が必要額を押し上げる。実例
+   *   （liv=estimate・inc=lt600・sinc=lt400・as=lt100）では包絡 500〜1,000万円のまま「減らせる」と出ていたが、
+   *   この組み合わせだけで 1,700〜2,500万円になる
+   * - **区分で答えた世帯でも、必要額は端の向きに単調ではない**。収入・資産が支出を上回る側
+   *   （`sufficient`：葬儀・予備費＋生活費1〜2年分）に入ると、生活費が高いほど額が上がるので、
+   *   「年収は上端（緩め）・生活費は上端（厳しめ）」の角がいちばん高くなる世帯がある（3,024世帯の総当たりで最大400万円の取りこぼし）
+   *
+   * 方向表は**入力ごとの向き**であって、組み合わせの最悪を保証しない（2026-09-23 裁定「方向表は最適化であって正しさの根拠ではない」）。
+   * 入力は最大5つ（本人の年収・配偶者の年収・生活費・資産・ローン）なので角は32組まで。帯の無い入力では
+   * 角が重なるので、同じ入力は1回だけ回す。
+   */
+  const both: End[] = ["loose", "strict"];
+  const seen = new Set([JSON.stringify(loose.input), JSON.stringify(strict.input)]);
+  const extra: DiagnoseInput[] = [];
+  for (const selfIncome of both)
+    for (const spouseIncome of both)
+      for (const living of both)
+        for (const assets of both)
+          for (const loan of both) {
+            const input = atEnd(p, sel, asOf, "loose", {
+              selfIncome,
+              spouseIncome,
+              living,
+              assets,
+              loan,
+            }).input;
+            const key = JSON.stringify(input);
+            if (seen.has(key)) continue;
+            seen.add(key);
+            extra.push(input);
+          }
 
   return {
     point,
@@ -280,12 +347,37 @@ export function crossingDrivers(
   const base = verdictOf(point);
   if (!base) return [];
 
-  /** 入力1つだけを厳しめ端に差し替えた入力を作る */
+  /**
+   * 年収を動かしたら、**年収から推定した生活費も一緒に動かす**（2026-10-17・QA の兄弟）。
+   * 生活費を代表値のまま年収だけ動かすと、回答の幅の中に存在しない入力で判定を確かめてしまう。
+   * また連動する世帯では年収の向きと必要額の向きが一致しないので、**両端を試す**。
+   */
+  const estimate = sel.livingCost === "estimate";
+  const withIncome = (selfIncome: number, spouseIncome: number): DiagnoseInput => ({
+    ...point,
+    self: { ...point.self, income: selfIncome },
+    spouse: point.spouse ? { ...point.spouse, income: spouseIncome } : null,
+    monthlyLiving: estimate
+      ? estimatedLiving(p, selfIncome + (point.spouse ? spouseIncome : 0))
+      : point.monthlyLiving,
+  });
+  const loose = estimate ? atEnd(p, sel, asOf, "loose").input : null;
+  const spouseNow = point.spouse?.income ?? 0;
+
+  /** 入力1つだけを端に差し替えた入力を作る（連動する年収は両端） */
   const only: Array<{ label: string; input: DiagnoseInput }> = [
     {
       label: `ご本人の年収「${labelOf(INCOME_LABEL, sel.selfIncome) ?? ""}」`,
-      input: { ...point, self: { ...point.self, income: strict.self.income } },
+      input: withIncome(strict.self.income, spouseNow),
     },
+    ...(loose
+      ? [
+          {
+            label: `ご本人の年収「${labelOf(INCOME_LABEL, sel.selfIncome) ?? ""}」`,
+            input: withIncome(loose.self.income, spouseNow),
+          },
+        ]
+      : []),
     {
       label: `毎月の生活費「${labelOf(LIVING_LABEL, sel.livingCost) ?? ""}」`,
       input: { ...point, monthlyLiving: strict.monthlyLiving },
@@ -298,11 +390,16 @@ export function crossingDrivers(
       ? [
           {
             label: `配偶者の年収「${labelOf(SPOUSE_INCOME_LABEL, sel.spouseIncome) ?? ""}」`,
-            input: {
-              ...point,
-              spouse: { ...point.spouse, income: strict.spouse.income },
-            },
+            input: withIncome(point.self.income, strict.spouse.income),
           },
+          ...(loose?.spouse
+            ? [
+                {
+                  label: `配偶者の年収「${labelOf(SPOUSE_INCOME_LABEL, sel.spouseIncome) ?? ""}」`,
+                  input: withIncome(point.self.income, loose.spouse.income),
+                },
+              ]
+            : []),
         ]
       : []),
     ...(sel.loan && sel.housing === "own_loan"
@@ -315,9 +412,11 @@ export function crossingDrivers(
       : []),
   ];
 
-  return only
+  const hits = only
     .map((x) => ({ label: x.label, r: verdictOf(x.input) }))
     .filter((x) => x.r !== null && x.r.v !== base.v)
     .sort((a, b) => (b.r?.need ?? 0) - (a.r?.need ?? 0))
     .map((x) => x.label);
+  // 年収は両端を試すので、同じ名前が2回出うる（1回にまとめる）
+  return [...new Set(hits)];
 }

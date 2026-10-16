@@ -71,6 +71,8 @@ import s from "./page.module.css";
  * 読者に分からず、グラフと結論が矛盾して見える（2026-08-30 の実物レビューで発覚）。
  */
 const AMOUNT_LABEL: Record<string, string> = {
+  // 答えた区分のどこにあたるかで、上乗せが要る場合と要らない場合がある（`rangeVerdict`・2026-10-17）
+  mixed: "答えた区分の幅で見た必要額の目安",
   shortage: "足りない保障額の目安",
   sufficient: "万一の直後に要る当座資金の目安",
   ample: "葬儀・予備費の目安",
@@ -88,6 +90,7 @@ const AMOUNT_LABEL: Record<string, string> = {
  */
 /** 最終行の括弧。額の性質が verdict で入れ替わるので、名前だけでは足りない */
 const RESULT_QUALIFIER: Record<string, string> = {
+  mixed: "",
   shortage: "",
   sufficient: "（葬儀・予備費と当座の生活費）",
   ample: "（葬儀・予備費のみ）",
@@ -95,6 +98,8 @@ const RESULT_QUALIFIER: Record<string, string> = {
 };
 
 const RESULT_NOTE: Record<string, string> = {
+  mixed:
+    "答えた区分のどこにあたるかで、上乗せの保障が要る場合と要らない場合があります。この額は、その両方を含めた幅です。",
   shortage: "見込みの支出から、受け取れる収入・資産を差し引いた残りです。",
   sufficient:
     "収入・資産で支出はまかなえる見込みです。これは不足額ではなく、手続きや当面の暮らしのために手元に置いておく目安（葬儀・予備費と生活費1〜2年分）です。",
@@ -105,6 +110,8 @@ const RESULT_NOTE: Record<string, string> = {
 };
 
 const AMOUNT_NOTE: Record<string, string> = {
+  mixed:
+    "※ 答えた区分のどこにあたるかで、上乗せの保障が要る場合と要らない場合があります。この額は、その両方を含めた幅です。",
   shortage: "※ 見込みの支出から、受け取れる収入・資産を差し引いた不足分です。",
   sufficient:
     "※ 収入・資産で支出はまかなえる見込みです。これは不足額ではなく、手続きや当面の暮らしのために手元に置いておく目安（葬儀・予備費と生活費1〜2年分）です。",
@@ -326,6 +333,8 @@ function CaseCard({
    * ニーズ軸（`r.verdict`）は滝の最終行のラベルが使っており、別物（CLAUDE.md「判定には軸名を添える」）。
    */
   const v3 = verdict3(coverage, r.range.low, r.range.high);
+  /** `r.range`（包絡したレンジ）の呼び名に使う必要額の判定（ニーズ軸）。代表値の `r.verdict` ではない */
+  const rangeKey = r.rangeVerdict ?? r.verdict;
   const shortfallVerdict = {
     label: DEATH_LABEL[v3],
     tone: SHORTFALL_TONE[v3],
@@ -377,12 +386,14 @@ function CaseCard({
 
       {/* **数字の意味は verdict で入れ替わる。** 不足のときは「足りない額」だが、
           収入が支出を上回るときは「万一直後の当座資金（葬儀費＋生活費1〜2年分）」を出している
-          （death.ts の sufficient 分岐）。同じ名前で呼ぶと、グラフと結論が矛盾して見える。 */}
+          （death.ts の sufficient 分岐）。同じ名前で呼ぶと、グラフと結論が矛盾して見える。
+          **呼び名はレンジ全体の必要額の判定（`rangeVerdict`）で選ぶ。** `r.range` は回答の幅で包絡した額なので、
+          代表値の判定（`r.verdict`）で呼ぶと、不足分を含む幅を「葬儀・予備費」と呼んでしまう（2026-10-17・QA） */}
       <div className={s.amount}>
-        {AMOUNT_LABEL[r.verdict] ?? AMOUNT_LABEL.sufficient}：
+        {AMOUNT_LABEL[rangeKey] ?? AMOUNT_LABEL.sufficient}：
         {formatRange(r.range.low, r.range.high)}
       </div>
-      <p className={s.basis}>{AMOUNT_NOTE[r.verdict] ?? AMOUNT_NOTE.sufficient}</p>
+      <p className={s.basis}>{AMOUNT_NOTE[rangeKey] ?? AMOUNT_NOTE.sufficient}</p>
 
       {/* 現在の保障との比較 */}
       {/* 現在の保障との比較。**最終の必要額との差**を幅で言う（`figures.ts`・2026-10-17） */}
@@ -487,8 +498,8 @@ function CaseCard({
           low: r.range.low,
           high: r.range.high,
           // モックの言い方（「＝ 民間保険で備える額」）に揃え、中身の性質を括弧で添える
-          label: `民間保険で備える額${RESULT_QUALIFIER[r.verdict] ?? ""}`,
-          note: `${RESULT_NOTE[r.verdict] ?? RESULT_NOTE.sufficient}${bandNote ?? ""}`,
+          label: `民間保険で備える額${RESULT_QUALIFIER[rangeKey] ?? ""}`,
+          note: `${RESULT_NOTE[rangeKey] ?? RESULT_NOTE.sufficient}${bandNote ?? ""}`,
         }}
         /* **手元のお金に読ませない。** 上回る分の大半は、これから算定期間をかけて入る就労収入（2026-10-15） */
         surplusNote={`この上回る分は、${survivorLabel}の就労収入（${formatManApprox(r.income.survivorWork, roundUnit)}）の前提の上にあります。いま手元にあるお金ではなく、${r.years.total}年かけて入る将来の収入を含みます。`}
@@ -669,9 +680,11 @@ export default async function ResultPage({
     const r = diagnose(params, { ...rawInput, lifestyleDial: dialFor(params, lv) });
     return `${r.self.range.low}-${r.self.range.high}`;
   });
+  // 「葬儀・予備費のぶんのまま」と言えるのは、包絡したレンジ全体がそうであるとき（代表値だけで言わない・2026-10-17）
+  const selfNeedKey = result.self.rangeVerdict ?? result.self.verdict;
   const absorbedNote =
     new Set(needsAcrossDials).size === 1 &&
-    (result.self.verdict === "ample" || result.self.verdict === "not_needed")
+    (selfNeedKey === "ample" || selfNeedKey === "not_needed")
       ? "前提を変えても、公的な年金と資産の範囲に収まっています。必要額は葬儀・予備費のぶんのままです。"
       : null;
 
@@ -772,11 +785,14 @@ export default async function ResultPage({
      * `death.ts` で low = high = 葬儀費用になる。理由抜きで「必要額 約200万円」とだけ出すと、
      * 読み手には桁を間違えた数字に見える。良い知らせは良い知らせとして届ける（CLAUDE.md）。
      */
-    const funeralOnly = dr.verdict === "ample" || dr.verdict === "not_needed";
+    // 呼び名は包絡したレンジ全体の必要額の判定（ニーズ軸）から。代表値だけ葬儀費用でも、
+    // 厳しめ端で足りないなら「葬儀費用だけ」とは言わない（`mixed` の説明は crossingNote が持つ・2026-10-17）
+    const needKey = dr.rangeVerdict ?? dr.verdict;
+    const funeralOnly = needKey === "ample" || needKey === "not_needed";
     const reason =
-      dr.verdict === "ample"
+      needKey === "ample"
         ? "公的な年金と資産で、遺されたご家族の生活費はまかなえる見込みです。"
-        : dr.verdict === "not_needed"
+        : needKey === "not_needed"
           ? "扶養しているご家族がいないため、上乗せの保障は要りません。"
           : "";
     /**
@@ -1065,9 +1081,10 @@ export default async function ResultPage({
   const sourcesNote = `制度パラメータ版 ${result.paramVersion} に、各値の出典URLと施行日を記録しています。下の当社基準には公的出典がありません。`;
 
   const deathResults = [result.self, ...(result.spouse ? [result.spouse] : [])];
-  const funeralOnlyNote = deathResults.every((r) => r.verdict === "ample")
+  // レンジ全体の必要額の判定（ニーズ軸）で見る。代表値だけで「葬儀費用だけ」と言わない（2026-10-17・QA）
+  const funeralOnlyNote = deathResults.every((r) => (r.rangeVerdict ?? r.verdict) === "ample")
     ? "公的な年金と資産で、遺されたご家族の生活費はまかなえる見込みです。上乗せで要るのは葬儀費用だけです。この判定は、遺されたご家族が働き続ける前提に立っています（前提は下の各行に出しています）。"
-    : deathResults.every((r) => r.verdict === "not_needed")
+    : deathResults.every((r) => (r.rangeVerdict ?? r.verdict) === "not_needed")
       ? "扶養しているご家族がいないため、上乗せの保障は要りません。見込むのは葬儀費用だけです。"
       : null;
 

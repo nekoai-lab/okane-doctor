@@ -14,17 +14,23 @@
  * 就労収入の感度文（`sensitivity.ts`）と同じ型で**文として出す**。
  */
 import type { ParamSet } from "../params/index.js";
-import type { Verdict } from "./types.js";
+import type { RangeVerdict, Verdict } from "./types.js";
 import { type DiagnoseInput, diagnose } from "./index.js";
 
 export interface EnvelopeResult {
   /** 包絡した提示レンジ（円） */
   low: number;
   high: number;
-  /** 緩め端・厳しめ端の判定（必要額の判定＝ニーズ軸） */
+  /**
+   * 候補のうち**いちばん軽い／いちばん重い**必要額の判定（ニーズ軸）。
+   *
+   * 2026-10-17 まで `inputs[0]` / `inputs[1]` の判定をそのまま入れていたが、
+   * 連動の候補（`extra`）のほうが重い判定を返す世帯がある（本人の年収は上端・配偶者は下端など）。
+   * 端の2つだけで決めると、レンジは候補ぜんぶの包絡なのに、判定は一部の候補しか見ないことになる
+   */
   verdictLoose: Verdict;
   verdictStrict: Verdict;
-  /** **端で判定が違うか。** 違うなら、数値だけでは伝わらないので文を添える */
+  /** **候補のあいだで判定が違うか。** 違うなら、数値だけでは伝わらないので文を添える */
   crossed: boolean;
   /** 端ごとの素の結果（画面と検査のため） */
   ends: Array<{ low: number; high: number; verdict: Verdict }>;
@@ -33,8 +39,8 @@ export interface EnvelopeResult {
 /**
  * 候補の入力すべてで回し、包絡を取る。
  *
- * `inputs[0]` を緩め端、`inputs[1]` を厳しめ端として扱う（残りは包絡の材料）。
- * **順序に意味を持たせるのはここだけ**で、判定の遷移文はこの2つから作る。
+ * 少なくとも2つ（緩め端・厳しめ端）が要る。**順序には意味を持たせない**（2026-10-17）。
+ * 判定の遷移文は、候補ぜんぶの中のいちばん軽い判定と重い判定から作る。
  */
 export function envelope(
   p: ParamSet,
@@ -50,14 +56,39 @@ export function envelope(
     return { low: r.range.low, high: r.range.high, verdict: r.verdict };
   });
 
+  const byWeight = [...ends].sort((a, b) => ORDER.indexOf(a.verdict) - ORDER.indexOf(b.verdict));
+  const verdictLoose = byWeight[0].verdict;
+  const verdictStrict = byWeight[byWeight.length - 1].verdict;
   return {
     low: Math.min(...ends.map((e) => e.low)),
     high: Math.max(...ends.map((e) => e.high)),
-    verdictLoose: ends[0].verdict,
-    verdictStrict: ends[1].verdict,
-    crossed: ends[0].verdict !== ends[1].verdict,
+    verdictLoose,
+    verdictStrict,
+    crossed: verdictLoose !== verdictStrict,
     ends,
   };
+}
+
+/**
+ * 最終の必要額（包絡したレンジ）を**どう呼ぶか**を決める必要額の判定（ニーズ軸）。
+ * `mixed` は「答えた区分のどこにあたるかで、上乗せが要る場合と要らない場合がある」。
+ *
+ * **代表値の判定でレンジ全体を呼ばない**（2026-10-17・QA で blocking）。
+ * 代表値が `ample`（葬儀・予備費だけ）でも、厳しめ端が `shortage` なら、
+ * 包絡したレンジの上側は**足りない額**であって葬儀・予備費ではない。
+ * 代表値の判定で「上乗せの保障は要りません。葬儀・予備費の目安は 約200〜1,500万円」と言うと、
+ * レンジの中に不足分があるのに、それを要らないお金と呼んでしまう。
+ *
+ * - 幅が無い（`band` が null）→ 代表値の判定のまま
+ * - 候補の中に `shortage` とそれ以外が混ざる → `mixed`
+ * - それ以外（どれも上乗せは要らない）→ いちばん重い判定。
+ *   `ample`（葬儀・予備費）と `sufficient`（当座資金）が混ざるなら、広いほうの呼び名で全体を呼ぶ
+ */
+export function rangeVerdict(point: Verdict, band: EnvelopeResult | null): RangeVerdict {
+  if (!band) return point;
+  const vs = new Set(band.ends.map((e) => e.verdict));
+  if (vs.has("shortage") && vs.size > 1) return "mixed";
+  return band.verdictStrict;
 }
 
 /**
