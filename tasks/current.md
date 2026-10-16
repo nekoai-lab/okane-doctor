@@ -14,7 +14,7 @@
 - 提出版 `nekoai-lab/okane-kenko@e35a072` の中身を取り込む PR（ハーネスとの統合・本番に触る箇所の直し）
 - 1回目の QA で blocking 2件 → 応急処置を入れた：ひとり親世帯は金額を出さず「まだ診断できません」、保存（お知らせ）は止めた（`src/watch/availability.ts`）
 - 2回目の QA で blocking 3件 → 直した：対象外の判定を `diagnose` の入口へ移して API も 422 で止める（`src/calc/scope.ts`）、暮らし方の目盛りを幅の両端にも渡す（`bandInputsFor`）、組み替えの余地は減らせる額 ≧ 不足額のときだけ（`verdict3.ts`・`index.ts`・仕様書 §1）
-- 判定の規則を変えたので、`docs/ADR.md` への追記を人に確認してから入れる
+- 判定の規則の変更は ADR-023 に記録した（オーナー確認済み）
 
 ## やり残し
 
