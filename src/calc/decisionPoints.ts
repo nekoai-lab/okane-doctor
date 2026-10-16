@@ -87,6 +87,18 @@ function housing(r: DeathResult, loan: number | null, danshinCovered: boolean): 
  * （ヒーローの感度文・滝の「余る分」の脚注と同じ事実を、判断の言葉で言う）。
  */
 function biggestAssumption(r: DeathResult): DecisionPoint {
+  /**
+   * **回答の年収が0円なのに就労収入が入っているなら、それは当社基準の見立て**（UX レビュー #4・2026-10-17）。
+   * 末子独立後の最低就労（`postIndepMinIncome`）を `death.ts` が `survivor.income` の推定として記録している。
+   * 以前は「就労収入 約1,000万円 が計算に入っています」とだけ書き、回答から来た額に読めた。
+   */
+  const estimated = r.assumptions.find((a) => a.field === "survivor.income");
+  if (r.income.survivorWork > 0 && estimated && typeof estimated.value === "number") {
+    return {
+      label: `当社基準の見立てで、就労収入 約${man(r.income.survivorWork)}万円 を入れています`,
+      body: `答えた年収は0円ですが、お子さんの独立後は年${man(estimated.value)}万円ほど働く前提を置いています（公的な出典のない当社の見立て）。働かない場合は、その分だけ必要額が増えます。`,
+    };
+  }
   if (r.margin > 0 && r.income.survivorWork > 0) {
     return {
       label: `緩衝材の約${man(r.margin)}万円は、就労の前提の上にあります`,

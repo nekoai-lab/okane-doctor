@@ -104,7 +104,8 @@ export function Step1({ chips, estimations, terms, editHref }: Step1Props) {
         DoD (b)（金額は明朝で主役に）と同じ組版を、金額以外の要約数にも当てる。
       */}
       <p className={s.counter}>
-        <span className={s.counterNum}>{chips.length - estimations.length}</span>
+        {/* 回答の数は、推定に回らなかったチップの数（当社基準の見立てはチップを持たないので引かない） */}
+        <span className={s.counterNum}>{answered.length}</span>
         <span className={s.counterUnit}>問に回答</span>
         <span className={s.counterSep}>／</span>
         <span className={s.counterNum}>{estimations.length}</span>

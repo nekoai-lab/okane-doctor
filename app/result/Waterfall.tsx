@@ -21,6 +21,11 @@ export interface WaterfallDeduction {
   label: string;
   /** どの回答から来たか（値だけ）。`回答:` はキャプション側が付ける */
   from: string | null;
+  /**
+   * `from` のキャプション名。既定は「回答」。**回答ではなく当社基準の見立てなら「当社基準」**
+   * （UX レビュー #4：答えた年収0円の人に、当社基準の就労収入を「回答」と添えていた）
+   */
+  fromLabel?: string;
   /** 回答ではない導出の説明（「手取りに換算し…」など）。キャプションにしない */
   note?: string;
   /** 出典（機関名）。無ければ null */
@@ -108,7 +113,7 @@ export function Waterfall({
               <p className={`${s.amount} ${s.amountCover}`}>▲{fmt(d.amount)}</p>
             </div>
             <p className={s.from}>
-              {d.from && <KeyCaption label="回答" value={d.from} />}
+              {d.from && <KeyCaption label={d.fromLabel ?? "回答"} value={d.from} />}
               {d.source && <KeyCaption label="出典" value={d.source} />}
               {d.note && <span className={s.note}>{d.note}</span>}
             </p>

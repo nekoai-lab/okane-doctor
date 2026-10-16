@@ -21,6 +21,7 @@ import { decisionPoints } from "../../src/calc/decisionPoints.js";
 import { reform2028 } from "../../src/calc/reform2028.js";
 import { verdict3 } from "../../src/calc/verdict3.js";
 import { Fold } from "./Fold.js";
+import { ownStandardEstimates, workDeductionSource } from "./estimates.js";
 import { sensitivityText } from "./sensitivityText.js";
 import { DEATH_LABEL } from "./verdictLabels.js";
 import { hasActionableGap, nextStepLines, reducibleSentence } from "./nextStep.js";
@@ -362,7 +363,13 @@ function CaseCard({
         （本人死亡と配偶者死亡では、遺される側が入れ替わるので前提も入れ替わる）ため、
         ページ直下に1つ置くと、どちらのケースの前提なのか言えなくなる。
       */}
-      <Step1 chips={chips} editHref={editHref} estimations={estimations} terms={terms} />
+      <Step1
+        chips={chips}
+        editHref={editHref}
+        // 当社基準で補った前提（答えた年収0円の就労収入）も「推定で補った項目」に入れる（UX #4）
+        estimations={[...estimations, ...ownStandardEstimates(r, survivorLabel)]}
+        terms={terms}
+      />
 
       {/* **数字の意味は verdict で入れ替わる。** 不足のときは「足りない額」だが、
           収入が支出を上回るときは「万一直後の当座資金（葬儀費＋生活費1〜2年分）」を出している
@@ -447,7 +454,8 @@ function CaseCard({
           },
           {
             label: `${survivorLabel}の就労収入`,
-            from: "配偶者の年収",
+            // 回答から来たのか当社基準の見立てなのかを名乗る（UX #4）。主語は遺される側
+            ...workDeductionSource(r, survivorLabel),
             note: "手取りに換算し、算定期間ぶん積んだもの",
             source: null,
             amount: r.income.survivorWork,
