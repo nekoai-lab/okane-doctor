@@ -1183,6 +1183,9 @@ export default async function ResultPage({
       {/* やさしい説明（T-07）。数値はAIに書かせず算定結果を差し込む。
           鍵が無ければ AI を呼ばず、テンプレのまま出す（AIを止めても成立する） */}
       <Narration
+        // 入力（クエリ）が変わったら状態ごと作り直す。目盛りの切り替えは同じページへの遷移なので、
+        // key が無いと useState が最初の説明文を持ったまま残る（2026-10-17・QA）
+        key={q.toString()}
         aiEnabled={Boolean(process.env.GEMINI_API_KEY)}
         initialText={narrate(result).text}
         query={q.toString()}

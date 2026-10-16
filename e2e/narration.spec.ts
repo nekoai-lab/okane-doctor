@@ -30,10 +30,28 @@ test("AIの文はプレースホルダのまま届き、数値は画面側が差
   });
 
   await page.goto(`/result?${QUERY}`);
-  const narration = page.getByTestId("narration");
+  // 露出は冒頭1文だけなので、金額は「続きを読む」の中の全文で確かめる
+  const narration = page.getByTestId("narration-full");
   await expect(narration).toContainText("世帯全体で見直せそうです"); // {{conclusion}} が差し込まれた
   await expect(narration).toContainText("万円"); // 金額は算定結果から入る
   await expect(narration).not.toContainText("{{"); // 壊れた記号を残さない
+});
+
+test("暮らし方の目盛りを変えたら、説明文も新しい算定結果に入れ替わる", async ({ page }) => {
+  // 届かなかった（退避文＝サーバで描いた初期文）経路。key が無いと最初の文が残っていた（2026-10-17・QA）
+  await page.route("**/api/narrate*", (route) => route.fulfill({ status: 500, body: "" }));
+
+  // 必要額が目盛りで動く世帯（自営・専業の配偶者・子2人・賃貸）
+  await page.goto(
+    "/result?v=1&sb=1986&emp=self&sp=1&spb=1988&spe=none&ch=2018-2021&edu=private&inc=lt400&sinc=none&as=lt100&liv=lt35&ho=rent&cvs=none&cvsp=none",
+  );
+  const narration = page.getByTestId("narration-full");
+  await expect(narration).toContainText("万円");
+  const before = (await narration.textContent()) ?? "";
+
+  await page.getByText("ゆとりを持つ").first().click();
+  await expect(page).toHaveURL(/dial=roomy/);
+  await expect(narration).not.toHaveText(before);
 });
 
 test("検査に落ちたら定型文に切り替え、切り替えたことを画面に書く", async ({ page }) => {
@@ -53,8 +71,8 @@ test("検査に落ちたら定型文に切り替え、切り替えたことを�
   });
 
   await page.goto(`/result?${QUERY}`);
-  await expect(page.getByTestId("narration")).toContainText("必要な保障の目安は");
-  await expect(page.getByText("定型文に切り替えました")).toBeVisible();
+  await expect(page.getByTestId("narration-full")).toContainText("必要な保障の目安は");
+  await expect(page.getByText("AI の文章が検査を通らなかったため")).toBeVisible();
 });
 
 /**

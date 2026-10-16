@@ -171,7 +171,9 @@ export function Narration({
 
       {hasMore && (
         <Fold count={`（全文${body.length}字）`} label="続きを読む">
-          <p className={s.narrationFull}>{body}</p>
+          <p className={s.narrationFull} data-testid="narration-full">
+            {body}
+          </p>
         </Fold>
       )}
       {/* 断り書きは「実際に起きたこと」を書く。AI が動く前から「AI が書いています」と
