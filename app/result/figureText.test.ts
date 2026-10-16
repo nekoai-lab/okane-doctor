@@ -13,8 +13,10 @@ import {
   bandWidenedNote,
   gapSentence,
   heroBreakdownNote,
+  heroCoverageText,
   heroDiffText,
   heroTotalLabel,
+  partialNote,
   rebalanceNote,
 } from "./figureText.js";
 
@@ -87,5 +89,24 @@ describe("圏内は「足りています」と言わない", () => {
   });
   it("単身では合計の呼び名を付けない", () => {
     expect(heroTotalLabel(figuresOf(SINGLE))).toBeNull();
+  });
+});
+
+describe("保険内容が分からない人がいるとき、世帯の結論を両方見たように言わない（設計レビュー #3）", () => {
+  const base = figuresOf(REBALANCE);
+  it("配偶者が分からない：本人の分だけで出していると書き、保障は「一部未入力」", () => {
+    const f = {
+      ...base,
+      household: { ...base.household, pendingCount: 1, totalCoverage: null },
+      spouse: base.spouse ? { ...base.spouse, verdict: "pending" as const, coverage: null } : null,
+    };
+    expect(partialNote(f)).toBe(
+      "配偶者の保険内容が分からないため、この結論はあなたの分だけで出しています。配偶者の分の過不足は、まだ出していません。",
+    );
+    expect(heroCoverageText(f)).toBe("一部未入力");
+  });
+  it("全員わかっていれば何も足さない", () => {
+    expect(partialNote(base)).toBeNull();
+    expect(heroCoverageText(base)).toContain("約");
   });
 });

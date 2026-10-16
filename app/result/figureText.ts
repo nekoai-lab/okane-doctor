@@ -94,3 +94,22 @@ export function bandWidenedNote(x: DeathFigures): string | null {
   if (p.low === x.need.low && p.high === x.need.high) return null;
   return `上の棒は、答えた区分の代表値で計算した内訳です。この額は、答えた区分の上下端でも計算して広げた幅です（代表値だけなら${formatRange(p.low, p.high)}）。`;
 }
+
+/**
+ * 保険内容が分からない人がいて、世帯の結論を**判定済みの人だけ**で出しているときの1行（設計レビュー #3）。
+ * 書かないと、片方しか見ていない結論を世帯全体を確かめたように読ませる。全員が保留なら null（見出しが保留を言う）。
+ */
+export function partialNote(f: ResultFigures): string | null {
+  if (f.household.pendingCount === 0 || f.household.verdict === "pending") return null;
+  const pending = people(f).filter((x) => x.verdict === "pending");
+  const judged = people(f).filter((x) => x.verdict !== "pending");
+  const name = (x: DeathFigures) => (x.who === "self" ? "あなた" : "配偶者");
+  return `${pending.map(name).join("と")}の保険内容が分からないため、この結論は${judged.map(name).join("と")}の分だけで出しています。${pending.map(name).join("と")}の分の過不足は、まだ出していません。`;
+}
+
+/** ヒーローの「いまの死亡保障」。1人でも分からなければ合計を出さない（欠けたまま足さない） */
+export function heroCoverageText(f: ResultFigures): string {
+  const c = f.household.totalCoverage;
+  if (c !== null) return formatRange(c, c);
+  return f.household.pendingCount < people(f).length ? "一部未入力" : "未入力";
+}

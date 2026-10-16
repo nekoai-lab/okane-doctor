@@ -25,6 +25,8 @@ import { hasActionableGap, nextStepLines, reducibleSentence } from "./nextStep.j
 import {
   bandWidenedNote,
   gapSentence,
+  heroCoverageText,
+  partialNote,
   heroBreakdownNote,
   heroDiffText,
   heroTotalLabel,
@@ -1114,7 +1116,8 @@ export default async function ResultPage({
         funeralOnlyNote={funeralOnlyNote}
         rebalanceNote={rebalanceNote(figures)}
         totalLabel={heroTotalLabel(figures)}
-        coverageText={hh.totalCoverage === null ? "未入力" : `約${money(hh.totalCoverage)}`}
+        coverageText={heroCoverageText(figures)}
+        partialNote={partialNote(figures)}
         needText={formatRange(hh.totalNeed.low, hh.totalNeed.high)}
         needHasRange={hh.totalNeed.low !== hh.totalNeed.high}
         modeText="いま通り"
@@ -1156,7 +1159,7 @@ export default async function ResultPage({
           verdict: HERO_BADGE[hh.verdict],
           tone: HERO_TONE[hh.verdict],
           needText: formatRange(hh.totalNeed.low, hh.totalNeed.high),
-          coverageText: hh.totalCoverage === null ? "未入力" : `約${money(hh.totalCoverage)}`,
+          coverageText: heroCoverageText(figures),
         }}
         values={placeholderValues(result)}
       />
@@ -1379,7 +1382,7 @@ export default async function ResultPage({
           <span className={s.narrationStat}>
             <span className={s.narrationStatLabel}>いまの保障</span>
             <span className={s.narrationStatValue}>
-              {hh.totalCoverage === null ? "未入力" : `約${money(hh.totalCoverage)}`}
+              {heroCoverageText(figures)}
             </span>
           </span>
         </div>

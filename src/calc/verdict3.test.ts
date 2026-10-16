@@ -282,6 +282,8 @@ describe("householdSummary：世帯4値と差額を同じ規則から出す", ()
     expect(r.totalReducible).toBe(0);
     // **1人でも未入力なら世帯合計は出さない。** 欠けたまま足すと実際より小さい保障額になる
     expect(r.totalCoverage).toBeNull();
+    // 結論が判定済みの人だけで出ていることを、画面が言えるように数を返す（設計レビュー #3）
+    expect(r.pendingCount).toBe(1);
   });
 
   it("差額の幅：下端は既存の差額、上端は必要額の下端から測った差額（2026-10-17・UX）", () => {

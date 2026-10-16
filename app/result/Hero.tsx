@@ -26,6 +26,11 @@ export interface HeroProps {
    * 合計だと書かないと、カード（1人分）の金額と食い違って見える
    */
   breakdownNote?: string | null;
+  /**
+   * 保険内容が分からない人がいて、結論を判定済みの人だけで出しているときの1行（設計レビュー #3）。
+   * 見出しの直下に置く（世帯全体を確かめたように読ませない）
+   */
+  partialNote?: string | null;
   /** 3列の金額が2人分を足したものなら、その呼び名（「2人分の合計」）。1人なら null */
   totalLabel?: string | null;
   /** 必要額が葬儀費用だけになる世帯に添える1行（仕様 §5.3）。無ければ null */
@@ -98,6 +103,7 @@ export function Hero(props: HeroProps) {
     caption,
     diffText,
     breakdownNote,
+    partialNote,
     totalLabel,
     funeralOnlyNote,
     rebalanceNote,
@@ -121,6 +127,9 @@ export function Hero(props: HeroProps) {
       <h1 className={s.head} id="hero-head">
         {headline(verdict, diffText)}
       </h1>
+
+      {/* 結論が判定済みの人だけで出ているなら、そう言う（設計レビュー #3） */}
+      {partialNote && <p className={s.funeral}>{partialNote}</p>}
 
       {/* 見出しの差額が2人分の合計なら、そう書いて内訳を出す（2026-10-17・UX） */}
       {breakdownNote && <p className={s.funeral}>{breakdownNote}</p>}

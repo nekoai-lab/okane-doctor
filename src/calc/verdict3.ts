@@ -76,6 +76,12 @@ export interface HouseholdSummary {
   reducibleRange: { low: number; high: number };
   /** 不足額の幅（円）。`shortage` の人について `[needLow − coverage, needHigh − coverage]` の合計。下端は `totalShortage` */
   shortageRange: { low: number; high: number };
+  /**
+   * 現保障が分からず判定していない人数（設計レビュー #3・2026-10-17）。
+   * **1人以上いて `verdict` が `pending` でないなら、世帯の結論は判定済みの人だけで出ている。**
+   * 画面はそう書く（両方を見たかのように世帯の結論を言わない）
+   */
+  pendingCount: number;
 }
 
 /**
@@ -132,6 +138,7 @@ export function householdSummary(
     },
     reducibleRange: { low: totalReducible, high: reducibleHigh },
     shortageRange: { low: totalShortage, high: shortageHigh },
+    pendingCount: verdicts.filter((x) => x === "pending").length,
   };
 }
 
