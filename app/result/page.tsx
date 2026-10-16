@@ -907,7 +907,7 @@ export default async function ResultPage({
     assumptions: [],
     premiseWeight: null,
     premiseSensitivity: null,
-    link: { pending: "もしもラボで見る（準備中）" },
+    link: { href: `/lab?${q.toString()}`, label: "もしもラボで見る" },
   });
 
   const savingsRow = (
@@ -959,7 +959,7 @@ export default async function ResultPage({
       premiseWeight: null,
       premiseSensitivity: null,
       // ラボは未実装。**押せないことを黙らせない**
-      link: { pending: "もしもラボで見る（準備中）" },
+      link: { href: `/lab?${q.toString()}`, label: "もしもラボで見る" },
     };
   };
 
