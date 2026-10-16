@@ -12,6 +12,7 @@
  * ここが持つのは HTTP と鍵とタイムアウトだけ。
  */
 import { OutOfScopeError, diagnose } from "../../../src/calc/index.js";
+import { dialFor } from "../../../src/calc/simulate.js";
 import { checkApiKey, narrationModel, streamGeminiText } from "../../../src/narrate/gemini.js";
 import {
   fallbackEvent,
@@ -21,6 +22,7 @@ import {
 import { buildUserContent, systemPrompt } from "../../../src/narrate/prompt.js";
 import { loadParams } from "../../../src/params/index.js";
 import { toCompleteSelections } from "../../../src/wizard/complete.js";
+import { decodeLivingLevel } from "../../../src/wizard/dial.js";
 import { normalize } from "../../../src/wizard/normalize.js";
 import { decodeSelections } from "../../../src/wizard/url.js";
 
@@ -46,7 +48,9 @@ export async function GET(req: Request): Promise<Response> {
   try {
     const params = loadParams();
     const { input } = normalize(params, complete, new Date());
-    diagnosis = diagnose(params, input);
+    // 暮らし方の目盛りも結果画面と同じに復元する。落とすと、退避文の金額だけ目盛り1になる（2026-10-16・QA）
+    const lifestyleDial = dialFor(params, decodeLivingLevel(q));
+    diagnosis = diagnose(params, { ...input, lifestyleDial });
   } catch (e) {
     // 算定できない世帯（src/calc/scope.ts）。金額が無いので言語化もしない
     if (e instanceof OutOfScopeError) {
