@@ -5,7 +5,13 @@ import { describe, expect, it } from "vitest";
 import { GOLDEN } from "../__tests__/households.js";
 import { diagnose } from "../calc/index.js";
 import { loadParams } from "../params/index.js";
-import { fillPlaceholders, hasNoRawNumbers, narrate, narrateStub } from "./narrate.js";
+import {
+  fallbackNarration,
+  fillPlaceholders,
+  hasNoRawNumbers,
+  narrate,
+  narrateStub,
+} from "./narrate.js";
 
 const P = loadParams("2026-08");
 const AS_OF = new Date("2026-08-17T12:00:00+09:00");
@@ -81,4 +87,23 @@ describe("narrate（T-07 スタブ）", () => {
     const n = narrate(d);
     expect(n.text).toContain("過不足はまだ");
   });
+});
+
+describe("保険内容が分からない人がいるときは、過不足を断定しない（2026-10-17・QA）", () => {
+  const base = GOLDEN.find((c) => c.id === "GT-02");
+  if (!base) throw new Error("GT-02 が無い");
+  const cases: [string, Partial<typeof base.input>][] = [
+    ["両方わからない", { coverageSelf: null, coverageSpouse: null }],
+    ["配偶者だけわからない", { coverageSpouse: null }],
+  ];
+  for (const [label, patch] of cases) {
+    it(`${label}：退避文も本文も「不足はなさそう」「減らせる」と言わない`, () => {
+      const d = diagnose(P, { ...base.input, ...patch }, AS_OF);
+      for (const text of [fallbackNarration(d).text, narrate(d).text]) {
+        expect(text).toContain("まだ出していません");
+        expect(text).not.toContain("不足はなさそう");
+        expect(text).not.toContain("減らせる");
+      }
+    });
+  }
 });

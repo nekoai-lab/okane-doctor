@@ -102,9 +102,12 @@ function rangeSentence(d: HouseholdDiagnosis): string {
 /** AI の代わりのスタブ。状況で文面を変えるが、数値は書かずプレースホルダだけ使う。 */
 export function narrateStub(d: HouseholdDiagnosis): string {
   const range = rangeSentence(d);
-  const pending = d.self.gap.kind === "pending";
-  if (pending) {
+  if (d.self.gap.kind === "pending") {
     return `いまの保険内容が分からないので、過不足はまだ出していません。あなたに万一のとき、${range}。証券が見つかったら、いまの保険と比べられます。`;
+  }
+  // 配偶者の保険だけ分からない：世帯の結論は判定済みの片方だけで出ているので、世帯として断定しない
+  if (d.spouse?.gap.kind === "pending") {
+    return `いまの前提では、${range}。${PENDING_TAIL}証券が見つかったら、いまの保険と比べられます。`;
   }
   switch (d.householdHeadline.kind) {
     case "shortage":
@@ -124,6 +127,12 @@ export interface Narration {
   source: "ai" | "ai-stub" | "fallback";
 }
 
+const PENDING_TAIL = "保険内容が分からない方がいるため、世帯全体の過不足はまだ出していません。";
+
+function hasPending(d: HouseholdDiagnosis): boolean {
+  return d.self.gap.kind === "pending" || d.spouse?.gap.kind === "pending";
+}
+
 const FALLBACK_TAIL: Record<string, string> = {
   all_covered: "いまの備えで大きな不足はなさそうです。",
   reducible: "世帯全体で見ると、いまの保険は減らせる余地がありそうです。",
@@ -137,7 +146,11 @@ const FALLBACK_TAIL: Record<string, string> = {
  * 金額の呼び名はスタブ・画面と同じ言い方にそろえる。
  */
 export function fallbackNarration(d: HouseholdDiagnosis): Narration {
-  const tail = FALLBACK_TAIL[d.householdHeadline.kind] ?? FALLBACK_TAIL.shortage;
+  // 保険内容が分からない人がいるなら、過不足は保留と書く。世帯の結論は判定済みの人だけで
+  // 出ているので、そのまま使うと「不足はなさそう」と断定してしまう（2026-10-17・QA）
+  const tail = hasPending(d)
+    ? PENDING_TAIL
+    : (FALLBACK_TAIL[d.householdHeadline.kind] ?? FALLBACK_TAIL.shortage);
   const fb = `いまの前提では、${rangeSentence(d)}。${tail}`;
   return { text: fillPlaceholders(fb, d), source: "fallback" };
 }
