@@ -741,7 +741,7 @@ export default async function ResultPage({
    * - 否定で終わらせない。**判定が動かない場合でも、必要額がどれだけ動くかを書く**
    */
   const sensitivityFor = (who: "self" | "spouse"): { text: string } | null => {
-    const sv = survivorIncomeSensitivity(params, input, who, asOfDate);
+    const sv = survivorIncomeSensitivity(params, input, who, asOfDate, ri.bands);
     if (!sv) return null;
 
     const label = who === "self" ? "遺されたご家族" : "あなた";

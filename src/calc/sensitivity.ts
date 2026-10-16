@@ -15,10 +15,10 @@
  * 2026-09-21、この2つを取り違えて「感度表では shortage なのにカードは変わらない」という
  * 食い違いの報告が出た。実際は両方とも正しく、比べていた軸が違っただけだった。
  */
-import type { DiagnoseInput } from "./index.js";
 import type { ParamSet } from "../params/index.js";
 import { v } from "../params/index.js";
-import { simulate } from "./simulate.js";
+import { envelope } from "./envelope.js";
+import { type DiagnoseInput, diagnose } from "./index.js";
 import type { Verdict3 } from "./verdict3.js";
 import { verdict3 } from "./verdict3.js";
 
@@ -81,35 +81,63 @@ export function pickBranch(now: Verdict3, atHalf: Verdict3, atZero: Verdict3): S
  * 遺族年金の額まで変わってしまい、測りたいものが測れない。
  *
  * 遺族の収入が元から0の世帯は `null`（動かす余地が無い）。
+ *
+ * **入力の暮らし方の目盛り（`lifestyleDial`）をそのまま使う**（設計レビュー #5・2026-10-17）。
+ * 以前は `simulate` 経由で回しており、`simulate` が目盛りを `assumptions.livingLevel`（未指定＝いま通り）で
+ * 上書きしたため、目盛りを変えた診断に「いま通り」の感度文が付いていた。
+ *
+ * **`bands`（回答の幅の両端）を渡すと、必要額と判定を幅の包絡で測る。**
+ * カードのバッジは幅の包絡レンジで判定しているので、感度だけ代表値で測ると
+ * 「判定は変わりません」の「判定」がバッジと別のものになる。両端それぞれの遺族の年収を同じ割合で動かす。
  */
 export function survivorIncomeSensitivity(
   p: ParamSet,
   input: DiagnoseInput,
   who: DeathCase,
   asOf: Date,
+  bands: DiagnoseInput[] | null = null,
 ): SurvivorIncomeSensitivity | null {
   const survivor = who === "self" ? input.spouse : input.self;
   const coverage = who === "self" ? input.coverageSelf : input.coverageSpouse;
   if (!survivor || survivor.income <= 0) return null;
 
-  const at = (income: number) => {
-    const answers =
-      who === "self"
-        ? { ...input, spouse: { ...input.spouse!, income } }
-        : { ...input, self: { ...input.self, income } };
-    const d = simulate(p, { answers, asOf }, "death").death;
-    return who === "self" ? d?.self : d?.spouse;
+  /** 遺族の年収だけを差し替えた入力。目盛りなど他の前提は入力のまま */
+  const withSurvivorIncome = (x: DiagnoseInput, f: (income: number) => number): DiagnoseInput => {
+    if (who === "self")
+      return x.spouse ? { ...x, spouse: { ...x.spouse, income: f(x.spouse.income) } } : x;
+    return { ...x, self: { ...x.self, income: f(x.self.income) } };
   };
+  const caseOf = (x: DiagnoseInput) => {
+    const d = diagnose(p, x, asOf);
+    return who === "self" ? d.self : d.spouse;
+  };
+  const half = (income: number) => Math.round(income / 2);
+  const zero = () => 0;
 
-  const now = at(survivor.income);
-  const halfGross = Math.round(survivor.income / 2);
-  const half = at(halfGross);
-  const zero = at(0);
-  if (!now || !half || !zero) return null;
+  const now = caseOf(input);
+  const halfGross = half(survivor.income);
+  const atHalf = caseOf(withSurvivorIncome(input, half));
+  const atZero = caseOf(withSurvivorIncome(input, zero));
+  if (!now || !atHalf || !atZero) return null;
 
-  const verdictNow = verdict3(coverage, now.range.low, now.range.high);
-  const verdictAtHalf = verdict3(coverage, half.range.low, half.range.high);
-  const verdictAtZero = verdict3(coverage, zero.range.low, zero.range.high);
+  const useBands = bands !== null && bands.length >= 2;
+  const rangeOf = (f: (income: number) => number, pointRange: Range): Range => {
+    if (!useBands) return pointRange;
+    const e = envelope(
+      p,
+      bands.map((x) => withSurvivorIncome(x, f)),
+      asOf,
+      who,
+    );
+    return { low: e.low, high: e.high };
+  };
+  const needNow = rangeOf((x) => x, now.range);
+  const needAtHalf = rangeOf(half, atHalf.range);
+  const needAtZero = rangeOf(zero, atZero.range);
+
+  const verdictNow = verdict3(coverage, needNow.low, needNow.high);
+  const verdictAtHalf = verdict3(coverage, needAtHalf.low, needAtHalf.high);
+  const verdictAtZero = verdict3(coverage, needAtZero.low, needAtZero.high);
 
   const ratio = v(p, "netIncomeRatio");
   const annualNet = survivor.income * ratio;
@@ -127,8 +155,8 @@ export function survivorIncomeSensitivity(
     yearsDependent: now.years.dependent,
     yearsAlone: now.years.alone,
     yearsTotal: now.years.total,
-    needNow: now.range,
-    needAtHalf: half.range,
-    needAtZero: zero.range,
+    needNow,
+    needAtHalf,
+    needAtZero,
   };
 }

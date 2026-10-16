@@ -14,6 +14,11 @@
 import { describe, expect, it } from "vitest";
 import { loadParams } from "../params/index.js";
 import { GOLDEN } from "../__tests__/households.js";
+import { toCompleteSelections } from "../wizard/complete.js";
+import { resultInputs } from "../wizard/resultInputs.js";
+import { decodeSelections } from "../wizard/url.js";
+import { resultFigures } from "./figures.js";
+import { diagnose } from "./index.js";
 import { pickBranch, survivorIncomeSensitivity } from "./sensitivity.js";
 
 const P = loadParams("2026-08");
@@ -108,5 +113,40 @@ describe("survivorIncomeSensitivity：合成入力で3分岐を固定する", ()
     expect(Math.round(s.annualNet * s.yearsDependent + s.netAfter * s.yearsAlone)).toBe(
       Math.round(s.workTotal),
     );
+  });
+});
+
+describe("感度は、カードと同じ暮らし方の目盛り・同じ回答の幅で測る（設計レビュー #5）", () => {
+  const AS_OF_1017 = new Date("2026-10-17T12:00:00+09:00");
+  const fromQuery = (query: string, level: "tight" | "asis" | "roomy") => {
+    const complete = toCompleteSelections(decodeSelections(query));
+    if (!complete) throw new Error("入力が足りない");
+    return resultInputs(P, complete, level, AS_OF_1017);
+  };
+  const REBALANCE =
+    "v=1&sb=1989&emp=employee&sp=1&spb=1991&spe=employee&ch=2024&edu=public&inc=lt600&sinc=lt400&as=lt500&liv=lt30&ho=own_loan&loan=lt3000&dan=yes&cvs=m2000&cvsp=none";
+
+  it("目盛りを付けた入力では、その目盛りで回した必要額を返す（いま通りで上書きしない）", () => {
+    const input = { ...BASE, coverageSelf: 0, lifestyleDial: 1.1 };
+    const s = survivorIncomeSensitivity(P, input, "self", AS_OF);
+    if (!s || !input.spouse) throw new Error("感度が出ない");
+    const zero = { ...input, spouse: { ...input.spouse, income: 0 } };
+    // 働けない場合（生活費が効く側）で比べる。目盛り1.1と1.0で必要額が違うこと自体も確かめる
+    expect(s.needAtZero).toEqual(diagnose(P, zero, AS_OF).self.range);
+    expect(s.needAtZero).not.toEqual(diagnose(P, { ...zero, lifestyleDial: 1 }, AS_OF).self.range);
+  });
+
+  it("幅を渡すと、いまの判定はカードのバッジ（resultFigures）と同じになる", () => {
+    for (const level of ["tight", "asis", "roomy"] as const) {
+      const ri = fromQuery(REBALANCE, level);
+      const f = resultFigures(P, ri.input, ri.bands, AS_OF_1017);
+      for (const who of ["self", "spouse"] as const) {
+        const s = survivorIncomeSensitivity(P, ri.input, who, AS_OF_1017, ri.bands);
+        if (!s) continue;
+        const card = who === "self" ? f.self : f.spouse;
+        expect(s.verdictNow, `${level}・${who}`).toBe(card?.verdict);
+        expect(s.needNow, `${level}・${who}`).toEqual(card?.need);
+      }
+    }
   });
 });
