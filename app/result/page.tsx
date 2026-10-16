@@ -50,7 +50,12 @@ import { toCompleteSelections } from "../../src/wizard/complete.js";
 import type { Estimation } from "../../src/wizard/types.js";
 import { crossingDrivers } from "../../src/wizard/uncertainty.js";
 import { resultInputs } from "../../src/wizard/resultInputs.js";
-import { LIVING_LEVELS, decodeLivingLevel, withLivingLevel } from "../../src/wizard/dial.js";
+import {
+  LIVING_LEVEL_LABEL,
+  LIVING_LEVELS,
+  decodeLivingLevel,
+  withLivingLevel,
+} from "../../src/wizard/dial.js";
 import { decodeSelections } from "../../src/wizard/url.js";
 import { SAVE_ENABLED } from "../../src/watch/availability.js";
 import s from "./page.module.css";
@@ -1120,7 +1125,7 @@ export default async function ResultPage({
         partialNote={partialNote(figures)}
         needText={formatRange(hh.totalNeed.low, hh.totalNeed.high)}
         needHasRange={hh.totalNeed.low !== hh.totalNeed.high}
-        modeText="いま通り"
+        modeText={LIVING_LEVEL_LABEL[livingLevel].name}
       />
 
       {/* 照合表 #4：暮らし方の前提トグル。**ヒーロー直下**（仕様 §5.3 のページ順） */}

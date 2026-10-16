@@ -5,7 +5,7 @@
  * 「同じ診療記録か」の判定が要らぬ仕事になる。
  */
 import { describe, expect, it } from "vitest";
-import { decodeLivingLevel, withLivingLevel } from "./dial.js";
+import { LIVING_LEVEL_LABEL, decodeLivingLevel, withLivingLevel } from "./dial.js";
 
 const BASE = "v=1&sb=1986&liv=lt30";
 
@@ -35,5 +35,13 @@ describe("目盛りの URL 状態", () => {
 
   it("未知の値は既定に倒す（URL を書き換えられても壊さない）", () => {
     expect(decodeLivingLevel(`${BASE}&dial=zzz`)).toBe("asis");
+  });
+});
+
+describe("目盛りの呼び名は1つの表から（設計レビュー #4）", () => {
+  it("URL の目盛りから引くと、ヒーローとトグルが同じ名前になる", () => {
+    expect(LIVING_LEVEL_LABEL[decodeLivingLevel(`${BASE}&dial=tight`)].name).toBe("切り詰める");
+    expect(LIVING_LEVEL_LABEL[decodeLivingLevel(`${BASE}&dial=roomy`)].name).toBe("ゆとりを持つ");
+    expect(LIVING_LEVEL_LABEL[decodeLivingLevel(BASE)].name).toBe("いま通り");
   });
 });

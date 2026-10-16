@@ -37,3 +37,20 @@ export function withLivingLevel(query: string | URLSearchParams, level: LivingLe
   else q.set(DIAL_KEY, level);
   return q.toString();
 }
+
+/**
+ * ラベルとサブラベルは仕様 §4-6 の表と同文（「切り詰める＝今の7割」は誤りだった）。
+ *
+ * `delta` は**そのサブラベルが既に言っている数**（1割しぼる／同じ水準／1割のゆとり）を
+ * 数字で書き出したもの。ADR-022 の乗数 `m`（0.9 / 1.0 / 1.1）と同じ値で、
+ * **新しい基準を作っていない**。文中に沈んでいた数を、あるべき声量にするだけ。
+ *
+ * **ヒーローの「暮らし方の前提」もこの表を読む**（設計レビュー #4・2026-10-17）。
+ * 以前はヒーローだけ「いま通り」を直書きしており、目盛りを変えても最上部の表示が変わらなかった。
+ */
+export const LIVING_LEVEL_LABEL: Record<LivingLevel, { name: string; sub: string; delta: string }> =
+  {
+    tight: { name: "切り詰める", sub: "いまの生活費から1割しぼる前提", delta: "−10%" },
+    asis: { name: "いま通り", sub: "いまと同じ水準（既定）", delta: "±0%" },
+    roomy: { name: "ゆとりを持つ", sub: "1割のゆとりを見る前提", delta: "+10%" },
+  };
