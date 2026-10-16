@@ -11,6 +11,9 @@
  * **壊さずに既定へ**（`decodeSelections` と同じ方針）。
  */
 
+import type { WizardSelections } from "./types.js";
+import { encodeSelections } from "./url.js";
+
 export type LivingLevel = "tight" | "asis" | "roomy";
 
 export const LIVING_LEVELS: readonly LivingLevel[] = ["tight", "asis", "roomy"];
@@ -54,3 +57,14 @@ export const LIVING_LEVEL_LABEL: Record<LivingLevel, { name: string; sub: string
     asis: { name: "いま通り", sub: "いまと同じ水準（既定）", delta: "±0%" },
     roomy: { name: "ゆとりを持つ", sub: "1割のゆとりを見る前提", delta: "+10%" },
   };
+
+/**
+ * ウィザードの URL（回答＋暮らし方の目盛り）。**回答を直す経路で目盛りを落とさない**（設計レビュー #18・2026-10-17）。
+ *
+ * ウィザードは回答だけを復元・再エンコードしていたので、結果画面で目盛りを変えてから
+ * 「入力をやり直す」と、結果に戻ったとき黙って「いま通り」に戻っていた。
+ * 回答の器（`WizardSelections`）には混ぜず、エンコードの出口で足す。
+ */
+export function wizardQuery(sel: Partial<WizardSelections>, level: LivingLevel): string {
+  return withLivingLevel(encodeSelections(sel), level);
+}

@@ -5,7 +5,8 @@
  * 「同じ診療記録か」の判定が要らぬ仕事になる。
  */
 import { describe, expect, it } from "vitest";
-import { LIVING_LEVEL_LABEL, decodeLivingLevel, withLivingLevel } from "./dial.js";
+import { LIVING_LEVEL_LABEL, decodeLivingLevel, wizardQuery, withLivingLevel } from "./dial.js";
+import { decodeSelections } from "./url.js";
 
 const BASE = "v=1&sb=1986&liv=lt30";
 
@@ -43,5 +44,28 @@ describe("目盛りの呼び名は1つの表から（設計レビュー #4）", 
     expect(LIVING_LEVEL_LABEL[decodeLivingLevel(`${BASE}&dial=tight`)].name).toBe("切り詰める");
     expect(LIVING_LEVEL_LABEL[decodeLivingLevel(`${BASE}&dial=roomy`)].name).toBe("ゆとりを持つ");
     expect(LIVING_LEVEL_LABEL[decodeLivingLevel(BASE)].name).toBe("いま通り");
+  });
+});
+
+describe("回答を直す経路で目盛りを落とさない（設計レビュー #18）", () => {
+  const RESULT =
+    "v=1&sb=1986&emp=self&sp=1&spb=1988&spe=none&ch=2018-2021&edu=private&inc=lt400&sinc=none&as=lt100&liv=lt35&ho=rent&cvs=none&cvsp=none&dial=roomy";
+  it("結果→ウィザード→結果で、回答も目盛りも戻る", () => {
+    const sel = decodeSelections(RESULT);
+    const level = decodeLivingLevel(RESULT);
+    const back = wizardQuery(sel, level);
+    expect(decodeLivingLevel(back)).toBe("roomy");
+    expect(decodeSelections(back)).toEqual(sel);
+  });
+  it("回答を1つ直しても目盛りは残る", () => {
+    const sel = { ...decodeSelections(RESULT), livingCost: "lt30" as const };
+    const back = wizardQuery(sel, decodeLivingLevel(RESULT));
+    expect(new URLSearchParams(back).get("liv")).toBe("lt30");
+    expect(decodeLivingLevel(back)).toBe("roomy");
+  });
+  it("既定（いま通り）は書かない", () => {
+    expect(new URLSearchParams(wizardQuery(decodeSelections(RESULT), "asis")).has("dial")).toBe(
+      false,
+    );
   });
 });
