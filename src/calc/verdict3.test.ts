@@ -248,6 +248,24 @@ describe("householdSummary：世帯4値と差額を同じ規則から出す", ()
     expect(r.totalShortage).toBe(man(200));
   });
 
+  it("**減らせる額が不足額に届かないなら『不足』。** 総量が足りないのに組み替えとは言わない（2026-10-16・QA）", () => {
+    const r = householdSummary([
+      { coverage: man(300), needLow: man(200), needHigh: man(200) },
+      { coverage: man(0), needLow: man(200), needHigh: man(200) },
+    ]);
+    expect(r.verdict).toBe("shortage");
+    expect(r.totalReducible).toBe(man(100));
+    expect(r.totalShortage).toBe(man(200));
+  });
+
+  it("減らせる額と不足額がちょうど同じなら『組み替えの余地』（総量は足りている）", () => {
+    const r = householdSummary([
+      { coverage: man(400), needLow: man(200), needHigh: man(200) },
+      { coverage: man(0), needLow: man(200), needHigh: man(200) },
+    ]);
+    expect(r.verdict).toBe("rebalanceable");
+  });
+
   it("**上端ちょうどは減らせるに入れない。** 差額0円の空主張を作らない", () => {
     const r = householdSummary([{ coverage: man(2000), needLow: man(1000), needHigh: man(2000) }]);
     expect(r.verdict).toBe("uncertain");

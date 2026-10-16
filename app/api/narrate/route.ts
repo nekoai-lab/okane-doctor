@@ -11,7 +11,7 @@
  * 検査そのものは `src/narrate/narrateStream.ts`（テストできる形にしてある）。
  * ここが持つのは HTTP と鍵とタイムアウトだけ。
  */
-import { diagnose } from "../../../src/calc/index.js";
+import { OutOfScopeError, diagnose } from "../../../src/calc/index.js";
 import { checkApiKey, narrationModel, streamGeminiText } from "../../../src/narrate/gemini.js";
 import {
   fallbackEvent,
@@ -48,6 +48,13 @@ export async function GET(req: Request): Promise<Response> {
     const { input } = normalize(params, complete, new Date());
     diagnosis = diagnose(params, input);
   } catch (e) {
+    // 算定できない世帯（src/calc/scope.ts）。金額が無いので言語化もしない
+    if (e instanceof OutOfScopeError) {
+      return Response.json(
+        { error: "out_of_scope", reason: e.reason, message: e.message },
+        { status: 422 },
+      );
+    }
     // 期限切れ・未確認パラメータでは診断を止める設計（PR-04）。言語化も当然止める。
     const message = e instanceof Error ? e.message : "診断を実行できませんでした。";
     return Response.json({ error: "diagnosis_unavailable", message }, { status: 503 });

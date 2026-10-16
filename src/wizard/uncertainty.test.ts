@@ -11,7 +11,11 @@ import { crossingNote, envelope } from "../calc/envelope.js";
 import { diagnose } from "../calc/index.js";
 import { loadParams } from "../params/index.js";
 import type { WizardSelections } from "./types.js";
-import { crossingDrivers, normalizeEnds } from "./uncertainty.js";
+import { dialFor } from "../calc/simulate.js";
+import { toCompleteSelections } from "./complete.js";
+import { LIVING_LEVELS } from "./dial.js";
+import { bandInputsFor, crossingDrivers, normalizeEnds } from "./uncertainty.js";
+import { decodeSelections } from "./url.js";
 
 const P = loadParams("2026-08");
 const AS_OF = new Date("2026-08-01T00:00:00+09:00");
@@ -328,5 +332,30 @@ describe("未回答には幅を作らない（区分が無いので）", () => {
     const e = normalizeEnds(P, { ...BASE, selfIncome: "gte1000" }, AS_OF);
     expect(e.strict.self.income).toBe(10_000_000); // 下端はある
     expect(e.loose.self.income).toBe(e.point.input.self.income); // 上端は無い＝点
+  });
+});
+
+describe("暮らし方の目盛りは、幅の両端にもそろって渡る（2026-10-16・QA）", () => {
+  // 代表世帯「不足」（CLAUDE.md の視覚 DoD の表）
+  const sel = toCompleteSelections(
+    decodeSelections(
+      new URLSearchParams(
+        "v=1&sb=1986&emp=self&sp=1&spb=1988&spe=none&ch=2018-2021&edu=private&inc=lt400&sinc=none&as=lt100&liv=lt35&ho=rent&cvs=none&cvsp=none",
+      ),
+    ),
+  );
+  if (!sel) throw new Error("代表世帯の URL が完全な回答になっていない");
+  const ends = normalizeEnds(P, sel, AS_OF);
+  const lows = LIVING_LEVELS.map((lv) => dialFor(P, lv));
+
+  it("全候補に同じ目盛りが付く", () => {
+    for (const d of lows) {
+      for (const input of bandInputsFor(ends, d)) expect(input.lifestyleDial).toBe(d);
+    }
+  });
+
+  it("目盛りを動かすと、カードの必要額（包絡）も動く", () => {
+    const highs = lows.map((d) => envelope(P, bandInputsFor(ends, d), AS_OF, "self").high);
+    expect(new Set(highs).size).toBeGreaterThan(1);
   });
 });

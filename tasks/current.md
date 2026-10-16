@@ -12,12 +12,14 @@
 
 - new-project で作成（2026-10-16）
 - 提出版 `nekoai-lab/okane-kenko@e35a072` の中身を取り込む PR（ハーネスとの統合・本番に触る箇所の直し）
-- 1回目の QA で blocking 2件 → 応急処置を入れた：ひとり親世帯は金額を出さず「まだ診断できません」（`src/wizard/scope.ts`）、保存（お知らせ）は止めた（`src/watch/availability.ts`）
+- 1回目の QA で blocking 2件 → 応急処置を入れた：ひとり親世帯は金額を出さず「まだ診断できません」、保存（お知らせ）は止めた（`src/watch/availability.ts`）
+- 2回目の QA で blocking 3件 → 直した：対象外の判定を `diagnose` の入口へ移して API も 422 で止める（`src/calc/scope.ts`）、暮らし方の目盛りを幅の両端にも渡す（`bandInputsFor`）、組み替えの余地は減らせる額 ≧ 不足額のときだけ（`verdict3.ts`・`index.ts`・仕様書 §1）
+- 判定の規則を変えたので、`docs/ADR.md` への追記を人に確認してから入れる
 
 ## やり残し
 
 - PRODUCT.md を人が書く
-- ひとり親世帯（配偶者なし・独立前の子あり）の算定を作る：子の生活費・遺族基礎年金・検算表・ゴールデン。できたら `src/wizard/scope.ts` の判定を外す
+- ひとり親世帯（配偶者なし・独立前の子あり）の算定を作る：子の生活費・遺族基礎年金・検算表・ゴールデン。できたら `src/calc/scope.ts` の判定を外す
 - 保存の直後にトークンつきの管理・削除 URL を本人に渡す。できたら `SAVE_ENABLED` を true に戻す
 - GCP の初回セットアップ（`docs/本番前チェックリスト.md`「G-0」。人の操作）
 - 初回デプロイの URL で `params/watch-sources.yaml` の罠ページ（`demoTrap`）を差し替える

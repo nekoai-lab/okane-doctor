@@ -9,6 +9,7 @@ import { assertUsable } from "../params/index.js";
 import { jstYear } from "../time/jstYear.js";
 import { calcDeath } from "./death.js";
 import { reform2028 as judgeReform2028 } from "./reform2028.js";
+import { OutOfScopeError, outOfScope } from "./scope.js";
 import { calcMedical } from "./medical.js";
 import type {
   DeathResult,
@@ -21,6 +22,7 @@ import type {
 export { calcDeath } from "./death.js";
 export { calcMedical, kogakuCap } from "./medical.js";
 export * from "./types.js";
+export { OutOfScopeError, outOfScope } from "./scope.js";
 
 export interface DiagnoseInput {
   self: Person;
@@ -78,6 +80,9 @@ export function diagnose(
 ): HouseholdDiagnosis {
   // 期限切れの中核パラメータでは診断しない（PR-04）。古い値で黙って出さない。
   assertUsable(p, asOf);
+  // 算定できない世帯では金額を作らない（scope.ts）。画面・API のどこから入っても、ここで止まる
+  const notCovered = outOfScope(p, input);
+  if (notCovered) throw new OutOfScopeError(notCovered);
 
   const self = calcDeath(p, toHousehold(input, "self"));
 
@@ -115,7 +120,7 @@ export function diagnose(
 
 /**
  * 世帯としての結論を1つに畳む（FR-25）。
- * 片方が過剰・片方が不足なら "rebalanceable"。
+ * 片方が過剰・片方が不足で、**過剰が不足以上**なら "rebalanceable"（総量は足りている）。
  * ADR-007c：「合計保険料を増やさずに解決できます」までは言うが、
  *           「付け替えましょう」「解約して入り直しましょう」とは言わない。
  */
@@ -129,7 +134,8 @@ export function headline(self: DeathResult, spouse: DeathResult | null): Househo
     .reduce((s, r) => s + r.gap.amount, 0);
 
   let kind: HouseholdHeadline["kind"];
-  if (totalExcess > 0 && totalShortage > 0) kind = "rebalanceable";
+  // 組み替えの余地は「総量は足りている」とき**だけ**。余剰が不足を埋めきれないなら不足と言う（2026-10-16・QA）
+  if (totalExcess > 0 && totalShortage > 0 && totalExcess >= totalShortage) kind = "rebalanceable";
   else if (totalShortage > 0) kind = "shortage";
   else if (totalExcess > 0) kind = "reducible";
   else kind = "all_covered";

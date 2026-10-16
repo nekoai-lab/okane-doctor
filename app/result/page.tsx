@@ -7,7 +7,7 @@
  */
 import Link from "next/link";
 import type { DiagnoseInput } from "../../src/calc/index.js";
-import { diagnose, toHousehold } from "../../src/calc/index.js";
+import { diagnose, outOfScope, toHousehold } from "../../src/calc/index.js";
 import type { DeathResult, EducationPlan } from "../../src/calc/types.js";
 import type { Projection } from "../../src/calc/projection.js";
 import { coverageCurve, projectDeath } from "../../src/calc/projection.js";
@@ -37,10 +37,13 @@ import { formatMan, formatRange } from "../../src/design/tokens.js";
 import { toCompleteSelections } from "../../src/wizard/complete.js";
 import type { Estimation } from "../../src/wizard/types.js";
 import { normalize } from "../../src/wizard/normalize.js";
-import { crossingDrivers, normalizeEnds } from "../../src/wizard/uncertainty.js";
+import {
+  bandInputsFor,
+  crossingDrivers,
+  normalizeEnds,
+} from "../../src/wizard/uncertainty.js";
 import { LIVING_LEVELS, decodeLivingLevel, withLivingLevel } from "../../src/wizard/dial.js";
 import { decodeSelections } from "../../src/wizard/url.js";
-import { outOfScope } from "../../src/wizard/scope.js";
 import { SAVE_ENABLED } from "../../src/watch/availability.js";
 import s from "./page.module.css";
 
@@ -580,8 +583,16 @@ export default async function ResultPage({
   }
 
   const params = loadParams();
-  // 算定できない世帯では、金額も判定も出さずに止める（src/wizard/scope.ts）
-  if (outOfScope(params, complete, jstYear(new Date())) === "single_parent") {
+  /**
+   * 暮らし方の目盛り（#4・D-02・ADR-022）。**URL が状態そのもの**なので、
+   * 押すたびにサーバで全部計算し直す ── 部分更新の取り残しが原理的に起きない。
+   * 既定（いま通り）は URL に書かない。
+   */
+  const livingLevel = decodeLivingLevel(q);
+  const dial = dialFor(params, livingLevel);
+  const { input: rawInput, estimations } = normalize(params, complete, new Date());
+  // 算定できない世帯では、金額も判定も出さずに止める（src/calc/scope.ts。diagnose も同じ所で止まる）
+  if (outOfScope(params, rawInput) === "single_parent") {
     return (
       <main className={s.page}>
         <h1 className={s.h3}>この世帯は、まだ診断できません</h1>
@@ -595,14 +606,6 @@ export default async function ResultPage({
       </main>
     );
   }
-  /**
-   * 暮らし方の目盛り（#4・D-02・ADR-022）。**URL が状態そのもの**なので、
-   * 押すたびにサーバで全部計算し直す ── 部分更新の取り残しが原理的に起きない。
-   * 既定（いま通り）は URL に書かない。
-   */
-  const livingLevel = decodeLivingLevel(q);
-  const dial = dialFor(params, livingLevel);
-  const { input: rawInput, estimations } = normalize(params, complete, new Date());
   const input = { ...rawInput, lifestyleDial: dial };
   const result = diagnose(params, input);
 
@@ -614,12 +617,15 @@ export default async function ResultPage({
    * **端で判定が変わるときは、そのことを露出部に文として出す**（畳まない）。
    * 生活費のダイヤル（lifestyleDial）は本人が動かす前提なので、ここでは点のまま扱う。
    */
-  const ends = normalizeEnds(params, complete, new Date());
-  const bandInputs = [ends.loose, ends.strict, ...ends.extra];
+  // 幅の両端にも同じ目盛りを渡す。渡さないと、カードの必要額と判定だけ目盛り1のまま残る（2026-10-16・QA）
+  const bandInputs = bandInputsFor(normalizeEnds(params, complete, new Date()), dial);
   const envFor = (who: "self" | "spouse") => {
     if (who === "spouse" && !result.spouse) return null;
     const r = envelope(params, bandInputs, new Date(), who);
-    return { ...r, note: crossingNote(r, crossingDrivers(params, complete, new Date(), who)[0]) };
+    return {
+      ...r,
+      note: crossingNote(r, crossingDrivers(params, complete, new Date(), who, dial)[0]),
+    };
   };
   const bandSelf = envFor("self");
   const bandSpouse = envFor("spouse");

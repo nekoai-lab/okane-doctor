@@ -5,7 +5,7 @@
  * loadParams が YAML を readFileSync で読むため Node ランタイムで動かす（Edge 不可）。
  */
 import { NextResponse } from "next/server";
-import { diagnose } from "../../../src/calc/index.js";
+import { OutOfScopeError, diagnose } from "../../../src/calc/index.js";
 import { loadParams } from "../../../src/params/index.js";
 import { DiagnoseRequestSchema } from "./schema.js";
 
@@ -35,6 +35,13 @@ export async function POST(req: Request): Promise<Response> {
     const result = diagnose(params, parsed.data);
     return NextResponse.json(result);
   } catch (e) {
+    // 算定できない世帯（src/calc/scope.ts）。入力の問題なので 503 ではなく 422 で返す
+    if (e instanceof OutOfScopeError) {
+      return NextResponse.json(
+        { error: "out_of_scope", reason: e.reason, message: e.message },
+        { status: 422 },
+      );
+    }
     // 期限切れ・未確認パラメータでは診断を止める設計（PR-04）。
     // 古い値で黙って出すより、止めて 503 を返すほうが安全。
     const message = e instanceof Error ? e.message : "診断を実行できませんでした。";

@@ -96,8 +96,17 @@ export function householdSummary(
     ? null
     : people.reduce((sum, x) => sum + (x.coverage as number), 0);
 
+  /**
+   * **組み替えの余地は「総量は足りている」ときだけ**（2026-10-16・QA で blocking）。
+   * 個人の判定の組み合わせだけで決めると、余剰300万・不足1,000万のような世帯にも
+   * 「保障の総量は足りています」と出てしまう。減らせる額が不足額に届かないなら、世帯としては不足。
+   */
+  const aggregated = aggregateHousehold(verdicts);
+  const verdict =
+    aggregated === "rebalanceable" && totalReducible < totalShortage ? "shortage" : aggregated;
+
   return {
-    verdict: aggregateHousehold(verdicts),
+    verdict,
     totalReducible,
     totalShortage,
     totalCoverage,

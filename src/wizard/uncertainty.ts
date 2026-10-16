@@ -245,6 +245,17 @@ export function normalizeEnds(p: ParamSet, sel: WizardSelections, asOf: Date): E
 }
 
 /**
+ * 包絡に渡す入力（緩め端・厳しめ端・連動の候補）に、**暮らし方の目盛りをそろえて付ける**。
+ *
+ * 2026-10-16（QA で blocking）、結果画面がこれを付け忘れており、目盛りを動かすと
+ * 内訳と年次表は動くのに、**死亡保障カードの必要額と判定だけ目盛り1のまま**だった。
+ * 画面で組まずにここで組んで、テストで固定する。
+ */
+export function bandInputsFor(ends: Ends, lifestyleDial: number): DiagnoseInput[] {
+  return [ends.loose, ends.strict, ...ends.extra].map((input) => ({ ...input, lifestyleDial }));
+}
+
+/**
  * **どの回答の幅が、判定の跨ぎを起こしているか**を特定する（2026-09-23・T-H）。
  *
  * 画面の一文「この幅は、答えの幅（◯◯）から来ています」の ◯◯ にあたる。
@@ -256,8 +267,10 @@ export function crossingDrivers(
   sel: WizardSelections,
   asOf: Date,
   who: "self" | "spouse" = "self",
+  lifestyleDial = 1,
 ): string[] {
-  const point = normalize(p, sel, asOf).input;
+  // 目盛りは本人が動かす値なので、ここでは点のまま全候補にそろえて付ける（bandInputsFor と同じ）
+  const point = { ...normalize(p, sel, asOf).input, lifestyleDial };
   const strict = atEnd(p, sel, asOf, "strict").input;
   const verdictOf = (input: DiagnoseInput) => {
     const d = diagnose(p, input, asOf);
