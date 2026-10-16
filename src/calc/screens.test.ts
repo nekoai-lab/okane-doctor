@@ -354,3 +354,22 @@ describe("⑤ 減らせる額はページに1箇所だけ、かつ必ず1箇所�
     }
   });
 });
+
+describe("失業の必要額も暮らし方の目盛りに連動する（設計レビュー #9）", () => {
+  const employee = GOLDEN.find((g) => g.input.self.employment === "employee");
+  if (!employee) throw new Error("会社員の世帯が無い");
+  const need = (livingLevel: "tight" | "asis" | "roomy") =>
+    simulate(P, { answers: employee.input, asOf: AS_OF, assumptions: { livingLevel } }, "unemployment")
+      .amounts;
+
+  it("切り詰める < いま通り < ゆとりを持つ（生活費が効く行なので必要額が動く）", () => {
+    const [t, a, r] = (["tight", "asis", "roomy"] as const).map((lv) => need(lv)?.needHigh ?? 0);
+    expect(t).toBeLessThan(a);
+    expect(a).toBeLessThan(r);
+  });
+
+  it("いま通りは目盛りを渡さない場合と同じ（既定の出力は動かさない）", () => {
+    const none = simulate(P, { answers: employee.input, asOf: AS_OF }, "unemployment").amounts;
+    expect(need("asis")).toEqual(none);
+  });
+});
