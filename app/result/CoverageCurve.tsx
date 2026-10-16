@@ -78,7 +78,7 @@ export function CoverageCurve({
       <ChartFrame
         labelEvery={every}
         legend={[
-          { label: "そこから先に必要な保障", color: "var(--chart-expense-3)" },
+          { label: "そこから先に足りなくなる額（代表値）", color: "var(--chart-expense-3)" },
           ...(coverage !== null
             ? [
                 {
