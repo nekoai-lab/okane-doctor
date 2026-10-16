@@ -15,6 +15,7 @@ import {
   heroBreakdownNote,
   heroCoverageText,
   heroDiffText,
+  heroNeedQualifier,
   heroTotalLabel,
   partialNote,
   rebalanceNote,
@@ -108,5 +109,16 @@ describe("保険内容が分からない人がいるとき、世帯の結論を�
   it("全員わかっていれば何も足さない", () => {
     expect(partialNote(base)).toBeNull();
     expect(heroCoverageText(base)).toContain("約");
+  });
+});
+
+describe("1点の必要額は、何の額かを名乗る（UX レビュー #5）", () => {
+  it("単身：葬儀・予備費の定額", () => {
+    const f = figuresOf(SINGLE);
+    expect(f.household.totalNeed.low).toBe(f.household.totalNeed.high);
+    expect(heroNeedQualifier(f)).toBe("（葬儀・予備費の定額）");
+  });
+  it("幅がある世帯は（幅）", () => {
+    expect(heroNeedQualifier(figuresOf(SHORT))).toBe("（幅）");
   });
 });

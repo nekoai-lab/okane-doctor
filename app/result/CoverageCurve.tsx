@@ -23,10 +23,19 @@ import s from "./page.module.css";
 export function CoverageCurve({
   points,
   coverage,
+  needRangeText,
+  fmt,
 }: {
   points: CoveragePoint[];
   /** いまの死亡保障額。分からない（未入力）なら null */
   coverage: number | null;
+  /**
+   * 最終の必要額（幅・`formatRange` 済み）。**この線の値とは別の量**なので、そう並べて書く
+   * （UX レビュー #1・#5：線の「約8,355万円」が4つ目の必要額に見えていた）
+   */
+  needRangeText: string;
+  /** 線の値の表示（丸め単位で丸めて「約」を付ける）。画面で桁を作らないため呼び出し側から渡す */
+  fmt: (yen: number) => string;
 }) {
   if (points.length < 2) return null;
 
@@ -38,8 +47,8 @@ export function CoverageCurve({
   if (maxNeed <= 0) {
     return (
       <div className={s.reduce}>
-        <strong>いまの前提では、この先ずっと上乗せの保障は必要ありません。</strong>{" "}
-        公的な支えとご自身の収入・資産で、支出をまかなえる見込みだからです。
+        <strong>答えた区分の代表値で見ると、この先ずっと収入と資産で支出をまかなえる見込みです。</strong>{" "}
+        保障の必要額（幅）が {needRangeText} なのは、万一の直後に要るお金（葬儀・予備費など）と、答えた区分の上下端での計算を含めているためです。
         <p className={s.basis}>
           ※ 万一の直後に要る当座のお金（葬儀・予備費）は、上の「目安」に出しています。
           ご存命のあいだの貯蓄の増減は見ていません。
@@ -86,7 +95,7 @@ export function CoverageCurve({
             ? `必要な保障は年々下がり、${crossing.year}年ごろにいまの保障で足りるようになる見込み。単位は万円。`
             : `必要な保障は年々下がる見込み。単位は万円。`
         }
-        title="その年に万一があったとき、そこから先に必要な保障（万円）"
+        title="その年に万一があったとき、そこから先に足りなくなる額（答えた区分の代表値で計算・万円）"
         years={years}
       >
         <path d={area} fill="var(--chart-expense-3)" fillOpacity="0.85" />
@@ -129,8 +138,9 @@ export function CoverageCurve({
 
       <ul className={s.cfPoints}>
         <li>
-          いま必要なのは <strong>約{formatMan(points[0].need)}</strong>
+          いまの時点で足りなくなる額は <strong>{fmt(points[0].need)}</strong>
           {points[0].survivorAge !== null ? `（配偶者${points[0].survivorAge}歳の時点）` : ""}
+          。代表値1点で引いた差額で、保障の必要額（幅）は {needRangeText} です
         </li>
         {/* 「下がる」と決め打ちしない。年によっては必要額が上がることもあり得るので、
             実際の値を比べてから書く（事実と違う言い方をしない） */}
@@ -146,7 +156,7 @@ export function CoverageCurve({
                   : "で変わらない見込み";
             return (
               <>
-                {label}には <strong>約{formatMan(points[i].need)}</strong> {dir}
+                {label}には <strong>{fmt(points[i].need)}</strong> {dir}
               </>
             );
           })()}

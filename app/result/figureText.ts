@@ -113,3 +113,17 @@ export function heroCoverageText(f: ResultFigures): string {
   if (c !== null) return formatRange(c, c);
   return f.household.pendingCount < people(f).length ? "一部未入力" : "未入力";
 }
+
+/**
+ * ヒーローの「必要額のめやす」に添える呼び名（UX レビュー #5）。
+ * 幅があれば「（幅）」。1点になるのは、全員の必要額が葬儀・予備費の床（当社基準の定額）に張り付くときだけなので、
+ * そう名乗る（1点の「約400万円」が精密な見積りに見えないように）。
+ */
+export function heroNeedQualifier(f: ResultFigures): string {
+  const h = f.household.totalNeed;
+  if (h.low !== h.high) return "（幅）";
+  const floorOnly = people(f).every(
+    (x) => x.point.verdict === "ample" || x.point.verdict === "not_needed",
+  );
+  return floorOnly ? "（葬儀・予備費の定額）" : "";
+}

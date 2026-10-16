@@ -32,6 +32,7 @@ import {
   partialNote,
   heroBreakdownNote,
   heroDiffText,
+  heroNeedQualifier,
   heroTotalLabel,
   rebalanceNote,
 } from "./figureText.js";
@@ -48,7 +49,7 @@ import { Waterfall } from "./Waterfall.js";
 import { Narration } from "./Narration.js";
 import { ownStandardValueText } from "../../src/params/display.js";
 import { loadParams, v } from "../../src/params/index.js";
-import { formatMan, formatRange } from "../../src/design/tokens.js";
+import { formatMan, formatManApprox, formatRange } from "../../src/design/tokens.js";
 import { toCompleteSelections } from "../../src/wizard/complete.js";
 import type { Estimation } from "../../src/wizard/types.js";
 import { crossingDrivers } from "../../src/wizard/uncertainty.js";
@@ -286,6 +287,7 @@ function CaseCard({
   editHref,
   gapText,
   bandNote,
+  roundUnit,
 }: {
   title: string;
   r: DeathResult;
@@ -316,6 +318,8 @@ function CaseCard({
   gapText: string;
   /** 滝の最終行が代表値より広い幅のとき、その旨の1文（`bandWidenedNote`）。無ければ null */
   bandNote: string | null;
+  /** 内訳の中間値を丸める単位（円）。params の `roundUnit` */
+  roundUnit: number;
 }) {
   /**
    * STEP4 の判定カード。**過不足軸**（`Verdict3`）を使う ── バッジと同じ軸。
@@ -432,7 +436,12 @@ function CaseCard({
       />
 
       {/* 必要保障額の推移。点（今日いくら）ではなく線（いつまでいくら）で見せる */}
-      <CoverageCurve coverage={coverage} points={coverageCurve(pj, r.income.assets)} />
+      <CoverageCurve
+        coverage={coverage}
+        fmt={(yen) => formatManApprox(yen, roundUnit)}
+        needRangeText={formatRange(r.range.low, r.range.high)}
+        points={coverageCurve(pj, r.income.assets)}
+      />
 
       {/*
         STEP3 滝グラフ（照合表 #7）。**移植元は result.html の #wfRows。**
@@ -467,7 +476,8 @@ function CaseCard({
             amount: r.income.assets,
           },
         ].filter((d) => d.amount > 0)}
-        fmt={(yen) => `約${money(yen)}`}
+        // 棒は代表値の内訳。必要額（丸め単位のレンジ）より精密に見せない（UX #5）
+        fmt={(yen) => formatManApprox(yen, roundUnit)}
         footnote={
           danshinCovered
             ? "住居費 0円 ─「団信あり」の回答から、万一のとき住宅ローンは保険で完済されるため、住居費を総額に含めていません。"
@@ -481,7 +491,7 @@ function CaseCard({
           note: `${RESULT_NOTE[r.verdict] ?? RESULT_NOTE.sufficient}${bandNote ?? ""}`,
         }}
         /* **手元のお金に読ませない。** 上回る分の大半は、これから算定期間をかけて入る就労収入（2026-10-15） */
-        surplusNote={`この上回る分は、${survivorLabel}の就労収入（約${money(r.income.survivorWork)}）の前提の上にあります。いま手元にあるお金ではなく、${r.years.total}年かけて入る将来の収入を含みます。`}
+        surplusNote={`この上回る分は、${survivorLabel}の就労収入（${formatManApprox(r.income.survivorWork, roundUnit)}）の前提の上にあります。いま手元にあるお金ではなく、${r.years.total}年かけて入る将来の収入を含みます。`}
         total={r.expense.total}
         totalFrom="STEP 2 の毎月の収支を通算し、大学の山と一度きりの支出まで足したもの"
         totalLabel="遺されたご家族に必要な総額"
@@ -1076,6 +1086,7 @@ export default async function ResultPage({
         partialNote={partialNote(figures)}
         needText={formatRange(hh.totalNeed.low, hh.totalNeed.high)}
         needHasRange={hh.totalNeed.low !== hh.totalNeed.high}
+        needQualifier={heroNeedQualifier(figures)}
         modeText={LIVING_LEVEL_LABEL[livingLevel].name}
       />
 
@@ -1219,6 +1230,7 @@ export default async function ResultPage({
             title="あなたが亡くなった場合"
             gapText={gapSentence(figures.self)}
             bandNote={bandWidenedNote(figures.self)}
+            roundUnit={v(params, "roundUnit")}
             workFrom={input.spouse && input.spouse.income > 0 ? "配偶者の年収" : null}
           />
         )}
@@ -1266,6 +1278,7 @@ export default async function ResultPage({
               title="配偶者が亡くなった場合"
               gapText={figures.spouse ? gapSentence(figures.spouse) : ""}
               bandNote={figures.spouse ? bandWidenedNote(figures.spouse) : null}
+              roundUnit={v(params, "roundUnit")}
               workFrom={input.self.income > 0 ? "あなたの年収" : null}
             />
           </details>

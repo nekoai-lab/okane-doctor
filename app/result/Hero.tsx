@@ -31,6 +31,8 @@ export interface HeroProps {
    * 見出しの直下に置く（世帯全体を確かめたように読ませない）
    */
   partialNote?: string | null;
+  /** 必要額の呼び名に添える括弧（`heroNeedQualifier`）。省略時は幅の有無だけで決める */
+  needQualifier?: string;
   /** 3列の金額が2人分を足したものなら、その呼び名（「2人分の合計」）。1人なら null */
   totalLabel?: string | null;
   /** 必要額が葬儀費用だけになる世帯に添える1行（仕様 §5.3）。無ければ null */
@@ -110,6 +112,7 @@ export function Hero(props: HeroProps) {
     coverageText,
     needText,
     needHasRange,
+    needQualifier,
     modeText,
   } = props;
 
@@ -150,7 +153,7 @@ export function Hero(props: HeroProps) {
         <div>
           {/* **幅のないものを幅と呼ばない**（J1・数直線や滝の帯／目盛りの出し分けと同じ規約） */}
           <p className={s.statLabel}>
-            必要額のめやす{needHasRange ? "（幅）" : ""}
+            必要額のめやす{needQualifier ?? (needHasRange ? "（幅）" : "")}
             {totalLabel ? `（${totalLabel}）` : ""}
           </p>
           <p className={`${s.statValue} ${s.need}`}>{needText}</p>
