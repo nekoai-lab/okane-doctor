@@ -42,3 +42,7 @@
 .sliderEnds { display: flex; justify-content: space-between; font-size: 13px; }
 .buttonIncome { display: block; font-size: 13px; }
 .scenarioAmount { display: block; font-family: var(--mk-font-display); font-size: 20px; font-weight: 600; color: var(--color-text); }
+
+.amountRange { white-space: normal; overflow-wrap: normal; word-break: normal; }
+.amountEnd { white-space: nowrap; }
+.page .verdictBadge { white-space: nowrap; }

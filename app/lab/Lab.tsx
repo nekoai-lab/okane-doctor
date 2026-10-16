@@ -24,16 +24,33 @@ const SAVINGS_LABEL = {
   shortage: "! 備え不足の可能性",
   pending: "… 未算定",
 };
+function AmountRange({ low, high }: { low: number; high: number }) {
+  const [start, end] = formatRange(low, high).split("〜");
+  return (
+    <span className={s.amountRange}>
+      <span className={s.amountEnd}>
+        {start}
+        {end !== undefined && "〜"}
+      </span>
+      {end !== undefined && (
+        <>
+          <wbr />
+          <span className={s.amountEnd}>{end}</span>
+        </>
+      )}
+    </span>
+  );
+}
 function Comparison({ point }: { point: LabPoint }) {
   return (
-    <strong className={`${badge.badge} ${badge[point.verdict]}`}>
+    <strong className={`${s.verdictBadge} ${badge.badge} ${badge[point.verdict]}`}>
       過不足の判定：{ICON[point.verdict]} {HERO_BADGE[point.verdict]}
     </strong>
   );
 }
 function SavingsBadge({ verdict }: { verdict: keyof typeof SAVINGS_LABEL }) {
   return (
-    <strong className={`${badge.badge} ${badge[verdict]}`}>
+    <strong className={`${s.verdictBadge} ${badge.badge} ${badge[verdict]}`}>
       貯蓄の判定：{SAVINGS_LABEL[verdict]}
     </strong>
   );
@@ -200,6 +217,7 @@ export function Lab({
   const [work, setWork] = useState(0);
   const [age, setAge] = useState(data.minAge);
   const scenario = data.work[work];
+  const spouseIncomeIsZero = data.work[0].now.annualIncome === 0;
   const point = scenario.points.find((p) => p.age === age);
   const difference = point ? labCoverageDifference(data.coverage, point.low, point.high) : null;
   const rising = labRisingIntervals(scenario.points);
@@ -229,7 +247,9 @@ export function Lab({
                 本人の万一：{point.age}歳（{point.year}年）
               </span>
               <span>必要な死亡保障のめやす</span>
-              <strong className={s.amount}>{formatRange(point.low, point.high)}</strong>
+              <strong className={s.amount}>
+                {<AmountRange low={point.low} high={point.high} />}
+              </strong>
               <span>
                 {point.children.length
                   ? `お子さん：${point.children.map((a) => `${a}歳`).join("・")}`
@@ -237,11 +257,19 @@ export function Lab({
               </span>
               {difference && (
                 <p>
-                  {difference.verdict === "pending"
-                    ? "いまの保険が不明のため、差は未算定です。"
-                    : difference.verdict === "uncertain"
-                      ? "いまの保険と比べて、必要額の幅の中です。"
-                      : `いまの保険と比べて、${difference.verdict === "shortage" ? "保障が" : "いまの保険が必要額を"}${formatRange(difference.low!, difference.high!)}${difference.verdict === "shortage" ? "不足しています" : "上回っています"}。`}
+                  {difference.verdict === "pending" ? (
+                    "いまの保険が不明のため、差は未算定です。"
+                  ) : difference.verdict === "uncertain" ? (
+                    "いまの前提では、いまの保険は必要額の幅の中に収まる可能性があります。"
+                  ) : (
+                    <>
+                      いまの前提では、
+                      <AmountRange low={difference.low!} high={difference.high!} />{" "}
+                      {difference.verdict === "shortage"
+                        ? "不足する可能性があります。"
+                        : "上回る可能性があります。"}
+                    </>
+                  )}
                 </p>
               )}
               <Comparison point={point} />
@@ -290,7 +318,7 @@ export function Lab({
                         {p.age}歳<br />
                         {p.year}年
                       </td>
-                      <td>{formatRange(p.low, p.high)}</td>
+                      <td>{<AmountRange low={p.low} high={p.high} />}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -332,11 +360,12 @@ export function Lab({
       {data.hasSpouse && (
         <section className={s.card}>
           <h2>配偶者の就労シナリオ</h2>
-          {data.work[0].now.annualIncome === 0 ? (
+          {spouseIncomeIsZero ? (
             <div className={s.readout}>
+              <p>配偶者の収入が0円の回答なので、働き方の切り替えはありません。</p>
               <span>現在の年齢で必要な死亡保障</span>
               <strong className={s.amount}>
-                {formatRange(scenario.now.low, scenario.now.high)}
+                {<AmountRange low={scenario.now.low} high={scenario.now.high} />}
               </strong>
               <Comparison point={scenario.now} />
             </div>
@@ -361,13 +390,13 @@ export function Lab({
               <div className={s.readout} aria-live="polite">
                 <span>現在の年齢で必要な死亡保障</span>
                 <strong className={s.amount}>
-                  {formatRange(scenario.now.low, scenario.now.high)}
+                  {<AmountRange low={scenario.now.low} high={scenario.now.high} />}
                 </strong>
                 <Comparison point={scenario.now} />
               </div>
               <p>
                 いまの前提では、配偶者の年収を約{formatMan(scenario.now.annualIncome ?? 0)}
-                とすると、必要額は{formatRange(scenario.now.low, scenario.now.high)}
+                とすると、必要額は{<AmountRange low={scenario.now.low} high={scenario.now.high} />}
                 、過不足の判定は「{HERO_BADGE[scenario.now.verdict]}」です。
               </p>
             </>
@@ -387,7 +416,12 @@ export function Lab({
               </li>
             </ul>
           </Fold>
-          <p className={s.next}>次の一歩：続けられそうな働き方を家族で確認しましょう。</p>
+          <p className={s.next}>
+            次の一歩：
+            {spouseIncomeIsZero
+              ? "配偶者が働く場合の見込みを、家族で話しておきましょう。"
+              : "続けられそうな働き方を家族で確認しましょう。"}
+          </p>
         </section>
       )}
       <section className={s.card}>
@@ -398,13 +432,15 @@ export function Lab({
             <Fold
               key={item.id}
               label={`${i + 1}. ${SCENARIO_TITLE[item.id]}`}
-              count={formatRange(item.need.low, item.need.high)}
+              count={<AmountRange low={item.need.low} high={item.need.high} />}
               countClassName={s.scenarioAmount}
               open={i === 0}
             >
               <div className={s.readout}>
                 <span>貯蓄を差し引く前の負担</span>
-                <strong className={s.amount}>{formatRange(item.need.low, item.need.high)}</strong>
+                <strong className={s.amount}>
+                  {<AmountRange low={item.need.low} high={item.need.high} />}
+                </strong>
                 <SavingsBadge verdict={item.savingsVerdict} />
               </div>
               <p>
@@ -425,7 +461,7 @@ export function Lab({
                       : "この就業形態では傷病手当金を見込んでいません。"}
                   </li>
                   <li>
-                    貯蓄の回答帯{formatRange(data.savings.low, data.savings.high)}
+                    貯蓄の回答帯{<AmountRange low={data.savings.low} high={data.savings.high} />}
                     と負担の幅を比べています。休職が長引けば負担は増えます。
                     {item.id === "mental" &&
                       `傷病手当金の上限${duration}を超える生活資金は含みません。`}
@@ -454,13 +490,13 @@ export function Lab({
           </Fold>
           <Fold
             label="7. 死亡（現在の年齢）"
-            count={formatRange(scenario.now.low, scenario.now.high)}
+            count={<AmountRange low={scenario.now.low} high={scenario.now.high} />}
             countClassName={s.scenarioAmount}
           >
             <div className={s.readout}>
               <span>資産を差し引いた後の必要保障額</span>
               <strong className={s.amount}>
-                {formatRange(scenario.now.low, scenario.now.high)}
+                {<AmountRange low={scenario.now.low} high={scenario.now.high} />}
               </strong>
               <Comparison point={scenario.now} />
             </div>
