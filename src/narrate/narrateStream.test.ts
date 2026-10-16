@@ -5,9 +5,9 @@
  * 偽の生成器で AI の振る舞い（数字を書く・知らないプレースホルダを書く・煽る）を作る。
  */
 import { describe, expect, it } from "vitest";
+import { GOLDEN } from "../__tests__/households.js";
 import { diagnose } from "../calc/index.js";
 import { loadParams } from "../params/index.js";
-import { GOLDEN } from "../__tests__/households.js";
 import { type NarrationEvent, narrateStreamEvents } from "./narrateStream.js";
 
 const P = loadParams("2026-08");
@@ -39,6 +39,18 @@ describe("narrateStreamEvents（T-07 ストリーミングの検査）", () => {
     expect(events).toHaveLength(2); // 打ち切るので「続きの文。」は流れない
     const shown = events.filter((e) => e.type === "chunk").map((e) => e.text ?? "");
     expect(shown.join("")).not.toMatch(/[0-9]/);
+  });
+
+  it("漢数字の金額も止める。チャンクをまたいで割れても、合流した時点で打ち切る（2026-10-17・QA）", async () => {
+    const whole = await run(["必要な保障の目安は三千万円です。"]);
+    expect(whole[0]).toMatchObject({ type: "fallback", reason: "g1_raw_number" });
+
+    const split = await run(["必要な保障の目安は", "三", "千万円です。", "続きの文。"]);
+    expect(split.at(-1)).toMatchObject({ type: "fallback", reason: "g1_raw_number" });
+    // 「三」1文字だけは数量と言えないので流れうるが、「三千」になった時点で止まり、続きは流れない
+    const shown = split.filter((e) => e.type === "chunk").map((e) => e.text ?? "");
+    expect(shown.join("")).not.toContain("千");
+    expect(shown.join("")).not.toContain("続き");
   });
 
   it("差し込めないプレースホルダが来たら退避する（壊れた文を出さない）", async () => {

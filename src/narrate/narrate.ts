@@ -61,8 +61,25 @@ export function fillPlaceholders(template: string, d: HouseholdDiagnosis): strin
  */
 export function hasNoRawNumbers(template: string): boolean {
   const withoutPlaceholders = template.replace(/\{\{[a-zA-Z]+\}\}/g, "");
-  return !/[0-9０-９]/.test(withoutPlaceholders);
+  if (/[0-9０-９]/.test(withoutPlaceholders)) return false;
+  return !KANJI_NUMBER.some((re) => re.test(withoutPlaceholders));
 }
+
+/**
+ * 漢数字の数量（2026-10-17・QA）。算用数字だけ見ていたので「三千万円」が素通りしていた。
+ *
+ * **「万一」「一方」「十分」は数量ではない**ので、漢数字が1文字あるだけでは止めない。
+ * 数量と言えるのは次のどれか（取りこぼすより、止めて定型文に退避するほうが安全）：
+ *  - 数字＋位（三千・五百・一万・二十）
+ *  - 「数」＋位（数百万・数千）
+ *  - 漢数字の並び＋単位（百万円・三年・十歳・二割・五倍・三か月）
+ * 検査はストリームの累積に掛かるので、チャンクをまたいで割れた金額も合流した時点で止まる。
+ */
+const KANJI_NUMBER: RegExp[] = [
+  /[〇一二三四五六七八九][十百千万億]/,
+  /数[十百千万億]/,
+  /[〇一二三四五六七八九十百千万億]+(?:円|億|年|歳|割|倍|％|%|か月|ヶ月|カ月|ヵ月)/,
+];
 
 /**
  * {{selfRange}} の呼び名は verdict で変える。**同じ数字ではないから。**

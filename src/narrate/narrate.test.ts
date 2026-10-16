@@ -2,9 +2,9 @@
  * AI言語化スタブのテスト（T-07）。核＝「AIは数値を書かない・G-1で生数字を弾く・落ちたら退避」。
  */
 import { describe, expect, it } from "vitest";
+import { GOLDEN } from "../__tests__/households.js";
 import { diagnose } from "../calc/index.js";
 import { loadParams } from "../params/index.js";
-import { GOLDEN } from "../__tests__/households.js";
 import { fillPlaceholders, hasNoRawNumbers, narrate, narrateStub } from "./narrate.js";
 
 const P = loadParams("2026-08");
@@ -22,6 +22,30 @@ describe("narrate（T-07 スタブ）", () => {
     expect(hasNoRawNumbers("必要額は約500万円です")).toBe(false);
     expect(hasNoRawNumbers("必要額は約３００万円です")).toBe(false);
     expect(hasNoRawNumbers("必要額は {{selfRange}} です")).toBe(true);
+  });
+
+  it("漢数字の金額・年数も生の数字として止める（2026-10-17・QA）", () => {
+    for (const t of [
+      "必要な保障の目安は三千万円です。",
+      "目安は三千万です。",
+      "数百万ほど足りません。",
+      "百万円ほど減らせます。",
+      "二十年ほど続きます。",
+      "保険料は二割ほど浮きます。",
+    ]) {
+      expect(hasNoRawNumbers(t), t).toBe(false);
+    }
+  });
+
+  it("「万一」「一方」「十分」のような数量でない漢字では止めない", () => {
+    for (const t of [
+      "あなたに万一のとき、{{selfRange}} が目安です。",
+      "一方で、配偶者の保障は少なめです。",
+      "いまの備えで十分そうです。",
+      "一度、前提を確かめてみてください。",
+    ]) {
+      expect(hasNoRawNumbers(t), t).toBe(true);
+    }
   });
 
   it("差し込みは算定結果の値を入れ、プレースホルダを残さない", () => {
