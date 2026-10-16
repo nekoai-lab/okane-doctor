@@ -105,7 +105,7 @@ export function projectDeath(
   const horizon = Math.max(1, yTotal, educationYearsLeft(p.education, children));
 
   const koseiAnnual = izokuKoseiAnnual(p, deceased);
-  const koseiLimit = koseiYears(p, children.length > 0, yTotal);
+  const koseiLimit = survivor ? koseiYears(p, children.length > 0, survivor.age, yTotal) : 0;
   const netNow = survivor ? survivor.income * v(p, "netIncomeRatio") : 0;
   const netAfter = Math.max(netNow, v(p, "postIndepMinIncome"));
 
@@ -162,6 +162,7 @@ export function projectDeath(
         survivor && inTerm
           ? grow(
               chukoreiKafuAnnual(p, {
+                deceasedHasKosei: koseiAnnual > 0,
                 survivorAgeAtDeath: survivor.age,
                 survivorAgeNow: survivor.age + t,
                 childrenAgesNow: agesNow,

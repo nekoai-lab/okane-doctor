@@ -192,8 +192,13 @@ export function calcDeath(p: ParamSet, h: Household): DeathResult {
 
   if (survivor) {
     pensionBasic = izokuKisoTotal(p, children, yTotal);
-    pensionKosei = izokuKoseiAnnual(p, deceased) * koseiYears(p, children.length > 0, yTotal);
-    chukoreiKafu = chukoreiKafuTotal(p, survivor, children, yTotal);
+    pensionKosei = izokuKoseiAnnual(p, deceased) * koseiYears(
+      p,
+      children.length > 0,
+      survivor.age,
+      yTotal,
+    );
+    chukoreiKafu = chukoreiKafuTotal(p, survivor, deceased, children, yTotal);
 
     // 就労収入の連続推定（ADR-008）：崖をつくらない
     const netNow = survivor.income * v(p, "netIncomeRatio");

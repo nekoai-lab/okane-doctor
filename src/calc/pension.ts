@@ -30,13 +30,22 @@ export function izokuKoseiAnnual(p: ParamSet, deceased: Person): number {
 }
 
 /**
- * 遺族厚生年金の受給想定年数。
+ * 遺族厚生年金の受給想定年数（**現行制度**。2028年改正は `reform2028.ts` が「まだ反映していない」と開示している）。
  * 子あり → 算定期間いっぱい。
- * 子なし → 2028年4月改正により原則5年（FR-17 の唯一の直撃層）。
+ * 子なし → 死亡時に配偶者が30歳未満なら5年、それ以外は算定期間いっぱい。
+ *
+ * ⚠ 当初は子なしを年齢に関係なく5年で打ち切っており、2028年改正を先取りしていた
+ *    （画面の「改正前の制度で計算」と食い違い、30歳以上の子なし世帯で収入を過少にしていた。2026-10-17・QA）。
  */
-export function koseiYears(p: ParamSet, hasChild: boolean, yearsTotal: number): number {
+export function koseiYears(
+  p: ParamSet,
+  hasChild: boolean,
+  survivorAgeAtDeath: number,
+  yearsTotal: number,
+): number {
   if (hasChild) return yearsTotal;
-  return Math.min(v(p, "reform2028Years"), yearsTotal);
+  if (survivorAgeAtDeath >= v(p, "koseiShortTermAge")) return yearsTotal;
+  return Math.min(v(p, "koseiShortTermYears"), yearsTotal);
 }
 
 /**
@@ -50,12 +59,15 @@ export function koseiYears(p: ParamSet, hasChild: boolean, yearsTotal: number): 
 export function chukoreiKafuTotal(
   p: ParamSet,
   survivor: Person,
+  deceased: Person,
   children: number[],
   yearsTotal: number,
 ): number {
+  const deceasedHasKosei = izokuKoseiAnnual(p, deceased) > 0;
   let total = 0;
   for (let t = 0; t < yearsTotal; t++) {
     total += chukoreiKafuAnnual(p, {
+      deceasedHasKosei,
       survivorAgeAtDeath: survivor.age,
       survivorAgeNow: survivor.age + t,
       childrenAgesNow: children.map((a) => a + t),
@@ -74,6 +86,11 @@ export function chukoreiKafuTotal(
 export function chukoreiKafuAnnual(
   p: ParamSet,
   ctx: {
+    /**
+     * 亡くなった人に遺族厚生年金があるか。中高齢寡婦加算は**遺族厚生年金への上乗せ**なので、
+     * 無ければ加算も無い（自営で 0 にしていたのに加算だけ乗っていた。2026-10-17・QA）
+     */
+    deceasedHasKosei: boolean;
     /** 死亡時点の遺族の年齢（子なし世帯の受給資格はここで決まる） */
     survivorAgeAtDeath: number;
     survivorAgeNow: number;
@@ -83,6 +100,7 @@ export function chukoreiKafuAnnual(
 ): number {
   const minAge = v(p, "chukoreiKafuMinAge");
   const add = v(p, "chukoreiKafuAdd");
+  if (!ctx.deceasedHasKosei) return 0;
 
   // 子なし：死亡時に年齢要件を満たすかどうかで、算定期間を通じて決まる
   if (!ctx.hasChildAtDeath) return ctx.survivorAgeAtDeath >= minAge ? add : 0;

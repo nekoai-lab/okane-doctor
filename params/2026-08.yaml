@@ -63,6 +63,20 @@ public:
     source: 2025年改正
     verified: false # 細目の確定待ち（OI-04）
     core: true
+  koseiShortTermAge:
+    value: 30
+    unit: age
+    label: 子のない妻の遺族厚生年金が5年の有期になる年齢（この年齢未満。現行制度）
+    source: 厚生年金保険法 第63条（日本年金機構「遺族厚生年金（受給要件・対象者・年金額）」）
+    verified: false
+    core: true
+  koseiShortTermYears:
+    value: 5
+    unit: years
+    label: 子のない30歳未満の妻の遺族厚生年金の受給期間（現行制度）
+    source: 厚生年金保険法 第63条（日本年金機構「遺族厚生年金（受給要件・対象者・年金額）」）
+    verified: false
+    core: true
   chukoreiKafuMinAge:
     value: 40
     unit: age

@@ -74,6 +74,7 @@ describe("式の検査：公式値を入れたら公式どおりの額になる�
 
   it("中高齢寡婦加算 ＝ 635,500 円（子が18歳を超えてから65歳まで）", () => {
     const got = chukoreiKafuAnnual(O, {
+      deceasedHasKosei: true,
       survivorAgeAtDeath: 45,
       survivorAgeNow: 52,
       childrenAgesNow: [19],
