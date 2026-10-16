@@ -17,7 +17,8 @@
 .buttons button[aria-pressed="true"] { background: var(--color-surface-inverse); color: var(--color-surface); }
 .reducible { color: var(--color-success-text); }
 .shortage { color: var(--color-warning-text); }
-.uncertain, .pending { color: var(--color-text-muted); }
+.uncertain { color: var(--mk-amber-deep); }
+.pending { color: var(--color-text-muted); }
 .scenarios > details { border-top: 1px solid var(--color-border); padding: 12px 0; }
 .table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .table th, .table td { padding: 10px 4px; border-bottom: 1px solid var(--color-border); text-align: left; }
@@ -37,3 +38,7 @@
 .slider::-moz-range-track { height: 6px; border-radius: 3px; background: var(--color-border); }
 .slider::-moz-range-thumb { box-sizing: border-box; width: 44px; height: 44px; border: 10px solid var(--color-surface); border-radius: 50%; background: var(--color-accent); }
 @media (max-width: 600px) { .desktopChart { display: none; } .mobileChart { display: block; max-width: 360px; margin-inline: auto; } }
+
+.sliderEnds { display: flex; justify-content: space-between; font-size: 13px; }
+.buttonIncome { display: block; font-size: 13px; }
+.scenarioAmount { display: block; font-family: var(--mk-font-display); font-size: 20px; font-weight: 600; color: var(--color-text); }

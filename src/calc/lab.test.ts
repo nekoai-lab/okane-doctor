@@ -7,6 +7,7 @@ import { bandInputsFor, normalizeEnds } from "../wizard/uncertainty.js";
 import { envelope } from "./envelope.js";
 import { diagnose } from "./index.js";
 import { calculateLab, labDeath, labInput } from "./lab.js";
+import { labCoverageDifference, labRisingIntervals } from "./labView.js";
 import { needForSickness } from "./scenarios.js";
 import { verdict3 } from "./verdict3.js";
 
@@ -133,5 +134,32 @@ describe("ラボ：既存算定と同じ必要額を表示する", () => {
   });
   it("期限切れの制度では試算を止める", () => {
     expect(() => calculateLab(p, input, [input, input], new Date("2100-01-01"))).toThrow();
+  });
+});
+
+describe("ラボの表示用導出", () => {
+  it.each([
+    [500, 100, 300, "reducible", 200, 400],
+    [50, 100, 300, "shortage", 50, 250],
+    [0, 100, 300, "shortage", 100, 300],
+    [100, 100, 300, "uncertain", 0, 200],
+    [300, 100, 300, "uncertain", 200, 0],
+    [200, 100, 300, "uncertain", 100, 100],
+    [null, 100, 300, "pending", null, null],
+  ] as const)("現保障%sと必要額%s〜%sの差", (coverage, low, high, verdict, diffLow, diffHigh) => {
+    expect(labCoverageDifference(coverage, low, high)).toEqual({
+      verdict,
+      low: diffLow,
+      high: diffHigh,
+    });
+  });
+  it("上昇区間だけをまとめ、下降・横ばいは含めない", () => {
+    const points = [100, 200, 300, 200, 200, 250].map((middle, i) => ({ age: 40 + i, middle }));
+    expect(labRisingIntervals(points)).toEqual([
+      { from: 40, to: 42 },
+      { from: 44, to: 45 },
+    ]);
+    expect(labRisingIntervals([])).toEqual([]);
+    expect(labRisingIntervals([{ age: 64, middle: 100 }])).toEqual([]);
   });
 });

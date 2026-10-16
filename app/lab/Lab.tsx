@@ -2,17 +2,15 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { LabData, LabPoint } from "../../src/calc/lab.js";
+import { labCoverageDifference, labRisingIntervals } from "../../src/calc/labView.js";
 import { formatMan, formatRange } from "../../src/design/tokens.js";
+import { HERO_BADGE } from "../result/Hero.js";
+import badge from "../result/hero.module.css";
 import { Fold } from "../result/Fold.js";
 import { linearScale } from "../result/chartScale.js";
 import s from "./page.module.css";
 
-const LABEL = {
-  reducible: "↓ 減らせる可能性",
-  uncertain: "↔ 圏内・要精査",
-  shortage: "! 不足の可能性",
-  pending: "… 判定は保留",
-};
+const ICON = { reducible: "↓", uncertain: "↔", shortage: "!", pending: "…" };
 const SCENARIO_TITLE: Record<string, string> = {
   hospital: "短期入院・手術",
   injury: "けがによる3か月の休職",
@@ -28,14 +26,16 @@ const SAVINGS_LABEL = {
 };
 function Comparison({ point }: { point: LabPoint }) {
   return (
-    <strong className={`${s.badge} ${s[point.verdict]}`}>
-      過不足の判定：{LABEL[point.verdict]}
+    <strong className={`${badge.badge} ${badge[point.verdict]}`}>
+      過不足の判定：{ICON[point.verdict]} {HERO_BADGE[point.verdict]}
     </strong>
   );
 }
 function SavingsBadge({ verdict }: { verdict: keyof typeof SAVINGS_LABEL }) {
   return (
-    <strong className={`${s.badge} ${s[verdict]}`}>貯蓄の判定：{SAVINGS_LABEL[verdict]}</strong>
+    <strong className={`${badge.badge} ${badge[verdict]}`}>
+      貯蓄の判定：{SAVINGS_LABEL[verdict]}
+    </strong>
   );
 }
 
@@ -81,7 +81,7 @@ function Curve({
             fontSize={font}
             fill="var(--color-text-muted)"
           >
-            {formatMan(t)}
+            {t === 0 ? "0円" : formatMan(t)}
           </text>
         </g>
       ))}
@@ -113,20 +113,28 @@ function Curve({
             stroke="var(--color-text)"
             strokeWidth="3"
           />
-          <text
-            x={(left + right) / 2}
-            y={Math.max(14, y(coverage) - 8)}
-            textAnchor="middle"
-            fontSize={font}
-            fill="var(--color-text)"
-          >
-            {coverage === 0 ? "いまの保険 なし" : `いまの保険 約${formatMan(coverage)}`}
-          </text>
+          {coverage > 0 && (
+            <text
+              x={(left + right) / 2}
+              y={Math.max(14, y(coverage) - 8)}
+              textAnchor="middle"
+              fontSize={font}
+              fill="var(--color-text)"
+            >
+              {`いまの保険 約${formatMan(coverage)}`}
+            </text>
+          )}
         </>
       )}
-      {!mobile && coverage !== null && points.some((p) => coverage > p.high) && (
-        <text x="400" y="108" textAnchor="middle" fontSize={font} fill="var(--color-success-text)">
-          緑の差 = 見直しの余地
+      {coverage !== null && points.some((p) => coverage > p.high) && (
+        <text
+          x={mobile ? 130 : 400}
+          y={mobile ? 14 : 108}
+          textAnchor="middle"
+          fontSize={font}
+          fill="var(--color-success-text)"
+        >
+          緑の差＝見直しの余地
         </text>
       )}
       <text
@@ -193,14 +201,16 @@ export function Lab({
   const [age, setAge] = useState(data.minAge);
   const scenario = data.work[work];
   const point = scenario.points.find((p) => p.age === age);
+  const difference = point ? labCoverageDifference(data.coverage, point.low, point.high) : null;
+  const rising = labRisingIntervals(scenario.points);
   const duration = `${Math.floor(data.maxBenefitMonths / 12)}年${data.maxBenefitMonths % 12}か月`;
   return (
     <main className={s.page}>
       <nav>
-        <Link href={back}>← 結果画面へ戻る</Link>
+        <Link href={back}>← 結果画面で全体を見る</Link>
       </nav>
       <header>
-        <p className={s.eyebrow}>MOSHIMO LAB / もしもを確かめる</p>
+        <p className={s.eyebrow}>もしもを確かめる</p>
         <h1>もしもラボ</h1>
         <p>いまの前提で、時期や働き方による備えの違いを確かめます。</p>
         <p className={s.note}>
@@ -210,7 +220,7 @@ export function Lab({
         </p>
       </header>
       <section className={s.card} id="timing">
-        <h2>万一の時期と必要額</h2>
+        <h2>{point ? `あなたが${point.age}歳で亡くなった場合` : "万一の時期と必要額"}</h2>
         <p>今後の貯蓄や返済が進めば、必要額は下がりえます。</p>
         {point ? (
           <>
@@ -220,6 +230,20 @@ export function Lab({
               </span>
               <span>必要な死亡保障のめやす</span>
               <strong className={s.amount}>{formatRange(point.low, point.high)}</strong>
+              <span>
+                {point.children.length
+                  ? `お子さん：${point.children.map((a) => `${a}歳`).join("・")}`
+                  : "お子さんなし"}
+              </span>
+              {difference && (
+                <p>
+                  {difference.verdict === "pending"
+                    ? "いまの保険が不明のため、差は未算定です。"
+                    : difference.verdict === "uncertain"
+                      ? "いまの保険と比べて、必要額の幅の中です。"
+                      : `いまの保険と比べて、${difference.verdict === "shortage" ? "保障が" : "いまの保険が必要額を"}${formatRange(difference.low!, difference.high!)}${difference.verdict === "shortage" ? "不足しています" : "上回っています"}。`}
+                </p>
+              )}
               <Comparison point={point} />
             </div>
             <label className={s.sliderLabel} htmlFor="lab-age">
@@ -237,8 +261,20 @@ export function Lab({
               disabled={data.minAge === 64}
               onChange={(e) => setAge(Number(e.target.value))}
             />
+            <div className={s.sliderEnds}>
+              <span>{data.minAge}歳</span>
+              <span>64歳</span>
+            </div>
+            <p className={s.note}>動かすと、その年齢での必要額に変わります。</p>
             <Curve points={scenario.points} selected={point} coverage={data.coverage} />
             <Curve points={scenario.points} selected={point} coverage={data.coverage} mobile />
+            {data.coverage === 0 && <p className={s.note}>いまの保険 なし</p>}
+            {rising.length > 0 && (
+              <p className={s.note}>
+                {rising.map((r) => `${r.from}〜${r.to}歳`).join("・")}
+                では必要額が上がります。家族の年齢に伴い、公的な支えや残る支出も変わるためです。
+              </p>
+            )}
             <Fold label="年齢ごとの金額" count={`（${scenario.points.length}年分）`}>
               <table className={s.table}>
                 <thead>
@@ -284,18 +320,31 @@ export function Lab({
             </li>
           </ul>
         </Fold>
-        <p className={s.next}>次の一歩：保険証券で保障の満期を確認しましょう。</p>
+        <p className={s.next}>
+          次の一歩：
+          {data.coverage === 0
+            ? "必要額の幅を家族で共有しましょう。"
+            : data.coverage === null
+              ? "いま加入している死亡保障の有無と金額を確認しましょう。"
+              : "保険証券で保障の満期を確認しましょう。"}
+        </p>
       </section>
       {data.hasSpouse && (
         <section className={s.card}>
           <h2>配偶者の就労シナリオ</h2>
           {data.work[0].now.annualIncome === 0 ? (
-            <p>配偶者の収入が0円の回答なので、この切り替えは使いません</p>
+            <div className={s.readout}>
+              <span>現在の年齢で必要な死亡保障</span>
+              <strong className={s.amount}>
+                {formatRange(scenario.now.low, scenario.now.high)}
+              </strong>
+              <Comparison point={scenario.now} />
+            </div>
           ) : (
             <>
               <fieldset className={s.buttons}>
                 <legend>配偶者の就労収入</legend>
-                {["回答額", "半分", "ゼロ"].map((label, i) => (
+                {["回答どおり", "半分", "ゼロ"].map((label, i) => (
                   <button
                     type="button"
                     key={label}
@@ -303,6 +352,9 @@ export function Lab({
                     onClick={() => setWork(i)}
                   >
                     {label}
+                    <span className={s.buttonIncome}>
+                      年収 約{formatMan(data.work[i].now.annualIncome ?? 0)}
+                    </span>
                   </button>
                 ))}
               </fieldset>
@@ -314,9 +366,9 @@ export function Lab({
                 <Comparison point={scenario.now} />
               </div>
               <p>
-                就労収入ゼロでも独立後の収入を見込むため、
-                <br />
-                働けない場合は必要額が増えます。
+                いまの前提では、配偶者の年収を約{formatMan(scenario.now.annualIncome ?? 0)}
+                とすると、必要額は{formatRange(scenario.now.low, scenario.now.high)}
+                、過不足の判定は「{HERO_BADGE[scenario.now.verdict]}」です。
               </p>
             </>
           )}
@@ -346,7 +398,8 @@ export function Lab({
             <Fold
               key={item.id}
               label={`${i + 1}. ${SCENARIO_TITLE[item.id]}`}
-              count="（1シナリオ）"
+              count={formatRange(item.need.low, item.need.high)}
+              countClassName={s.scenarioAmount}
               open={i === 0}
             >
               <div className={s.readout}>
@@ -384,10 +437,9 @@ export function Lab({
                   <li>出典：{item.need.sources.join(" ／ ")}</li>
                 </ul>
               </Fold>
-              <p className={s.next}>次の一歩：休職中に使える勤務先の保障を確認しましょう。</p>
             </Fold>
           ))}
-          <Fold label="6. 障害による長期の休職" count="（1シナリオ）">
+          <Fold label="6. 障害による長期の休職" count="未算定" countClassName={s.scenarioAmount}>
             <div className={s.readout}>
               <span>必要額</span>
               <strong className={s.amount}>未算定</strong>
@@ -399,9 +451,12 @@ export function Lab({
                 長期の収入減と本人の生活費が続くケースです。障害年金の受給条件を含めた算定に未対応です。
               </p>
             </Fold>
-            <p className={s.next}>次の一歩：年金窓口で障害年金の受給条件を確認しましょう。</p>
           </Fold>
-          <Fold label="7. 死亡（現在の年齢）" count="（1シナリオ）">
+          <Fold
+            label="7. 死亡（現在の年齢）"
+            count={formatRange(scenario.now.low, scenario.now.high)}
+            countClassName={s.scenarioAmount}
+          >
             <div className={s.readout}>
               <span>資産を差し引いた後の必要保障額</span>
               <strong className={s.amount}>
@@ -429,36 +484,25 @@ export function Lab({
                 <li>出典：{data.deathSource}</li>
               </ul>
             </Fold>
-            <Link className={s.next} href={back}>
-              次の一歩：結果画面の内訳を確認
-            </Link>
           </Fold>
         </div>
-        <Link className={s.next} href={back}>
-          次の一歩：結果画面で備えの全体を確認
-        </Link>
+        <p>
+          読み方：軽く短いもしもは公的な支えと貯蓄で受け止め、保険は重く長い領域で足りない分に備えるものです。
+        </p>
+        <p className={s.next}>次の一歩：結果画面で備えの全体を確認しましょう。</p>
       </section>
-      <section className={`${s.card} ${s.pending}`}>
-        <h2>言葉による条件の変更</h2>
-        <strong className={s.amount}>準備中</strong>
-        <p>自然言語で前提を変える機能は、まだ使えません。</p>
-        <Fold label="機能の予定" count="（1項目）">
-          <p>
-            AIは言葉を前提に翻訳し、計算は本編と同じエンジンが行う予定です。解釈した前提も表示します。
-          </p>
+      <p className={s.note}>言葉による条件の変更は準備中です。</p>
+      {estimations.length > 0 ? (
+        <Fold label="入力の推定" count={`（${estimations.length}項目）`}>
+          <ul>
+            {estimations.map((e) => (
+              <li key={e}>{e}</li>
+            ))}
+          </ul>
         </Fold>
-        <Link className={s.next} href="#timing">
-          次の一歩：時期による違いを確認
-        </Link>
-      </section>
-      <Fold label="入力の推定" count={`（${estimations.length}項目）`}>
-        <ul>
-          {estimations.map((e) => (
-            <li key={e}>{e}</li>
-          ))}
-        </ul>
-        {!estimations.length && <p>推定で補った入力はありません。</p>}
-      </Fold>
+      ) : (
+        <p className={s.note}>推定で補った入力はありません。</p>
+      )}
       <footer className={s.card}>
         {scenario.now.verdict !== "reducible" ? (
           <p>
@@ -468,13 +512,13 @@ export function Lab({
             {scenario.now.verdict === "pending" && "現保障が不明のため、確認できていません。"}
           </p>
         ) : (
-          <p>いまの前提では、現在の死亡保障に減らせる可能性があります。</p>
+          <p>いまの前提では、いまの死亡保障を減らせる可能性があります。</p>
         )}
-        <Fold label="保存とロードマップの対応状況" count="（1項目）">
+        <Fold label="保存の機能（準備中）" count="（1項目）">
           <p>保存とロードマップは準備中です。</p>
         </Fold>
         <Link className={s.cta} href={back}>
-          結果画面へ戻る
+          結果画面で全体を見る
         </Link>
       </footer>
     </main>

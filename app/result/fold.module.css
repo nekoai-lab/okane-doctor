@@ -35,7 +35,7 @@
   margin-left: 2px;
 }
 
-.fold[open] .chevron {
+.fold[open] > .summary .chevron {
   transform: rotate(45deg);
   margin-top: -3px;
 }

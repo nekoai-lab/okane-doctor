@@ -18,6 +18,7 @@ import s from "./fold.module.css";
 export function Fold({
   label,
   count,
+  countClassName,
   children,
   open,
 }: {
@@ -25,6 +26,7 @@ export function Fold({
   label: string;
   /** 件数。`（3通り）` のように括弧ごと渡す。**折り返さない** */
   count?: string;
+  countClassName?: string;
   children: ReactNode;
   /** 既定で開いておくか（参照材は閉じるのが既定） */
   open?: boolean;
@@ -35,7 +37,7 @@ export function Fold({
         <span aria-hidden="true" className={s.chevron} />
         <span className={s.label}>
           {label}
-          {count && <span className={s.count}>{count}</span>}
+          {count && <span className={`${s.count} ${countClassName ?? ""}`}>{count}</span>}
         </span>
       </summary>
       <div className={s.body}>{children}</div>
