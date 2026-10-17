@@ -13,6 +13,23 @@
       "caveat": "Approved concept style; check responsive crop and consistency"
     },
     {
+      "id": "family-wide",
+      "path": "assets/family-riverside-wide.webp",
+      "width": 1280,
+      "height": 720,
+      "variants": [
+        {
+          "path": "assets/family-riverside-wide-800.webp",
+          "width": 800,
+          "height": 450
+        }
+      ],
+      "source": "ChatGPT generated 2026-10-17 from IMAGE_PROMPTS.md A-1 (reference: 川辺を歩く笑顔の家族4人.png)",
+      "usage": "prototype home hero",
+      "altDefault": "",
+      "caveat": "Clothing of children differs from the approved reference; awaiting Naomi's approval"
+    },
+    {
       "id": "senior",
       "path": "assets/senior-portrait-crop.webp",
       "width": 595,
