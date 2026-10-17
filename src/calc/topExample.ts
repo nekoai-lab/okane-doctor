@@ -1,7 +1,7 @@
 /**
  * トップページ（LP）の「ある家族の、診断をのぞいてみる」の試算例（2026-10-15）
  *
- * **LP に金額を手で書かない。** 例の世帯を結果画面と同じ入口（URL クエリ → normalize → diagnose）に通し、
+ * **LP に金額を手で書かない。** 例の世帯を結果画面と同じ入口（URL クエリ → resultInputs → resultFigures）に通し、
  * 出てきた値をそのまま返す。params が改定されれば、LP の数字も一緒に動く。
  *
  * 過不足は `verdict3` と同じ不等号で判定し、差は**幅で**返す（中心値は作らない。
@@ -9,10 +9,11 @@
  */
 import type { ParamSet } from "../params/index.js";
 import { toCompleteSelections } from "../wizard/complete.js";
-import { normalize } from "../wizard/normalize.js";
+import { decodeLivingLevel } from "../wizard/dial.js";
+import { resultInputs } from "../wizard/resultInputs.js";
 import { decodeSelections } from "../wizard/url.js";
-import { diagnose } from "./index.js";
-import { type Verdict3, verdict3 } from "./verdict3.js";
+import { resultFigures } from "./figures.js";
+import type { Verdict3 } from "./verdict3.js";
 
 /**
  * 例の世帯：37歳・会社員／配偶者35歳・専業（収入なし）／子2歳／持ち家・ローン2,000〜3,000万・団信あり／
@@ -28,13 +29,18 @@ export interface TopExample {
   childAges: number[];
   /** 遺されたご家族に必要な総額（円） */
   total: number;
+  /**
+   * 総額の内訳（円）。LP の「必要額の内訳」に出す。足すと `total` になる
+   * （生活費は子の独立前後の合計、その他は葬儀などのまとまった費用）。
+   */
+  expense: { living: number; education: number; housing: number; other: number };
   /** 遺族年金（基礎＋厚生＋中高齢寡婦加算）（円） */
   pension: number;
   /** 配偶者の就労収入（円） */
   survivorWork: number;
   /** 貯蓄・資産（円） */
   assets: number;
-  /** 民間保険で備える額の幅（円）。結果画面の「必要額のめやす」と同じ値 */
+  /** 民間保険で備える額の幅（円）。結果画面の最終の必要額（回答の幅を包絡したもの）と同じ値 */
   need: { low: number; high: number };
   /** 団信でローンが消える（住居費0円）か */
   danshinCovered: boolean;
@@ -46,21 +52,16 @@ export interface TopExample {
 }
 
 export function topExample(p: ParamSet, asOf: Date): TopExample {
-  const complete = toCompleteSelections(decodeSelections(new URLSearchParams(TOP_EXAMPLE_QUERY)));
+  const q = new URLSearchParams(TOP_EXAMPLE_QUERY);
+  const complete = toCompleteSelections(decodeSelections(q));
   if (!complete) throw new Error("トップの試算例の入力が揃っていない");
-  const { input } = normalize(p, complete, asOf);
-  const r = diagnose(p, input, asOf).self;
+  // 結果画面と同じ入口（resultInputs → resultFigures）を通す。LP には「この例の結果画面」への
+  // リンクがあるので、代表値のレンジだけを出すと、押した先の必要額と食い違う（2026-10-17）。
+  const { input, bands } = resultInputs(p, complete, decodeLivingLevel(q), asOf);
+  const f = resultFigures(p, input, bands, asOf).self;
+  const r = f.point;
   const coverage = input.coverageSelf;
   if (coverage === null) throw new Error("トップの試算例には、いまの保障が要る");
-
-  const { low, high } = r.range;
-  const v = verdict3(coverage, low, high);
-  const gap =
-    v === "shortage"
-      ? { low: low - coverage, high: high - coverage }
-      : v === "reducible"
-        ? { low: coverage - high, high: coverage - low }
-        : null;
 
   return {
     query: TOP_EXAMPLE_QUERY,
@@ -68,16 +69,22 @@ export function topExample(p: ParamSet, asOf: Date): TopExample {
     spouseAge: input.spouse?.age ?? null,
     childAges: input.children,
     total: r.expense.total,
+    expense: {
+      living: r.expense.livingChild + r.expense.livingAlone,
+      education: r.expense.education,
+      housing: r.expense.housing,
+      other: r.expense.funeral,
+    },
     pension: r.income.pensionBasic + r.income.pensionKosei + r.income.chukoreiKafu,
     survivorWork: r.income.survivorWork,
     assets: r.income.assets,
-    need: { low, high },
+    need: { ...f.need },
     danshinCovered:
       input.housing.type === "own" &&
       (input.housing.loan ?? 0) > 0 &&
       input.housing.danshin !== false,
     coverage,
-    verdict: v,
-    gap,
+    verdict: f.verdict,
+    gap: f.gap.kind === "none" ? null : { low: f.gap.low, high: f.gap.high },
   };
 }
