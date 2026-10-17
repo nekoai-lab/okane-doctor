@@ -1,0 +1,224 @@
+/*
+  Modern Fintech A の共通部品。値はすべてセマンティックトークン（theme-fintech.css が上書き）。
+  文字は 12px 以上、操作要素は 44px 以上（--target-min）。フォーカスは tokens.css の共通リングをそのまま使う。
+*/
+
+/* ---------- 判定バッジ ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+}
+.badgeIcon {
+  font-style: normal;
+}
+.badgeAxis {
+  font-weight: 700;
+}
+.badge_positive {
+  color: var(--color-verdict-reducible-text);
+  background: var(--color-verdict-reducible-bg);
+}
+.badge_attention {
+  color: var(--color-verdict-shortage-text);
+  background: var(--color-verdict-shortage-bg);
+}
+.badge_neutral {
+  color: var(--color-verdict-neutral);
+  background: var(--color-verdict-neutral-bg);
+}
+
+/* ---------- ボタン ---------- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--color-primary);
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.button_primary {
+  background: var(--color-primary);
+  color: var(--color-text-on-inverse);
+}
+.button_primary:hover {
+  background: var(--color-primary-active);
+  border-color: var(--color-primary-active);
+}
+.button_secondary {
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+.button_quiet {
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.buttonFull {
+  width: 100%;
+}
+
+/* ---------- カード ---------- */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 18px;
+  margin: 12px 16px;
+}
+.cardTitle {
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 800;
+  margin: 0 0 10px;
+}
+
+/* ---------- 注記 ---------- */
+.note {
+  background: var(--color-note-bg);
+  color: var(--color-note-text);
+  border-radius: var(--radius-control);
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.noteWarning {
+  background: var(--color-note-warning-bg);
+  color: var(--color-note-warning-text);
+}
+
+/* ---------- 折りたたみ ---------- */
+.disclosure {
+  border-top: 1px solid var(--color-border);
+  margin-top: 12px;
+}
+.disclosureSummary {
+  cursor: pointer;
+  min-height: var(--target-min);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  font-weight: 700;
+  font-size: 14px;
+}
+.disclosureSummary::-webkit-details-marker {
+  display: none;
+}
+.chevron {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--color-text-secondary);
+  border-bottom: 2px solid var(--color-text-secondary);
+  transform: rotate(-45deg);
+  transition: transform 120ms ease;
+  margin-left: 2px;
+}
+.disclosure[open] .chevron {
+  transform: rotate(45deg);
+  margin-top: -3px;
+}
+.count {
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+.disclosureBody {
+  padding: 4px 0 12px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* ---------- ヘッダー ---------- */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 0 10px 0 18px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.brand {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--color-text);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--target-min);
+}
+.brandDot {
+  color: var(--color-primary);
+}
+.headerAction {
+  display: grid;
+  place-items: center;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  color: var(--color-text);
+  font-size: 20px;
+  text-decoration: none;
+  border-radius: 10px;
+}
+
+/* ---------- 下部ナビ ---------- */
+.bottomNav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, 390px);
+  height: 74px;
+  display: flex;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  z-index: 11;
+}
+.navItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+.navIcon {
+  font-size: 21px;
+  line-height: 1.3;
+}
+.navItemCurrent {
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
+/* 読み上げ専用の文字（見た目には出さない） */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
