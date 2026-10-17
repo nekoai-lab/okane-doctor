@@ -10,6 +10,10 @@ COPY package.json package-lock.json ./
 # --ignore-scripts：prepare が git のフックパスを設定するだけで、コンテナには git が無い
 RUN npm ci --ignore-scripts
 COPY . .
+# 共有画像の絶対 URL の基点（app/layout.tsx の metadataBase）。ビルドのときに読まれる。
+# 値は Cloud Build のトリガーの置換変数 _SITE_URL から渡す（公開リポジトリに本番 URL を書かない）
+ARG SITE_URL=
+ENV SITE_URL=${SITE_URL}
 RUN npm run build
 
 FROM node:22-alpine AS runner
@@ -18,6 +22,9 @@ ENV NODE_ENV=production
 # Cloud Run は PORT を渡してくる。standalone の server.js はこれを読む
 ENV PORT=8080
 ENV HOSTNAME=0.0.0.0
+# 動的なページ（/・/result など）は実行時に metadataBase を組み立てるので、実行側にも渡す
+ARG SITE_URL=
+ENV SITE_URL=${SITE_URL}
 
 # root で動かさない
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
