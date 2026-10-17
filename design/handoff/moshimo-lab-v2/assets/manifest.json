@@ -27,7 +27,8 @@
       "source": "ChatGPT generated 2026-10-17 from IMAGE_PROMPTS.md A-1 (reference: 川辺を歩く笑顔の家族4人.png)",
       "usage": "prototype home hero",
       "altDefault": "",
-      "caveat": "Clothing of children differs from the approved reference; awaiting Naomi's approval"
+      "caveat": "Approved by Naomi 2026-10-17 as is (children's clothing differs from the original reference)",
+      "status": "approved"
     },
     {
       "id": "senior",
