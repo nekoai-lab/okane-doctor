@@ -14,9 +14,16 @@ export function AppHeader({
   return (
     <header className={s.header}>
       <a className={s.brand} href="/">
-        <span aria-hidden="true" className={s.brandDot}>
-          ●
-        </span>
+        {/* 05B の承認済みシンボル（design/handoff/logo-05B/approved/02_symbol_color_white.png の写し）。
+            ブランドの色を持つ画像なのでトークンには通さない。名前は隣の文字が読み上げる */}
+        {/* biome-ignore lint/performance/noImgElement: 28px の固定画像。next/image の最適化は要らない */}
+        <img
+          className={s.brandMark}
+          src="/brand/okane-doctor-symbol.png"
+          alt=""
+          width={28}
+          height={28}
+        />
         {title}
       </a>
       {action && (
