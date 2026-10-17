@@ -163,4 +163,6 @@
 - 書いていないもの：本番 URL・プロジェクト ID・シークレット名・合言葉。「誰の何を変えたかったか」は README ではなく Zenn 記事にする（オーナー 2026-10-18）
 - `PRODUCT.md` は「人が書く」なので触っていない
 - やり残し（docs 以外なので別 PR）：`package.json` の description「AI×お金の健康」、`params/watch-sources.yaml` の罠ページが提出版の URL を指している
+- PR #18 でマージ済み（5cde78e）
+- 追記（2026-10-18）：オーナー指示「ハッカソンには触れない」。README・ARCHITECTURE.md・STATUS.md の冒頭・アーキテクチャ図.html の見出しから、ハッカソン名と「提出版・審査中」の言い方を外し「前身の okane-kenko」にした。CLAUDE.md の冒頭（開発ルール）と過去の記録（ADR・STATUS の本文・チェックリスト・docs/hackathon/）はそのまま
 - 次の1手：request-qa → マージ（docs だけなので UX レビューは不要）
