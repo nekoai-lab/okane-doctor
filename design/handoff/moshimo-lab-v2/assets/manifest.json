@@ -4,7 +4,7 @@
   "assets": [
     {
       "id": "family",
-      "path": "assets/hero/family-riverside.webp",
+      "path": "assets/family-riverside.webp",
       "width": 1448,
       "height": 1086,
       "source": "川辺を歩く笑顔の家族4人.png",
@@ -14,7 +14,7 @@
     },
     {
       "id": "senior",
-      "path": "assets/hero/senior-portrait-crop.webp",
+      "path": "assets/senior-portrait-crop.webp",
       "width": 595,
       "height": 722,
       "source": "シニアパターン_コンセプトボード.png",
@@ -24,7 +24,7 @@
     },
     {
       "id": "single-male",
-      "path": "assets/hero/single-male-portrait-crop.webp",
+      "path": "assets/single-male-portrait-crop.webp",
       "width": 585,
       "height": 621,
       "source": "単身男性の未来設計コンセプトボード.png",
@@ -34,7 +34,7 @@
     },
     {
       "id": "single-female",
-      "path": "assets/hero/single-female-portrait-crop.webp",
+      "path": "assets/single-female-portrait-crop.webp",
       "width": 590,
       "height": 605,
       "source": "単身女性の安心ライフ_コンセプトボード.png",
