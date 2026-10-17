@@ -1,0 +1,48 @@
+.page { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; color: var(--color-text); overflow-wrap: anywhere; }
+.page h1, .page h2, .amount { font-family: var(--mk-font-display); }
+.page h1 { font-size: 36px; margin: 12px 0; }
+.page h2 { font-size: 23px; line-height: 1.5; margin: 0 0 12px; }
+.page h3 { font-size: 16px; margin-bottom: 4px; }
+.page p { line-height: 1.8; }
+.page a { color: var(--color-text); }
+.eyebrow, .note { font-size: 13px; color: var(--color-text-muted); }
+.card { margin: 28px 0; padding: 24px 20px; border: 1px solid var(--color-border); border-radius: 20px; background: var(--color-surface); }
+.readout { background: var(--color-surface-subtle); padding: 18px; border-radius: 12px; }
+.amount { display: block; font-size: clamp(23px, 6vw, 32px); line-height: 1.6; font-weight: 600; margin: 8px 0; }
+.chart { width: 100%; height: auto; display: block; margin: 20px 0; }
+.sliderLabel { display: block; margin-top: 20px; font-weight: 600; }
+.slider { width: 100%; min-height: 44px; accent-color: var(--color-accent); }
+.buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+.buttons button { flex: 1; min-height: 44px; padding: 10px 8px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; font: inherit; cursor: pointer; }
+.buttons button[aria-pressed="true"] { background: var(--color-surface-inverse); color: var(--color-surface); }
+.reducible { color: var(--color-success-text); }
+.shortage { color: var(--color-warning-text); }
+.uncertain { color: var(--mk-amber-deep); }
+.pending { color: var(--color-text-muted); }
+.scenarios > details { border-top: 1px solid var(--color-border); padding: 12px 0; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th, .table td { padding: 10px 4px; border-bottom: 1px solid var(--color-border); text-align: left; }
+.cta { display: block; padding: 14px; border-radius: 8px; text-align: center; background: var(--color-accent); color: var(--color-surface) !important; text-decoration: none; font-weight: 600; }
+@media (max-width: 359px) { .card { padding: 18px 12px; } .readout { padding: 12px; } }
+.buttons { min-inline-size: 0; margin: 0; padding: 0; border: 0; }
+.buttons legend { margin-bottom: 8px; font-size: 14px; }
+.readout > span { display: block; font-size: 14px; line-height: 1.8; }
+.badge { display: block; font-size: 14px; line-height: 1.7; margin-top: 12px; }
+.next { display: block; margin-top: 24px; font-size: 14px; line-height: 1.8; }
+.buttons button { white-space: nowrap; }
+.buttons + .readout { margin-top: 20px; }
+.mobileChart { display: none; }
+.slider { appearance: none; background: transparent; margin: 4px 0; height: 44px; cursor: pointer; }
+.slider::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: var(--color-border); }
+.slider::-webkit-slider-thumb { appearance: none; width: 44px; height: 44px; margin-top: -19px; border: 10px solid var(--color-surface); border-radius: 50%; background: var(--color-accent); }
+.slider::-moz-range-track { height: 6px; border-radius: 3px; background: var(--color-border); }
+.slider::-moz-range-thumb { box-sizing: border-box; width: 44px; height: 44px; border: 10px solid var(--color-surface); border-radius: 50%; background: var(--color-accent); }
+@media (max-width: 600px) { .desktopChart { display: none; } .mobileChart { display: block; max-width: 360px; margin-inline: auto; } }
+
+.sliderEnds { display: flex; justify-content: space-between; font-size: 13px; }
+.buttonIncome { display: block; font-size: 13px; }
+.scenarioAmount { display: block; font-family: var(--mk-font-display); font-size: 20px; font-weight: 600; color: var(--color-text); }
+
+.amountRange { white-space: normal; overflow-wrap: normal; word-break: normal; }
+.amountEnd { white-space: nowrap; }
+.page .verdictBadge { white-space: nowrap; }
