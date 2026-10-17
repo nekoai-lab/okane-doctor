@@ -23,6 +23,7 @@ const nextConfig = {
     "/api/diagnose": ["./params/**"],
     "/api/narrate": ["./params/**"],
     "/result": ["./params/**"],
+    "/lab": ["./params/**"],
   },
   // src/ は .ts を .js 拡張子で import する（bundler 解決前提）。
   // webpack は .js→.ts の読み替えをしないので、明示する。src/ 側は触らない。
