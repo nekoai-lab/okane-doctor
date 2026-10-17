@@ -141,7 +141,10 @@ function Curve({
             y2={y(coverage)}
             stroke="var(--color-text)"
             strokeWidth="3"
+            strokeDasharray="8 5"
           />
+          {/* 点線＝いまの額を延ばした仮定。確かなのは左端（いま）だけなので、そこにだけ点を打つ（2026-10-17 UX） */}
+          {coverage > 0 && <circle cx={left} cy={y(coverage)} r="5" fill="var(--color-text)" />}
           {coverage > 0 && (
             <text
               x={(left + right) / 2}
@@ -199,10 +202,10 @@ function Curve({
             i === points.length - 1 ||
             (!mobile && p.age % 5 === 0 && i > 1 && i < points.length - 2),
         )
-        .map((p) => (
+        .map((p, i) => (
           <g key={p.age} textAnchor="middle" fill="var(--color-text-muted)">
             <text x={x(p.age)} y={bottom + 18} fontSize={font}>
-              {p.age}歳
+              {i === 0 ? `いま（${p.age}歳）` : `${p.age}歳`}
             </text>
             <text x={x(p.age)} y={bottom + 34} fontSize={font}>
               {p.year}年
@@ -253,7 +256,6 @@ export function Lab({
         </header>
         <section className={s.card} id="timing">
           <h2>{point ? `あなたが${point.age}歳で亡くなった場合` : "万一の時期と必要額"}</h2>
-          <p>今後の貯蓄や返済が進めば、必要額は下がりえます。</p>
           {point ? (
             <>
               <div className={s.readout} aria-live="polite">
@@ -304,19 +306,21 @@ export function Lab({
                 onChange={(e) => setAge(Number(e.target.value))}
               />
               <div className={s.sliderEnds}>
-                <span>{data.minAge}歳</span>
+                <span>いま（{data.minAge}歳）</span>
                 <span>64歳</span>
               </div>
               <p className={s.note}>動かすと、その年齢での必要額に変わります。</p>
               <p className={s.chartPremise}>
-                現在の収入・生活費・資産・ローン残高などを固定し、家族の年齢だけを変えた試算です。
+                いまの収入・生活費・貯蓄・ローン残高のまま、家族の年齢だけを進めた試算です。これからの貯蓄や返済は入れていないので、それが進めば必要額はこの線より下がりえます。
               </p>
               <p className={s.legend}>
                 {[
                   "帯：必要額の幅",
                   "線：代表値",
                   "点：選択した年齢",
-                  ...(data.coverage !== null && data.coverage > 0 ? ["黒い横線：いまの保険"] : []),
+                  ...(data.coverage !== null && data.coverage > 0
+                    ? ["黒い点線：いまの保険（いまの額のまま延ばした線）"]
+                    : []),
                 ].map((item, i) => (
                   <span key={item}>
                     {i > 0 && "／"}
@@ -329,7 +333,7 @@ export function Lab({
               {data.coverage === 0 && <p className={s.note}>いまの保険 なし</p>}
               {data.coverage !== null && data.coverage > 0 && (
                 <p className={s.note}>
-                  現在の保障額を一定として表示しています。満期・更新は反映していません。
+                  満期・更新は見ていません。満期が先に来る保険なら、その年齢からの保障はこの点線より少なくなります。
                 </p>
               )}
               {rising.length > 0 && (
@@ -372,7 +376,7 @@ export function Lab({
                 現在の制度・収入・生活費・資産・ローン残高を固定し、家族の年齢だけを進めます。今後の貯蓄や返済が進めば必要額は下がりえます。
               </li>
               <li>
-                制度改正は予測していません。現保障は満期・更新を確認していないため水平線です。緑の塗りは必要額の上端を上回る部分です。
+                制度改正は予測していません。現保障は満期・更新を確認していないため、いまの額を延ばした点線です。緑の塗りは必要額の上端を上回る部分です。
               </li>
               <li>対象はいまの年齢から64歳までです。死亡シナリオは現在の年齢で計算します。</li>
               <li>
