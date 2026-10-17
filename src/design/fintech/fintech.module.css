@@ -167,8 +167,11 @@
   gap: 6px;
   min-height: var(--target-min);
 }
-.brandDot {
-  color: var(--color-primary);
+.brandMark {
+  display: block;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 .headerAction {
   display: grid;

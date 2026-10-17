@@ -124,4 +124,12 @@
 - オーナーが見た目を承認。Mac mini 側の別案（PR #12）とはオーナーの選択でこちら（PR #11）を採り、#12 は閉じた
 - request-qa は blocking なし、Codex の UX レビュー9回目で ux-pass
 - やり残し：上の弧の葉に近い端は、原画の斜めの切り口より丸みが強い（UX 任意。ヘッダーの大きさでは支障なし）
-- 次の1手：PR #11 をマージ（デプロイはまだしない）
+- PR #11 は 2026-10-17 にマージ済み（63f4b24）
+
+## claude/lp-final-rlhc3h（05B 承認アセットをファビコン・アイコン・OG・ラボのヘッダーへ・2026-10-17・Claude Code）
+
+- 現状：オーナーから届いた 05B 承認アセット一式（個別 PNG・README）を `design/handoff/logo-05B/approved/` に置いた。README のとおり、原画から切り出し・縮小したラスターで、形は描き直していない
+- 使った所：ファビコン（`app/favicon.ico` は承認の 16px と 32px をそのまま格納、`app/icon.png` は 32px）、アプリアイコン（`app/apple-icon.png`。承認シンボルを 180px に縮小して白で余白）、OG 画像（`app/opengraph-image.png`。承認フルロゴを 1.76 倍して 1200×630 の白地の中央）、もしもラボのヘッダー（`AppHeader` の仮の「●」を承認シンボル `public/brand/okane-doctor-symbol.png` に）
+- LP のロゴは触っていない（オーナー指示。#11 の SVG のまま）
+- やり残し：OG 画像の URL は `metadataBase` が無いので本番の URL が決まるまで localhost になる。OG 画像は 258px の切り出しを拡大しているので少し甘い（高解像度の原画があれば差し替える）。`app/layout.tsx` のタブ名がまだ旧名「お金の健康診断」
+- 次の1手：UX レビュー → request-qa → マージ（デプロイはまだしない）
