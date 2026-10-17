@@ -9,15 +9,21 @@
  */
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { jstYear } from "../../src/time/jstYear.js";
+import { isComplete } from "../../src/wizard/complete.js";
 import {
   DEFAULT_LIVING_LEVEL,
   decodeLivingLevel,
   type LivingLevel,
   wizardQuery,
 } from "../../src/wizard/dial.js";
-import { decodeSelections } from "../../src/wizard/url.js";
-import { isComplete } from "../../src/wizard/complete.js";
-import { jstYear } from "../../src/time/jstYear.js";
+import {
+  ASSETS_LABEL,
+  INCOME_LABEL,
+  LIVING_LABEL,
+  LOAN_LABEL,
+  SPOUSE_INCOME_LABEL,
+} from "../../src/wizard/labels.js";
 import type {
   CoverageCode,
   DanshinChoice,
@@ -27,13 +33,7 @@ import type {
   SpouseEmploymentChoice,
   WizardSelections,
 } from "../../src/wizard/types.js";
-import {
-  ASSETS_LABEL,
-  INCOME_LABEL,
-  LIVING_LABEL,
-  LOAN_LABEL,
-  SPOUSE_INCOME_LABEL,
-} from "../../src/wizard/labels.js";
+import { decodeSelections } from "../../src/wizard/url.js";
 import s from "./page.module.css";
 
 const EMPLOYMENT: [EmploymentChoice, string][] = [
@@ -59,11 +59,11 @@ const COVERAGE: [CoverageCode, string][] = [
   ["none", "加入していない"],
   ["m300", "300万円"],
   ["m500", "500万円"],
-  ["m1000", "1000万円"],
-  ["m1500", "1500万円"],
-  ["m2000", "2000万円"],
-  ["m3000", "3000万円"],
-  ["m5000", "5000万円"],
+  ["m1000", "1,000万円"],
+  ["m1500", "1,500万円"],
+  ["m2000", "2,000万円"],
+  ["m3000", "3,000万円"],
+  ["m5000", "5,000万円"],
   ["gte10000", "1億円以上"],
   ["unknown", "分からない"],
 ];
@@ -88,6 +88,8 @@ const TOTAL = STEP_TITLES.length;
 function RadioGroup<T extends string>(props: {
   legend: string;
   note?: string;
+  /** 金額の選択肢のように短い項目が多いときは2列に並べる */
+  grid?: boolean;
   options: [T, string][];
   value: T | undefined;
   onChange: (v: T) => void;
@@ -98,7 +100,7 @@ function RadioGroup<T extends string>(props: {
     <fieldset className={s.field}>
       <legend className={s.legend}>{props.legend}</legend>
       {props.note ? <p className={s.note}>{props.note}</p> : null}
-      <div className={s.choices}>
+      <div className={props.grid ? `${s.choices} ${s.choicesGrid}` : s.choices}>
         {props.options.map(([val, label]) => (
           <label key={val} className={s.choice}>
             <input
@@ -370,7 +372,7 @@ export default function WizardPage() {
           {childCount !== undefined && childCount > 0 && (
             <RadioGroup
               legend="お子さんの進路の見通し"
-              note="教育費の目安に使います。決めていなければ「まだ決めていない」で大丈夫です（公立中心で仮に計算します）。"
+              note="教育費の目安に使います。未定なら「まだ決めていない」で、公立中心として計算します。"
               options={EDU_PLAN}
               value={sel.educationPlan}
               onChange={(v) => set({ educationPlan: v })}
@@ -448,7 +450,8 @@ export default function WizardPage() {
         <>
           <RadioGroup
             legend="あなたが亡くなったときに受け取れる死亡保険金（合計）"
-            note="いま入っている生命保険で、あなたを対象（被保険者）にしている保障額の合計です。分からなければ「分からない」で進めます。"
+            note="あなたが対象（被保険者）の生命保険の保障額の合計です。分からなければ「分からない」を選んでください。"
+            grid
             options={COVERAGE}
             value={sel.coverageSelf}
             onChange={(v) => set({ coverageSelf: v })}
@@ -456,15 +459,13 @@ export default function WizardPage() {
           {sel.hasSpouse && (
             <RadioGroup
               legend="配偶者が亡くなったときに受け取れる死亡保険金（合計）"
-              note="配偶者を対象（被保険者）にしている保障額の合計です。本人の分と混ぜないよう、分けてお聞きしています。"
+              note="配偶者が対象（被保険者）の保障額の合計です。あなたの分とは分けてお答えください。"
+              grid
               options={COVERAGE}
               value={sel.coverageSpouse}
               onChange={(v) => set({ coverageSpouse: v })}
             />
           )}
-          <p className={s.helper}>
-            保険証券の写真から自動で読み取る入力は準備中です。いまは金額を選んでお答えください。
-          </p>
         </>
       )}
 

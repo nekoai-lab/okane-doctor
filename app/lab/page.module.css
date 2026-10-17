@@ -51,7 +51,7 @@
 
 .sliderEnds { display: flex; justify-content: space-between; font-size: 12px; color: var(--color-text-secondary); }
 .buttonIncome { display: block; font-size: 12px; font-weight: 400; }
-.scenarioAmount { display: block; font-family: var(--mk-font-display); font-size: 16px; font-weight: 800; color: var(--color-primary); }
+.scenarioAmount { display: block; font-family: var(--mk-font-display); font-size: 18px; font-weight: 800; color: var(--color-primary); }
 
 .amountRange { white-space: normal; overflow-wrap: normal; word-break: normal; }
 .amountEnd { white-space: nowrap; }
@@ -99,3 +99,4 @@
 }
 /* 失敗の文は畳んだカードの見出しの下に出す（入力は畳む） */
 .wordsError { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: var(--color-text); }
+.lead { font-weight: 700; color: var(--color-text); }

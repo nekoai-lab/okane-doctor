@@ -223,7 +223,7 @@ T-01 算定エンジン ✅完了
 ## T-13 ─ 気づき通知(継続的な見直し)フェーズ2a
 
 **価値**：一回で終わる健康診断から、たまに見直したくなる主治医へ。範囲は保険のまま、継続性で価値を出す。
-設計 → [`docs/hackathon/2026-09-14_watch-notify-design.md`](hackathon/2026-09-14_watch-notify-design.md)
+設計 → [`docs/design-notes/2026-09-14_watch-notify-design.md`](design-notes/2026-09-14_watch-notify-design.md)
 
 - [x] 子の学齢の節目到達を判定する純粋関数(`src/watch/milestones.ts`)
 - [x] Watchストア(Firestore：`households` / `notice_log`)
