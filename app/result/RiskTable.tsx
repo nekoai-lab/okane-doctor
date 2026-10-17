@@ -15,7 +15,7 @@
  * **金額はここで作らない。** 受け取った文字列を描くだけ（CLAUDE.md「本番UIに金額をハードコードしない」）。
  */
 import Link from "next/link";
-import { RangeText } from "./AmountText.js";
+import { RangeText, WithAmounts } from "./AmountText.js";
 import { AxisBadge } from "./AxisBadge.js";
 import { Fold } from "./Fold.js";
 import {
@@ -138,15 +138,21 @@ export function RiskTable({
   caption,
   sharedSavingsText = null,
   countUnit = null,
+  unsupportedCount = 0,
   lead = null,
 }: {
   rows: RiskRow[];
   caption: string;
   /**
-   * 並べた行の数に添える語（「つのリスクを並べました（うち1つは未算定）」）。数は `rows.length`。
+   * 並べた行の数に添える語（「つのリスク」）。数は `rows.length`。
    * 旧「この診断で分かること」の箱から移した（範囲の説明はページ末尾の折りたたみへ・2026-10-17）
    */
   countUnit?: string | null;
+  /**
+   * 計算未対応で空欄の行の数。**文に埋めず、数字として立てる**（2026-10-17・PR #1 の UX レビュー2回目の直しを
+   * この置き場所に当てた）。「6つのリスクを並べました（うち1つは未算定）」の1文では数が文の中にあった
+   */
+  unsupportedCount?: number;
   /** 表の前に置く世帯ごとの案内（単身世帯の §6-10）。無ければ機能の1文 */
   lead?: string | null;
   /**
@@ -162,13 +168,33 @@ export function RiskTable({
       </h2>
       {/* 自称語（正直・安心など）を使わない。機能を書く（UIラベル規約・2026-10-17 §指摘） */}
       {countUnit && (
-        <p className={s.count}>
-          <span className={s.countNum}>{rows.length}</span>
-          <span className={s.countUnit}>{countUnit}</span>
+        <p
+          className={s.count}
+          data-risk-shown={rows.length}
+          data-risk-unsupported={unsupportedCount}
+        >
+          <span className={s.countStat}>
+            <span className={s.countNum}>{rows.length}</span>
+            <span className={s.countUnit}>{countUnit}</span>
+          </span>
+          {unsupportedCount > 0 && (
+            <span className={s.countStat}>
+              <span className={s.countUnit}>うち未算定</span>
+              <span className={s.countSubNum}>{unsupportedCount}</span>
+              <span className={s.countUnit}>つ</span>
+            </span>
+          )}
         </p>
       )}
       <p className={s.lead}>{lead ?? "死亡・病気・失業を、同じ表で並べて見ています。"}</p>
       <p className={s.caption}>{caption}</p>
+      {/*
+        **尺度がカードごとに違うことを、畳まずに言う**（2026-10-17・UX レビュー2回目・任意）。
+        「この表の読み方」の中にしか書いておらず、カードどうしで棒の長さを比べる誤読を招いていた。
+      */}
+      <p className={s.scaleNote}>
+        図の目盛りはカードごとに違います。棒の長さはカードどうしで比べず、カードの中で帯と縦線の位置を見てください。
+      </p>
 
       <ul className={s.list}>
         {rows.map((r) => (
@@ -207,7 +233,11 @@ export function RiskTable({
               レンジのすぐ下に出す。**畳まない** ── 判定が動きうるという事実を、
               開いてもらって初めて見える場所に置かない
             */}
-            {r.crossingNote ? <p className={s.crossing}>{r.crossingNote}</p> : null}
+            {r.crossingNote ? (
+              <p className={s.crossing}>
+                <WithAmounts text={r.crossingNote} />
+              </p>
+            ) : null}
 
             {/* (a) 図の視覚アンカー。判定が文章ではなく位置関係で読める */}
             {r.scale ? (
@@ -233,12 +263,13 @@ export function RiskTable({
 
             <div className={s.cardFoot}>
               <span className={`${s.precision} ${s[r.precisionTone]}`}>{r.precisionLabel}</span>
-              {"href" in r.link ? (
-                <Link className={s.link} href={r.link.href}>
-                  {r.link.label}
-                </Link>
-              ) : null
-              /* 準備中の導線は出さない（押せない機能を見せない・2026-10-17 UX レビュー §指摘） */
+              {
+                "href" in r.link ? (
+                  <Link className={s.link} href={r.link.href}>
+                    {r.link.label}
+                  </Link>
+                ) : null
+                /* 準備中の導線は出さない（押せない機能を見せない・2026-10-17 UX レビュー §指摘） */
               }
             </div>
           </li>
@@ -279,30 +310,30 @@ export function RiskTable({
       */}
       <div className={s.legendFold}>
         <Fold count="（3点）" label="この表の読み方">
-        <dl className={s.legend}>
-          <dt>過不足の判定</dt>
-          <dd>
-            <span className={`${s.badge} ${s.ok}`}>大丈夫のめやす</span>
-            <span className={`${s.badge} ${s.check}`}>圏内・要精査</span>
-            <span className={`${s.badge} ${s.short}`}>備え不足の可能性</span>
-            <span className={`${s.badge} ${s.none}`}>未診断</span>
-          </dd>
-          <dt>図の読み方</dt>
-          <dd className={s.legendText}>
-            <span className={s.swatchBand} />
-            帯が必要額の幅（幅が無いときは
-            <span className={s.swatchTick} />
-            の目盛り）、
-            <span className={s.swatchHold} />
-            縦線がいまの受け皿（保障・貯蓄）です。<strong>カードごとに目盛りが違います</strong>
-            ──左端は0円、右端は必要額と受け皿の大きいほうです。
-          </dd>
-          <dt>精度</dt>
-          <dd className={s.legendText}>
-            「計算済み」はあなたの回答からの試算、「制度式で概算」は公的制度の計算式どおりの概算、
-            「計算未対応」は正直な空欄です。
-          </dd>
-        </dl>
+          <dl className={s.legend}>
+            <dt>過不足の判定</dt>
+            <dd>
+              <span className={`${s.badge} ${s.ok}`}>大丈夫のめやす</span>
+              <span className={`${s.badge} ${s.check}`}>圏内・要精査</span>
+              <span className={`${s.badge} ${s.short}`}>備え不足の可能性</span>
+              <span className={`${s.badge} ${s.none}`}>未診断</span>
+            </dd>
+            <dt>図の読み方</dt>
+            <dd className={s.legendText}>
+              <span className={s.swatchBand} />
+              帯が必要額の幅（幅が無いときは
+              <span className={s.swatchTick} />
+              の目盛り）、
+              <span className={s.swatchHold} />
+              縦線がいまの受け皿（保障・貯蓄）です。<strong>カードごとに目盛りが違います</strong>
+              ──左端は0円、右端は必要額と受け皿の大きいほうです。
+            </dd>
+            <dt>精度</dt>
+            <dd className={s.legendText}>
+              「計算済み」はあなたの回答からの試算、「制度式で概算」は公的制度の計算式どおりの概算、
+              「計算未対応」は正直な空欄です。
+            </dd>
+          </dl>
         </Fold>
       </div>
     </section>

@@ -814,7 +814,8 @@ export default async function ResultPage({
       key: `death-${who}`,
       title: `死亡（${who}）`,
       // 配偶者も子もいない世帯に「遺されたご家族」と書かない（UX レビュー §指摘・2026-10-17）
-      subtitle: input.spouse || input.children.length > 0 ? "遺されたご家族の生活" : "葬儀・身の回りの整理",
+      subtitle:
+        input.spouse || input.children.length > 0 ? "遺されたご家族の生活" : "葬儀・身の回りの整理",
       tone: v === "pending" ? "none" : TONE[v],
       verdictLabel: DEATH_LABEL[v],
       precisionLabel: "計算済み",
@@ -944,9 +945,7 @@ export default async function ResultPage({
 
   const riskRows: RiskRow[] = [
     deathRow("本人", result.self, input.coverageSelf, bandSelf),
-    ...(result.spouse
-      ? [deathRow("配偶者", result.spouse, input.coverageSpouse, bandSpouse)]
-      : []),
+    ...(result.spouse ? [deathRow("配偶者", result.spouse, input.coverageSpouse, bandSpouse)] : []),
     savingsRow(
       "sick_short",
       "病気・けが（短期）",
@@ -971,7 +970,7 @@ export default async function ResultPage({
     ),
   ];
 
-  /** 計算未対応で空欄の行の数（「◯つのリスクを並べました（うち◯つは未算定）」） */
+  /** 計算未対応で空欄の行の数（「◯つのリスク／うち未算定◯つ」） */
   const unsupportedCount = riskRows.filter((r) => r.precisionTone === "unsupported").length;
 
   // 進路 what-if（子がいる世帯だけ）：公立/私立で必要額（あなた）がどう変わるか
@@ -1021,7 +1020,6 @@ export default async function ResultPage({
     }
     return null;
   })();
-
 
   /**
    * 使った前提と出典（照合表 #9）。**ラベルとURLは `params` から取る。**
@@ -1131,17 +1129,15 @@ export default async function ResultPage({
         premiseFmt={(yen) => formatManApprox(yen, roundUnit)}
         reason={conclusionReason(figures)}
         reviewYear={watchYear}
+        bookmarkHint={!SAVE_ENABLED}
         rows={rows}
       />
 
       {/* 根拠 1：リスク別健康診断表（仕様 §5.3） */}
       <RiskTable
         caption={caption}
-        countUnit={
-          unsupportedCount > 0
-            ? `つのリスクを並べました（うち${unsupportedCount}つは未算定）`
-            : "つのリスクを診ました"
-        }
+        countUnit={unsupportedCount > 0 ? "つのリスク" : "つのリスクを診断"}
+        unsupportedCount={unsupportedCount}
         lead={soloLead}
         rows={riskRows}
         // 貯蓄で受ける行（制度式で概算）があるときだけ、その共通の受け皿の額を注記に立てる
@@ -1337,8 +1333,7 @@ export default async function ResultPage({
               <li>誰が被保険者か（本人／配偶者）</li>
             </ul>
             <p className={s.basis}>
-              ※
-              具体的な商品名・会社名・ランキングは出しません。どうするかを決めるのは、ご本人です。
+              ※ 具体的な商品名・会社名・ランキングは出しません。どうするかを決めるのは、ご本人です。
             </p>
           </Fold>
         )}

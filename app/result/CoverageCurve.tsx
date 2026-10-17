@@ -15,6 +15,7 @@
  *   水平線で描く。実際には定期が切れると階段状に下がる。ここは入力を増やす判断が要る
  */
 import type { CoveragePoint } from "../../src/calc/projection.js";
+import { RangeText } from "./AmountText.js";
 import { formatMan } from "../../src/design/tokens.js";
 import { ChartFrame, plotBottom, plotTop, xAt, yAt } from "./ChartFrame.js";
 import { linearScale } from "./chartScale.js";
@@ -47,8 +48,11 @@ export function CoverageCurve({
   if (maxNeed <= 0) {
     return (
       <div className={s.reduce}>
-        <strong>答えた区分の代表値で見ると、この先ずっと収入と資産で支出をまかなえる見込みです。</strong>{" "}
-        保障の必要額（幅）が {needRangeText} なのは、万一の直後に要るお金（葬儀・予備費など）と、答えた区分の上下端での計算を含めているためです。
+        <strong>
+          答えた区分の代表値で見ると、この先ずっと収入と資産で支出をまかなえる見込みです。
+        </strong>{" "}
+        保障の必要額（幅）が <RangeText text={needRangeText} />{" "}
+        なのは、万一の直後に要るお金（葬儀・予備費など）と、答えた区分の上下端での計算を含めているためです。
         <p className={s.basis}>
           {/* 「見ていません」で閉じない。外れたら結果がどちらへ動くかまで言う（§6-6・開示の規約） */}
           ※ 葬儀などの費用は、上の「目安」に入っています。
@@ -139,9 +143,12 @@ export function CoverageCurve({
 
       <ul className={s.cfPoints}>
         <li>
-          いまの時点で足りなくなる額は <strong>{fmt(points[0].need)}</strong>
+          いまの時点で足りなくなる額は{" "}
+          <strong>
+            <RangeText text={fmt(points[0].need)} />
+          </strong>
           {points[0].survivorAge !== null ? `（配偶者${points[0].survivorAge}歳の時点）` : ""}
-          。代表値1点で引いた差額で、保障の必要額（幅）は {needRangeText} です
+          。代表値1点で引いた差額で、保障の必要額（幅）は <RangeText text={needRangeText} /> です
         </li>
         {/* 「下がる」と決め打ちしない。年によっては必要額が上がることもあり得るので、
             実際の値を比べてから書く（事実と違う言い方をしない） */}
@@ -157,7 +164,11 @@ export function CoverageCurve({
                   : "で変わらない見込み";
             return (
               <>
-                {label}には <strong>{fmt(points[i].need)}</strong> {dir}
+                {label}には{" "}
+                <strong>
+                  <RangeText text={fmt(points[i].need)} />
+                </strong>{" "}
+                {dir}
               </>
             );
           })()}

@@ -16,6 +16,7 @@
  * **数値はここで作らない。** 呼び出し側が回答から作った文字列を描くだけ。
  */
 import Link from "next/link";
+import { WithAmounts } from "./AmountText.js";
 import s from "./step1.module.css";
 
 /**
@@ -126,7 +127,9 @@ export function Step1({ chips, estimations, terms, editHref }: Step1Props) {
               {items.map((c) => (
                 <li className={`${s.chip} ${c.wide ? s.chipWide : ""}`} key={c.key}>
                   <span className={s.chipKey}>{c.key}</span>
-                  <span className={s.chipValue}>{c.value}</span>
+                  <span className={s.chipValue}>
+                    <WithAmounts text={c.value} />
+                  </span>
                 </li>
               ))}
             </ul>
@@ -155,8 +158,12 @@ export function Step1({ chips, estimations, terms, editHref }: Step1Props) {
           <p className={s.estimatesHead}>推定で補った項目（{estimations.length}件）</p>
           {estimations.map((e) => (
             <div className={s.estimate} key={e.field}>
-              <p className={s.estimateName}>{chipTextOf(e.field) ?? e.label}</p>
-              <p className={s.estimateNote}>{e.note}</p>
+              <p className={s.estimateName}>
+                <WithAmounts text={chipTextOf(e.field) ?? e.label} />
+              </p>
+              <p className={s.estimateNote}>
+                <WithAmounts text={e.note} />
+              </p>
             </div>
           ))}
           {/*
@@ -169,7 +176,7 @@ export function Step1({ chips, estimations, terms, editHref }: Step1Props) {
             幅仮置き（D-01 の完全実装）は `docs/TICKETS.md` の T-H に起票した。
           */}
           <p className={s.estimatesFoot}>
-            未回答の項目と、答えどおりでは置けない前提（答えた年収0円のときの就労など）は、当社基準の仮置き額で計算し、仮置きであることをここに残します。
+            <WithAmounts text="未回答の項目と、答えどおりでは置けない前提（答えた年収0円のときの就労など）は、当社基準の仮置き額で計算し、仮置きであることをここに残します。" />
           </p>
         </div>
       )}

@@ -181,6 +181,7 @@ export function Conclusion({
   fmt,
   nextStep,
   reviewYear,
+  bookmarkHint,
   premise,
   premiseFmt,
 }: {
@@ -199,6 +200,8 @@ export function Conclusion({
   nextStep: string;
   /** 次の見直しのめやす（段差チャートと同じ `projectDeath` の節目）。無ければ null */
   reviewYear: number | null;
+  /** 見返す方法（ブックマーク）をここで言うか。お知らせ（保存）が動いているときは、その導線のカードが言う */
+  bookmarkHint: boolean;
   premise: KeyPremise | null;
   /** 前提の図の金額の書式（内訳と同じ丸め単位） */
   premiseFmt: (yen: number) => string;
@@ -217,9 +220,14 @@ export function Conclusion({
           </AxisBadge>
         </div>
         <h1 className={s.head} id="hero-head">
-          {headline}
+          {/* 見出し・文の中の金額も数字の途中で折らない（PR #1 の UX レビュー2回目の直しをこの置き場所に当てた） */}
+          <WithAmounts text={headline} />
         </h1>
-        {reason && <p className={s.note}>{reason}</p>}
+        {reason && (
+          <p className={s.note}>
+            <WithAmounts text={reason} />
+          </p>
+        )}
         {partialNote && (
           <p className={s.note}>
             <WithAmounts text={partialNote} />
@@ -253,7 +261,11 @@ export function Conclusion({
 
         <PeopleLine fmt={fmt} rows={rows} />
 
-        {noReducible && <p className={s.note}>{noReducible}</p>}
+        {noReducible && (
+          <p className={s.note}>
+            <WithAmounts text={noReducible} />
+          </p>
+        )}
         <p className={s.mode}>暮らし方の前提：{modeText}（下の根拠で変えられます）</p>
       </section>
 
@@ -262,11 +274,22 @@ export function Conclusion({
         <h2 className={s.h2} id="next-step">
           次の一歩
         </h2>
-        <p className={s.step}>{nextStep}</p>
+        <p className={s.step}>
+          <WithAmounts text={nextStep} />
+        </p>
         {reviewYear !== null && (
           <p className={s.review}>
             <span className={s.subLabel}>次の見直しのめやす</span>
             <span className={s.reviewValue}>{reviewYear}年ごろ</span>
+          </p>
+        )}
+        {/*
+          **いま使えるもの（ブックマークと見直す時期）を言う**（PR #1 の UX レビュー2回目「お知らせの説明」を
+          この置き場所に当てた）。お知らせが止まっているあいだは準備中の導線を出さないので、見返す方法はここで1回だけ言う
+        */}
+        {bookmarkHint && reviewYear !== null && (
+          <p className={s.small}>
+            このページのURLをブックマークすると、その頃に見返して答え直せます。
           </p>
         )}
         <p className={s.small}>このサービスは特定の商品を勧めたり、申込みへ誘導したりしません。</p>
