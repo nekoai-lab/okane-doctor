@@ -37,6 +37,7 @@ import {
   heroNeedQualifier,
   heroTotalLabel,
   rebalanceNote,
+  gapHeadline,
 } from "./figureText.js";
 import { SoloCase } from "./SoloCase.js";
 import { HERO_BADGE, HERO_TONE, Hero } from "./Hero.js";
@@ -391,9 +392,17 @@ function CaseCard({
           （death.ts の sufficient 分岐）。同じ名前で呼ぶと、グラフと結論が矛盾して見える。
           **呼び名はレンジ全体の必要額の判定（`rangeVerdict`）で選ぶ。** `r.range` は回答の幅で包絡した額なので、
           代表値の判定（`r.verdict`）で呼ぶと、不足分を含む幅を「葬儀・予備費」と呼んでしまう（2026-10-17・QA） */}
+      {/*
+        **呼び名の下に金額を立てる**（2026-10-17・UX レビュー2回目）。
+        「足りない保障額の目安：約6,200万〜1億600万円」を1つの見出し文にしていたため、
+        390px で「〜1」／「億600万円」と数字の途中で割れ、金額も文の中に埋まっていた。
+        呼び名と金額を別の行にし、金額は下端・上端それぞれを分割不可にする。
+      */}
       <div className={s.amount}>
-        {AMOUNT_LABEL[rangeKey] ?? AMOUNT_LABEL.sufficient}：
-        {formatRange(r.range.low, r.range.high)}
+        <p className={s.amountLabel}>{AMOUNT_LABEL[rangeKey] ?? AMOUNT_LABEL.sufficient}</p>
+        <p className={s.amountValue}>
+          <RangeText text={formatRange(r.range.low, r.range.high)} />
+        </p>
       </div>
       <p className={s.basis}>{AMOUNT_NOTE[rangeKey] ?? AMOUNT_NOTE.sufficient}</p>
 
@@ -1175,21 +1184,37 @@ export default async function ResultPage({
             「診ました」は全行を評価し終えたように読めるが、計算未対応の行は正直な空欄で、
             過不足の判定（過不足軸）も出していない。数は診断表の行（`precisionTone`）から数える。
           */}
-          <p className={s.scopeCount}>
-            <span className={s.scopeNum}>{riskRows.length}</span>
-            <span className={s.scopeUnit}>
-              {unsupportedCount > 0
-                ? `つのリスクを並べました（うち${unsupportedCount}つは未算定）`
-                : "つのリスクを診ました"}
+          {/*
+            **数を文に埋めない**（2026-10-17・UX レビュー2回目）。
+            「6つのリスクを並べました（うち1つは未算定）」の1文では、数が文の中にあり、
+            この画面に図も独立した数字も無かった。並べた数と未算定の数を、それぞれ数字として立てる。
+          */}
+          <p
+            className={s.scopeCount}
+            data-risk-shown={riskRows.length}
+            data-risk-unsupported={unsupportedCount}
+          >
+            <span className={s.scopeStat}>
+              <span className={s.scopeNum}>{riskRows.length}</span>
+              <span className={s.scopeUnit}>
+                {unsupportedCount > 0 ? "つのリスク" : "つのリスクを診断"}
+              </span>
             </span>
+            {unsupportedCount > 0 && (
+              <span className={s.scopeStat}>
+                <span className={s.scopeUnit}>うち未算定</span>
+                <span className={s.scopeNum}>{unsupportedCount}</span>
+                <span className={s.scopeUnit}>つ</span>
+              </span>
+            )}
           </p>
           <p>
-            <strong>この診断で分かること：</strong>{" "}
-            あなたに万一のとき、遺されたご家族の生活・教育・住まいに必要なお金と、いまの保険との過不足の目安です。
+            <strong>分かること：</strong>
+            万一のとき、遺されたご家族に必要なお金と、いまの保険との過不足の目安です。
           </p>
           <p>
-            <strong>この診断で分からないこと（扱いません）：</strong>{" "}
-            家計全体の最適化、就業不能・介護・学資などの個別の備え、具体的な保険商品の良し悪し。ここは線を引いています。
+            <strong>扱わないこと：</strong>
+            家計全体の最適化、就業不能・介護・学資などの個別の備え、保険商品の良し悪し。
           </p>
         </div>
       </div>
@@ -1209,7 +1234,7 @@ export default async function ResultPage({
         {reducibleText && heroShowsReducible ? null : reducibleText ? (
           <div className={s.reduce}>
             {/* **既にある金額を、あるべき声量にする**（DoD (b) の組版を (a) の解に使う） */}
-            <strong>減らせそうな箇所：</strong> {reducibleText}
+            <strong>減らせそうな箇所：</strong> <WithAmounts text={reducibleText} />
             保険料が浮くのは良い知らせです（いまの前提では）。
           </div>
         ) : (
@@ -1288,9 +1313,19 @@ export default async function ResultPage({
                   別の話なので、つなげると「十分に足りています／約200万円 足りていません」のような
                   矛盾した1行になる（実際になった）。要約では行動につながる過不足を優先し、
                   過不足が出ていないときだけ判定を出す。両方の意味は開けば書いてある。 */}
-              <span className={s.spouseSummaryVerdict}>
-                {figures.spouse ? <WithAmounts text={gapSentence(figures.spouse)} /> : null}
-              </span>
+              {/* 差額があるときは呼び名と金額に分け、金額を立てる（UX レビュー2回目） */}
+              {figures.spouse && gapHeadline(figures.spouse) ? (
+                <span className={s.spouseSummaryHead}>
+                  <span className={s.spouseSummaryLabel}>{gapHeadline(figures.spouse)?.label}</span>
+                  <span className={s.spouseSummaryAmount}>
+                    <RangeText text={gapHeadline(figures.spouse)?.amount ?? ""} />
+                  </span>
+                </span>
+              ) : (
+                <span className={s.spouseSummaryVerdict}>
+                  {figures.spouse ? <WithAmounts text={gapSentence(figures.spouse)} /> : null}
+                </span>
+              )}
             </summary>
             <CaseCard
               childCount={input.children.length}
@@ -1404,7 +1439,7 @@ export default async function ResultPage({
           self: input.self.employment,
           spouse: input.spouse?.employment ?? null,
         }).map((line) => (
-          <p className={s.meta} key={line}>
+          <p className={s.nextLine} key={line}>
             <WithAmounts text={line} />
           </p>
         ))}
@@ -1425,9 +1460,19 @@ export default async function ResultPage({
           </Fold>
         )}
 
+        {/*
+          **ページ末尾の「文面はサンプル」の枠をここへ統合した**（2026-10-17・UX レビュー2回目）。
+          同じ断り書きが、ここと最下部の点線枠の2か所にあった。断り書きは対象（次の一歩・選ぶ基準）の
+          すぐ下に1回だけ置き、「入力をやり直す」も行動の案内のそばに置く。
+        */}
         <p className={s.basis}>
           ※ このサービスは特定の商品を勧めたり、申込みへ誘導したりしません（制度・一般情報の提供）。
-          次の一歩の案内は専門家レビュー前のサンプルです。
+          次の一歩・選ぶ基準の文面は、保険業法の正式な弁護士レビュー（OI-01）後に確定します（現在はサンプル）。
+        </p>
+        <p className={s.meta}>
+          <Link className={s.link} href={`/wizard?${q.toString()}`}>
+            入力をやり直す
+          </Link>
         </p>
       </div>
 
@@ -1445,7 +1490,14 @@ export default async function ResultPage({
           <p className={s.narrationSummary}>
             <span className={s.narrationStat}>
               <span className={s.narrationStatLabel}>
-                {watchYear === null ? "お知らせが対象にする期間" : "次にお知らせが要りそうな時期"}
+                {/* お知らせが止まっているあいだは、いま使える「見返す時期」として名乗る（UX レビュー2回目） */}
+                {watchYear === null
+                  ? SAVE_ENABLED
+                    ? "お知らせが対象にする期間"
+                    : "この結果が見ている期間"
+                  : SAVE_ENABLED
+                    ? "次にお知らせが要りそうな時期"
+                    : "次に見直すとよさそうな時期"}
               </span>
               <span className={s.narrationStatValue}>
                 {watchYear === null
@@ -1469,9 +1521,15 @@ export default async function ResultPage({
             </Link>
           </>
         ) : (
-          <p className={s.watchLead}>お知らせを受け取る機能は、いま準備中です。</p>
+          // **いま使えるもの（ブックマークと見直す時期）を先に言う**（2026-10-17・UX レビュー2回目）。
+          // 準備中の機能の説明は括弧の1句にとどめる
+          <p className={s.watchLead}>
+            このページのURLをブックマークすると、その頃に見返して答え直せます（お知らせ機能は準備中）。
+          </p>
         )}
-        <p className={s.basis}>※ 保存しなくても、この結果はURLをブックマークすれば見返せます。</p>
+        {SAVE_ENABLED && (
+          <p className={s.basis}>※ 保存しなくても、この結果はURLをブックマークすれば見返せます。</p>
+        )}
       </div>
 
       {/*
@@ -1492,6 +1550,14 @@ export default async function ResultPage({
       */}
       {/* **参照材なので畳む**（視覚の DoD (a)）。在庫であることが要点なので件数を露出に出す */}
       <div className={s.section}>
+        {/*
+          **件数を独立した数字として立てる**（2026-10-17・UX レビュー2回目）。
+          公的な出典の数（上）と並べて、結果がどれだけ当社の見立てに乗っているかを数で見せる。
+        */}
+        <p className={s.countLine}>
+          <span className={s.countNum}>{Object.keys(params.ownStandard).length}</span>
+          <span className={s.countUnit}>件の当社基準</span>
+        </p>
         <Fold
           count={`（全${Object.keys(params.ownStandard).length}件）`}
           label="当社基準（公的出典のない当社の見立て）"
@@ -1510,14 +1576,6 @@ export default async function ResultPage({
             })}
           </ul>
         </Fold>
-      </div>
-
-      <div className={s.draftNote}>
-        次の一歩・選ぶ基準の文面は、保険業法の正式な弁護士レビュー（OI-01）後に確定します（現在はサンプル）。
-        <br />
-        <Link className={s.link} href={`/wizard?${q.toString()}`}>
-          入力をやり直す
-        </Link>
       </div>
 
       {/*

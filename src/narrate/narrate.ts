@@ -137,7 +137,7 @@ export function narrateStub(d: HouseholdDiagnosis): string {
     case "reducible":
       return `いまの前提では、{{conclusion}}。${range}。世帯全体で見ると、いまの保険は {{gapAmount}} ほど減らせる余地がありそうで、保険料が浮くのは良い知らせです。`;
     case "rebalanceable":
-      return `いまの前提では、{{conclusion}}。${range}。ご夫婦のどちらかが多め・どちらかが少なめなので、世帯全体で見ると合計の保険料を増やさずに整えられそうです。`;
+      return `いまの前提では、{{conclusion}}。${range}。ご夫婦のどちらかが多め・どちらかが少なめなので、世帯全体で、合計の保険料も確認しながら備え方を検討できます。`;
     case "uncertain":
       // 圏内：多い・少ないを言い切らない（G-4 に触れる「足りない」も使わない）
       return `いまの前提では、${range}。{{conclusion}}。答えた区分の幅や推定で補った項目がはっきりすると、判定も定まります。`;

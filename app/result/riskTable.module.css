@@ -43,6 +43,14 @@
   line-height: 1.6;
 }
 
+/* 尺度がカードごとに違うことの注記（畳まない）。本文より一段小さく */
+.scaleNote {
+  font-size: 13px;
+  color: var(--mk-muted-2);
+  line-height: 1.7;
+  margin: 0 0 var(--space-4);
+}
+
 .list {
   list-style: none;
   padding: 0;
@@ -181,6 +189,11 @@
   font-size: 11px;
   color: var(--mk-muted);
   margin-top: 3px;
+}
+
+/* 目盛りの値は1語。数字の途中で折らない（2026-10-17・UX レビュー2回目） */
+.scaleTicks span {
+  white-space: nowrap;
 }
 
 /* 計算未対応でも枠は見せる。空いている場所があることを図でも伝える */
