@@ -15,6 +15,7 @@
  * - 描画ライブラリは足さない
  */
 import type { ReactNode } from "react";
+import { WithAmounts } from "./AmountText.js";
 import type { Scale } from "./chartScale.js";
 import s from "./page.module.css";
 
@@ -159,7 +160,7 @@ export function ChartFrame({
               className={it.line ? s.chartLegendLine : s.chartLegendChip}
               style={{ background: it.color }}
             />
-            {it.label}
+            <WithAmounts text={it.label} />
           </li>
         ))}
       </ul>

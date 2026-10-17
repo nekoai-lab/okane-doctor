@@ -86,6 +86,22 @@ export function gapSentence(x: DeathFigures): string {
 }
 
 /**
+ * 畳んだケースの要約に出す「呼び名＋差額」（2026-10-17・UX レビュー2回目）。
+ *
+ * 要約を「いまの保障より、約400〜8,600万円 足りていません。」の1文にしていたため、
+ * 金額が文の中に埋まり、その画面に図も独立した数字も無かった。呼び名と金額を分けて返し、
+ * 金額は画面で大きく立てる。差額を言わない判定（圏内・保留）では null（`gapSentence` の文を出す）。
+ * 判定は過不足の判定（過不足軸）。金額は `gapSentence` と同じ `x.gap` から取る。
+ */
+export function gapHeadline(x: DeathFigures): { label: string; amount: string } | null {
+  if (x.verdict === "shortage")
+    return { label: "いまの保障より足りない額", amount: formatRange(x.gap.low, x.gap.high) };
+  if (x.verdict === "reducible")
+    return { label: "いまの保障から減らせそうな額", amount: formatRange(x.gap.low, x.gap.high) };
+  return null;
+}
+
+/**
  * STEP3 の最終行に添える1文。**棒は代表値の内訳、最終行は答えの幅まで広げたレンジ**であることを言う。
  * 言わないと、棒の引き算（代表値）と最終行（幅）が合わないように見える。幅が代表値と同じなら出さない。
  */

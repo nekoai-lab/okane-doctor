@@ -39,9 +39,17 @@ export function UsedSources({ items, note }: { items: UsedSource[]; note: string
         畳んだ中が完全な記録であることは変わらないので、**約束の言い換えであって後退ではない**。
         件数を出すのは開示の規約（数の無い「すべて見る」は隠蔽に近い）。
       */}
+      {/*
+        **件数を文に埋めない**（2026-10-17・UX レビュー2回目）。見出しは名前だけにし、
+        件数は独立した数字として立てる（約束「ここに残しています」は件数の呼び名に移した）。
+      */}
       <h2 className={s.head} id="sources-heading">
-        使った前提と出典 — 全<span className={s.count}>{items.length}</span>件をここに残しています
+        使った前提と出典
       </h2>
+      <p className={s.countLine}>
+        <span className={s.count}>{items.length}</span>
+        <span className={s.countUnit}>件の出典</span>
+      </p>
       {/* 参照材なので畳む（視覚の DoD (a)）。露出は件数を含む見出しだけ */}
       <Fold count={`（全${items.length}件）`} label="出典を見る">
         <ul className={s.chips}>

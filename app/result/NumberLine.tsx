@@ -10,6 +10,7 @@
  *
  * **金額はここで作らない。** 受け取った額を描くだけ。
  */
+import { RangeText, WithAmounts } from "./AmountText.js";
 import { VERDICT_AXIS } from "./verdictLabels.js";
 import type { DecisionPoint } from "../../src/calc/decisionPoints.js";
 import s from "./numberLine.module.css";
@@ -35,6 +36,31 @@ function ticksFor(max: number): number[] {
   return out;
 }
 
+/**
+ * **文字を付ける目盛りは4つまで**（2026-10-17・UX レビュー2回目）。
+ *
+ * 390px では線の幅がおよそ 290px で、「10,000万」級の文字は1つ 45px ほどある。
+ * 7本すべてに文字を付けると隣どうしが重なり、必要額と現在額の位置関係が読めなかった。
+ * 目盛りの線は全部残し、文字は 0 から等間隔に間引く。
+ */
+export const MAX_TICK_LABELS = 4;
+export function labeledTicks(ticks: number[]): Set<number> {
+  const n = ticks.length;
+  if (n <= MAX_TICK_LABELS) return new Set(ticks);
+  // 0 から等間隔に、文字が4つ以下になる最小の間隔
+  const every = Math.ceil((n - 1) / (MAX_TICK_LABELS - 1));
+  return new Set(ticks.filter((_, i) => i % every === 0));
+}
+
+/** 目盛りの文字。1億以上は「億」で書く（「12,000万」ではなく「1.2億」） */
+export function tickText(v: number): string {
+  if (v === 0) return "0";
+  const man = v / MAN;
+  if (man >= 10_000)
+    return `${(man / 10_000).toLocaleString("ja-JP", { maximumFractionDigits: 1 })}億`;
+  return `${man.toLocaleString("ja-JP")}万`;
+}
+
 export function NumberLine({ need, coverage, fmt, verdict, points }: NumberLineProps) {
   const top = Math.max(need.high, coverage ?? 0);
   const step = top > 5000 * MAN ? 2000 * MAN : 1000 * MAN;
@@ -47,6 +73,7 @@ export function NumberLine({ need, coverage, fmt, verdict, points }: NumberLineP
   const max = Math.ceil((top + 1) / step) * step;
   const pct = (v: number) => 4 + (v / max) * 92;
   const ticks = ticksFor(max);
+  const labeled = labeledTicks(ticks);
 
   return (
     <div className={s.wrap}>
@@ -66,9 +93,11 @@ export function NumberLine({ need, coverage, fmt, verdict, points }: NumberLineP
           {ticks.map((v) => (
             <g key={v}>
               <line className={s.tick} x1={`${pct(v)}%`} x2={`${pct(v)}%`} y1="46" y2="53" />
-              <text className={s.tickText} x={`${pct(v)}%`} y="66" textAnchor="middle">
-                {v === 0 ? "0" : `${(v / MAN).toLocaleString("ja-JP")}万`}
-              </text>
+              {labeled.has(v) && (
+                <text className={s.tickText} x={`${pct(v)}%`} y="66" textAnchor="middle">
+                  {tickText(v)}
+                </text>
+              )}
             </g>
           ))}
 
@@ -105,10 +134,12 @@ export function NumberLine({ need, coverage, fmt, verdict, points }: NumberLineP
         <div className={s.marks}>
           <span className={s.markNeed}>
             必要額のめやす{" "}
-            {need.low === need.high ? fmt(need.low) : `${fmt(need.low)}〜${fmt(need.high)}`}
+            <RangeText
+              text={need.low === need.high ? fmt(need.low) : `${fmt(need.low)}〜${fmt(need.high)}`}
+            />
           </span>
           <span className={s.markCov}>
-            いまの保障 {coverage === null ? "未入力" : fmt(coverage)}
+            いまの保障 <RangeText text={coverage === null ? "未入力" : fmt(coverage)} />
           </span>
         </div>
       </div>
@@ -134,8 +165,12 @@ export function NumberLine({ need, coverage, fmt, verdict, points }: NumberLineP
             <li className={s.point} key={p.label}>
               <span className={s.pointNum}>{i + 1}</span>
               <div>
-                <p className={s.pointLabel}>{p.label}</p>
-                <p className={s.pointBody}>{p.body}</p>
+                <p className={s.pointLabel}>
+                  <WithAmounts text={p.label} />
+                </p>
+                <p className={s.pointBody}>
+                  <WithAmounts text={p.body} />
+                </p>
               </div>
             </li>
           ))}
