@@ -88,4 +88,29 @@ describe("POST /api/lab/words", () => {
     expect(res.status).toBe(503);
     expect(warn.mock.calls.flat().join(" ")).not.toContain("秘密の言葉");
   });
+
+  it("AI の応答が言葉を引用していても、ログには理由コードとステータスしか残らない", async () => {
+    vi.stubEnv("GEMINI_API_KEY", FAKE_KEY);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    // エラー本文が言葉を引用する
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("bad request: 山田花子 乳がん", { status: 400 })),
+    );
+    expect((await post({ query: BASE, text: "山田花子 乳がん" })).status).toBe(503);
+    // 返答が JSON として壊れていて、その断片が言葉を引用する
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json({
+          candidates: [{ content: { parts: [{ text: '{"kind":"山田花子 乳がん' }] } }],
+        }),
+      ),
+    );
+    expect((await post({ query: BASE, text: "山田花子 乳がん" })).status).toBe(503);
+    const logged = warn.mock.calls.flat().join("\n");
+    expect(logged).not.toContain("山田花子");
+    expect(logged).not.toContain("乳がん");
+    expect(logged).toBe("[lab-words] api_error HTTP 400\n[lab-words] bad_json");
+  });
 });

@@ -87,9 +87,16 @@ export async function POST(req: Request): Promise<Response> {
     });
     return Response.json(interpretLabWords(raw, ctx), { headers: { "cache-control": "no-store" } });
   } catch (e) {
-    // 言葉はログに出さない。理由だけ残す
-    const reason = abort.signal.aborted ? "timeout" : "api_error";
-    console.warn(`[lab-words] ${reason}: ${e instanceof Error ? e.message.slice(0, 200) : ""}`);
+    // 言葉はログに出さない。例外の message は外部の応答本文や返答の断片を含み、そこに利用者の言葉が
+    // 引用されうるので書かない（2026-10-17 QA）。残すのは固定の理由コードと HTTP ステータスだけ
+    const reason = abort.signal.aborted
+      ? "timeout"
+      : e instanceof SyntaxError
+        ? "bad_json"
+        : "api_error";
+    const status =
+      e instanceof Error ? /^Gemini API エラー: HTTP (\d{3}) /.exec(e.message)?.[1] : undefined;
+    console.warn(`[lab-words] ${reason}${status ? ` HTTP ${status}` : ""}`);
     return Response.json({ error: "ai_unavailable" }, { status: 503 });
   } finally {
     clearTimeout(timer);
