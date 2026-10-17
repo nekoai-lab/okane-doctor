@@ -17,8 +17,8 @@
  */
 import { RangeText, WithAmounts } from "./AmountText.js";
 import { AxisBadge } from "./AxisBadge.js";
-import type { KeyPremise, PersonRow } from "./conclusion.js";
-import { VERDICT_ICON, VERDICT_TONE } from "./conclusion.js";
+import type { KeyPremise, PersonRow } from "./conclusionModel.js";
+import { VERDICT_ICON, VERDICT_TONE } from "./conclusionModel.js";
 import type { Verdict3 } from "../../src/calc/verdict3.js";
 import s from "./conclusion.module.css";
 
@@ -137,7 +137,7 @@ function PremiseFigure({ p, fmt }: { p: KeyPremise; fmt: (yen: number) => string
       </div>
     );
   }
-  // 単身：いまの保障と、必要額（葬儀などの費用）の内訳を1か所で見せる（UX_REVIEW 1回目「単身の内訳」）
+  // 単身：いまの保障と、必要額の内訳を1か所で見せる（UX_REVIEW 1回目「単身の内訳」）
   const top = Math.max(p.need.high, p.coverage ?? 0);
   const w = (v: number) => `${top > 0 ? Math.max(1, Math.round((v / top) * 100)) : 0}%`;
   const needText =
@@ -156,7 +156,7 @@ function PremiseFigure({ p, fmt }: { p: KeyPremise; fmt: (yen: number) => string
         </div>
       )}
       <div className={s.pairRow}>
-        <span className={s.subLabel}>必要額（葬儀などの費用）</span>
+        <span className={s.subLabel}>{p.needLabel}</span>
         <span className={s.premiseValue}>
           <RangeText text={needText} />
         </span>

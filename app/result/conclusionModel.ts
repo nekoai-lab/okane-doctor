@@ -206,7 +206,8 @@ export function nextStepSentence(
  * 結論を決めている前提（1点）。**図1つ＋感度文1つ**（CLAUDE.md「開示の見せ方」・§5-3）。
  *
  * - 配偶者がいる世帯：本人に万一のときの**配偶者の就労収入**（組み替え＝回答の年収、不足＝当社基準の見立て）
- * - 単身：**扶養しているご家族がいないこと**。図は「いまの保障」と「必要額（葬儀などの費用）」の内訳
+ * - 単身：**扶養しているご家族がいないこと**。図は「いまの保障」と「必要額」の内訳。
+ *   必要額の中身は配偶者の有無ではなくエンジンの支出内訳で呼ぶ（団信なしの住宅ローンは必要額に入る・PR #5 の QA）
  *
  * 金額はすべて `ResultFigures` と感度（`survivorIncomeSensitivity`）から来る。ここで作らない。
  */
@@ -226,6 +227,8 @@ export type KeyPremise =
       title: string;
       coverage: number | null;
       need: { low: number; high: number };
+      /** 必要額の呼び名。団信なしの住宅ローンを含むかで変わる */
+      needLabel: string;
       text: string;
     };
 
@@ -237,12 +240,19 @@ export function keyPremise(
 ): KeyPremise | null {
   const x = f.self;
   if (!f.spouse) {
+    // 団信なしのローンが必要額に残るのは、資産で消し切れず必要額の判定（ニーズ軸）が `not_needed` を外れたとき。
+    // `not_needed` なら必要額は葬儀・予備費の床なので、そのときは葬儀費用だけと言ってよい（`calcDeath`）。
+    // ローン残高は回答の幅の軸なので、代表値の額はここに書かない（幅の両端と食い違う）。呼び名だけを分ける
+    const withLoan = x.point.expense.housing > 0 && x.needVerdict !== "not_needed";
     return {
       kind: "single",
       title: "扶養しているご家族がいないこと",
       coverage: x.coverage,
       need: x.need,
-      text: "見込んでいるのは葬儀などの費用だけです。扶養するご家族ができたら、遺族の生活費が加わるので答え直してください。",
+      needLabel: withLoan ? "必要額（葬儀などの費用と住宅ローンの残り）" : "必要額（葬儀などの費用）",
+      text: withLoan
+        ? "見込んでいるのは、葬儀などの費用と、団信で返されない住宅ローンの残りです。扶養するご家族ができたら、遺族の生活費が加わるので答え直してください。"
+        : "見込んでいるのは葬儀などの費用だけです。扶養するご家族ができたら、遺族の生活費が加わるので答え直してください。",
     };
   }
   const work = x.point.income.survivorWork;

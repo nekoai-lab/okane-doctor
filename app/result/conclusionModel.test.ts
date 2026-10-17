@@ -17,7 +17,7 @@ import {
   nextStepSentence,
   noReducibleSentence,
   personRows,
-} from "./conclusion.js";
+} from "./conclusionModel.js";
 import { ownStandardEstimates } from "./estimates.js";
 import { DEATH_LABEL } from "./verdictLabels.js";
 
@@ -199,5 +199,18 @@ describe("この結論を決めている前提（1点）", () => {
     expect(p.need).toEqual(f.self.need);
     expect(p.coverage).toBe(f.self.coverage);
     expect(p.text).not.toMatch(/(見ていません|含めていません)。?$/);
+    expect(p.needLabel).toBe("必要額（葬儀などの費用）");
+  });
+
+  it("単身で団信なしの住宅ローンがある：必要額を葬儀費用だけと呼ばない（PR #5 の QA）", () => {
+    const { f } = fromQuery(
+      "v=1&sb=1996&emp=employee&sp=0&ch=&inc=lt600&as=lt100&liv=lt25&ho=own_loan&loan=lt3000&dan=no&cvs=m1000",
+    );
+    expect(f.self.point.expense.housing).toBeGreaterThan(0);
+    const p = keyPremise(f, null, false);
+    if (p?.kind !== "single") throw new Error("前提が無い");
+    expect(p.needLabel).toContain("住宅ローン");
+    expect(p.text).toContain("住宅ローン");
+    expect(p.text).not.toContain("葬儀などの費用だけ");
   });
 });

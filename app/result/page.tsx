@@ -34,7 +34,7 @@ import {
   nextStepSentence,
   noReducibleSentence,
   personRows,
-} from "./conclusion.js";
+} from "./conclusionModel.js";
 import { bandWidenedNote, gapSentence, partialNote } from "./figureText.js";
 import { HERO_BADGE, HERO_TONE } from "./Hero.js";
 import { LivingDial } from "./LivingDial.js";
