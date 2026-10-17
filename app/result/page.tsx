@@ -24,7 +24,7 @@ import { RangeText } from "./AmountText.js";
 import { Fold } from "./Fold.js";
 import { ownStandardEstimates, workDeductionSource } from "./estimates.js";
 import { sensitivityText } from "./sensitivityText.js";
-import { DEATH_LABEL } from "./verdictLabels.js";
+import { DEATH_LABEL, SAVINGS_LABEL } from "./verdictLabels.js";
 import { hasActionableGap } from "./nextStep.js";
 import { Conclusion } from "./Conclusion.js";
 import { reviewReasonSentence } from "./conclusionModel.js";
@@ -711,12 +711,6 @@ export default async function ResultPage({
   });
   const bySc = Object.fromEntries(sims.map((x) => [x.scenario, x]));
   const TONE = { reducible: "ok", uncertain: "check", shortage: "short" } as const;
-  const SAVINGS_LABEL = {
-    reducible: "大丈夫のめやす",
-    uncertain: "貯蓄と同じくらい",
-    shortage: "備え不足の可能性",
-    pending: "判定できません",
-  } as const;
 
   /**
    * 感度文（仕様 §5.3 T-E・2026-09-21 オーナー承認の文型）。

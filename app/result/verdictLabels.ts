@@ -19,3 +19,17 @@ export const DEATH_LABEL: Record<Verdict3, string> = {
  * 無印の「判定」を画面に出さない（CLAUDE.md「判定には必ず軸名を添える」・2026-10-17 UX レビュー）。
  */
 export const VERDICT_AXIS = "過不足の判定";
+
+/**
+ * 病気・けが・失業の行の**貯蓄の判定**のラベル（`verdictBySavings`）。結果の診断表ともしもラボが同じ表を引く。
+ *
+ * 2026-10-18 UX レビュー（24回目）：保留側を「貯蓄と同じくらい」にしたら、範囲が少し重なるだけでも出るため
+ * 「ほぼ同額」と読め、足りない側を小さく見せた（必要額 約58〜333万円・貯蓄 約50万円の世帯）。
+ * 重なる＝答えの幅しだいで足りないこともある、なのでそのまま書く。「大丈夫」も何がかを書く。
+ */
+export const SAVINGS_LABEL: Record<Verdict3, string> = {
+  reducible: "貯蓄で足りるめやす",
+  uncertain: "足りない場合あり",
+  shortage: "備え不足の可能性",
+  pending: "判定できません",
+};

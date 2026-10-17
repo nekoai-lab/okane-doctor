@@ -15,6 +15,7 @@ import {
 import { linearScale } from "../result/chartScale.js";
 import { Fold } from "../result/Fold.js";
 import { HERO_BADGE } from "../result/Hero.js";
+import { SAVINGS_LABEL as SAVINGS_VERDICT } from "../result/verdictLabels.js";
 import s from "./page.module.css";
 import { Words } from "./Words.js";
 
@@ -25,13 +26,8 @@ const SCENARIO_TITLE: Record<string, string> = {
   cancer: "がんによる1年の休職",
   mental: "こころの不調による休職",
 };
-/** 貯蓄の判定の言葉。アイコンは VerdictBadge が VERDICT_BADGE から付ける（✓ ↔ ! …） */
-const SAVINGS_LABEL = {
-  reducible: "大丈夫のめやす",
-  uncertain: "貯蓄と同じくらい",
-  shortage: "備え不足の可能性",
-  pending: "未算定",
-};
+/** 貯蓄の判定の言葉は結果画面と同じ表。アイコンは VerdictBadge が VERDICT_BADGE から付ける（✓ ↔ ! …） */
+const SAVINGS_LABEL = { ...SAVINGS_VERDICT, pending: "未算定" };
 function AmountRange({ low, high }: { low: number; high: number }) {
   const [start, end] = formatRange(low, high).split("〜");
   return (

@@ -162,9 +162,10 @@ export function RiskTable({
                       {r.subtitle}・{r.precisionLabel}
                     </span>
                   </span>
-                  {/* 狭い画面では判定の列を見出しの行の右端に寄せる（金額の2列に幅を渡す）。CSS で片方だけ出す */}
-                  <span className={`${s.badge} ${s[r.tone]} ${s.badgeNarrow}`}>
-                    {r.verdictLabel}
+                  {/* 狭い画面では判定の列を見出しの下に軸名つきで出す（金額の2列に幅を渡す）。CSS で片方だけ出す */}
+                  <span className={s.badgeNarrow}>
+                    <span className={s.narrowAxis}>{VERDICT_AXIS}</span>
+                    <Badge tone={r.tone} label={r.verdictLabel} />
                   </span>
                 </div>
               </th>
@@ -181,7 +182,7 @@ export function RiskTable({
                 </span>
               </td>
               <td className={s.verdictCell}>
-                <span className={`${s.badge} ${s[r.tone]}`}>{r.verdictLabel}</span>
+                <Badge tone={r.tone} label={r.verdictLabel} />
               </td>
             </tr>
             {/* 答えの幅で判定が変わるときの一文（T-H・2026-09-23 オーナー裁定）。**畳まない** */}
@@ -274,5 +275,17 @@ export function RiskTable({
         </Fold>
       </div>
     </section>
+  );
+}
+
+/** 判定は記号＋ラベル＋色の3点で出す（色だけで意味を伝えない・2026-10-18 UX レビュー24回目） */
+const TONE_ICON: Record<RiskRow["tone"], string> = { ok: "✓", check: "↔", short: "!", none: "…" };
+
+function Badge({ tone, label }: { tone: RiskRow["tone"]; label: string }) {
+  return (
+    <span className={`${s.badge} ${s[tone]}`}>
+      <span aria-hidden="true">{TONE_ICON[tone]} </span>
+      {label}
+    </span>
   );
 }

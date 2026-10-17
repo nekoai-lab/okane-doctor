@@ -133,7 +133,7 @@ export function CoverageCurve({
             />
             <text
               fill="var(--color-success-text)"
-              fontSize="12.5"
+              fontSize="13.5"
               textAnchor={crossingIndex > n * 0.7 ? "end" : "start"}
               x={xAt(crossingIndex, n) + (crossingIndex > n * 0.7 ? -4 : 4)}
               y={plotTop + 13}

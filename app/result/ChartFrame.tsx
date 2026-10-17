@@ -115,7 +115,7 @@ export function ChartFrame({
               />
               <text
                 fill="var(--chart-axis-text)"
-                fontSize="12.5"
+                fontSize="13.5"
                 textAnchor="end"
                 x={plotLeft - 6}
                 y={y + 4}
@@ -129,7 +129,7 @@ export function ChartFrame({
         {/* 目盛りの単位。見出しにもあるが、図だけを見たときに桁が分かるよう軸の上にも1回置く（AUDIT 2-1） */}
         <text
           fill="var(--chart-axis-text)"
-          fontSize="12.5"
+          fontSize="13.5"
           textAnchor="end"
           x={plotLeft - 6}
           y={14}
@@ -153,7 +153,7 @@ export function ChartFrame({
           i % labelEvery === 0 || i === n - 1 ? (
             <text
               fill="var(--chart-axis-text)"
-              fontSize="12.5"
+              fontSize="13.5"
               key={y}
               textAnchor="middle"
               x={xAt(i, n)}
