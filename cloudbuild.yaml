@@ -3,7 +3,7 @@
 # gemini-case-navi と同じ形（Cloud Build トリガー）。手元に Docker は要らない ─
 # ビルドはここで走る。トリガーの作成は README ではなく docs/本番前チェックリスト.md「G」に書く。
 #
-# **okane-doctor は、審査中の提出版 okane-kenko と同じ GCP プロジェクトで動く。**
+# **okane-doctor は、前身の okane-kenko と同じ GCP プロジェクトで動く。**
 # 本番（サービス okane-kenko）に触らないために、このファイルで次の4つを固定している：
 #   - サービス名の既定値は okane-doctor（トリガーの置換変数を入れ忘れても本番を上書きしない）
 #   - 実行アカウントは okane-doctor 専用（本番のアカウントを使い回さない）
@@ -20,7 +20,7 @@
 substitutions:
   _SERVICE: okane-doctor
   _REGION: asia-northeast1
-  # Artifact Registry のリポジトリは提出版と共有する（イメージ名がサービス名で分かれるので混ざらない）
+  # Artifact Registry のリポジトリは okane-kenko と共有する（イメージ名がサービス名で分かれるので混ざらない）
   _REPO: okane-kenko
   # 公開 URL（共有画像の絶対 URL の基点）。値はトリガーの置換変数に置き、このファイルには書かない。
   # 空のままなら共有画像の URL が localhost になるだけで、デプロイは止まらない

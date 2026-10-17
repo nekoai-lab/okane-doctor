@@ -10,7 +10,7 @@
 import type { Impact, ParamChange } from "./judge.js";
 import type { VerificationChange } from "./verifyOps.js";
 
-/** 1回の巡回で何をしたか。**全ツール呼び出しを時系列で読める形にする**（審査軸②の証跡） */
+/** 1回の巡回で何をしたか。**全ツール呼び出しを時系列で読める形にする**（自律監視の証跡） */
 export interface ActionLogEntry {
   at: string;
   /** 何をしたか（fetch / extract / judge / decide） */
