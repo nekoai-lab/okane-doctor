@@ -137,9 +137,18 @@ export function RiskTable({
   rows,
   caption,
   sharedSavingsText = null,
+  countUnit = null,
+  lead = null,
 }: {
   rows: RiskRow[];
   caption: string;
+  /**
+   * 並べた行の数に添える語（「つのリスクを並べました（うち1つは未算定）」）。数は `rows.length`。
+   * 旧「この診断で分かること」の箱から移した（範囲の説明はページ末尾の折りたたみへ・2026-10-17）
+   */
+  countUnit?: string | null;
+  /** 表の前に置く世帯ごとの案内（単身世帯の §6-10）。無ければ機能の1文 */
+  lead?: string | null;
   /**
    * 病気・けが・失業の行が**共通の**受け皿にしている貯蓄（整形済み・各カードの「いまの貯蓄」と同じ文字列）。
    * 計算した貯蓄の行が無ければ null
@@ -151,9 +160,14 @@ export function RiskTable({
       <h2 className={s.heading} id="risk-table-heading">
         あなたのお金の健康診断表
       </h2>
-      <p className={s.lead}>
-        万が一は、ひとつではありません。人生のリスクを項目別に、正直な精度表示つきで診ます。
-      </p>
+      {/* 自称語（正直・安心など）を使わない。機能を書く（UIラベル規約・2026-10-17 §指摘） */}
+      {countUnit && (
+        <p className={s.count}>
+          <span className={s.countNum}>{rows.length}</span>
+          <span className={s.countUnit}>{countUnit}</span>
+        </p>
+      )}
+      <p className={s.lead}>{lead ?? "死亡・病気・失業を、同じ表で並べて見ています。"}</p>
       <p className={s.caption}>{caption}</p>
 
       <ul className={s.list}>
@@ -223,10 +237,9 @@ export function RiskTable({
                 <Link className={s.link} href={r.link.href}>
                   {r.link.label}
                 </Link>
-              ) : (
-                // **未実装のリンク先を沈黙させない。** 押せないなら、その理由まで書く
-                <span className={s.pending}>{r.link.pending}</span>
-              )}
+              ) : null
+              /* 準備中の導線は出さない（押せない機能を見せない・2026-10-17 UX レビュー §指摘） */
+              }
             </div>
           </li>
         ))}

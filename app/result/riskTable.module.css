@@ -98,10 +98,11 @@
   border: 1.5px solid var(--mk-amber);
   color: var(--mk-amber-deep);
 }
+/* 不足は Warning（オレンジ）。赤に見える色を判定に使わない（CLAUDE.md・2026-10-17 UX レビュー） */
 .short {
-  background: var(--mk-red-bg);
-  border: 1.5px solid var(--mk-red);
-  color: var(--mk-red-deep);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-verdict-shortage);
+  color: var(--color-verdict-shortage-text);
 }
 .none {
   background: var(--mk-grey-bg);
@@ -477,4 +478,37 @@
   border-top: none;
   margin-top: 0;
   padding-top: 0;
+}
+
+/* 並べた行の数（既にある数字を、あるべき声量で・DoD (a)(b)） */
+.count {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 var(--space-2);
+}
+
+.countNum {
+  font-family: var(--mk-font-display);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.countUnit {
+  font-size: 14px;
+  color: var(--mk-ink-2);
+}
+
+/*
+  **前提の折りたたみだけのカードでは、箱を出さない**（2026-10-17・UX_REVIEW 1回目「前提の折りたたみの面積」）。
+  帯や感度文が無いとき、橙の箱は折りたたみの見出し1行のために1段ぶんの面積を取り、
+  判定と金額を縦に見比べる邪魔をしていた。見出し1行（件数つき）だけにする。
+*/
+.premises:has(> .premisesMore:first-child) {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: var(--space-2);
 }

@@ -21,25 +21,22 @@ import { decisionPoints } from "../../src/calc/decisionPoints.js";
 import { reform2028 } from "../../src/calc/reform2028.js";
 import { verdict3 } from "../../src/calc/verdict3.js";
 import { RangeText, WithAmounts } from "./AmountText.js";
-import { AxisBadge } from "./AxisBadge.js";
 import { Fold } from "./Fold.js";
 import { ownStandardEstimates, workDeductionSource } from "./estimates.js";
 import { sensitivityText } from "./sensitivityText.js";
 import { DEATH_LABEL } from "./verdictLabels.js";
-import { hasActionableGap, nextStepLines, reducibleSentence } from "./nextStep.js";
+import { hasActionableGap } from "./nextStep.js";
+import { Conclusion } from "./Conclusion.js";
 import {
-  bandWidenedNote,
-  gapSentence,
-  heroCoverageText,
-  partialNote,
-  heroBreakdownNote,
-  heroDiffText,
-  heroNeedQualifier,
-  heroTotalLabel,
-  rebalanceNote,
-} from "./figureText.js";
-import { SoloCase } from "./SoloCase.js";
-import { HERO_BADGE, HERO_TONE, Hero } from "./Hero.js";
+  conclusionHeadline,
+  conclusionReason,
+  keyPremise,
+  nextStepSentence,
+  noReducibleSentence,
+  personRows,
+} from "./conclusion.js";
+import { bandWidenedNote, gapSentence, partialNote } from "./figureText.js";
+import { HERO_BADGE, HERO_TONE } from "./Hero.js";
 import { LivingDial } from "./LivingDial.js";
 import { RiskTable, type RiskRow } from "./RiskTable.js";
 import { Step1, type AnswerChip } from "./Step1.js";
@@ -137,12 +134,13 @@ const SHORTFALL_TONE: Record<string, "ok" | "check" | "short" | "none"> = {
  * （2026-09-21 の要素照合で発見）。T-B でレンジが復活すれば常に幅の文で真になるが、
  * **それまでの間も嘘をつかない**。
  */
-function shortfallBody(v: string, hasRange: boolean): string {
+function shortfallBody(v: string, hasRange: boolean, hasEstimates: boolean): string {
+  // 推定が0件の世帯に「推定で補った項目を答え直す」と書かない（§指摘・2026-10-17）
   switch (v) {
     case "reducible":
-      return `${hasRange ? "厳しめの前提（幅の右端）で計算しても" : "この必要額で計算しても"}、いまの保障が上回っています。減らせる可能性があります。ただし概算です。契約を見直す前に、契約内容（保障額・期間・更新の時期）を確かめ、推定で補った項目を実際の値で答え直してください。`;
+      return `${hasRange ? "厳しめの前提（幅の右端）で計算しても" : "この必要額で計算しても"}、いまの保障が上回っています。減らせる可能性があります。ただし概算です。契約を見直す前に、契約内容（保障額・期間・更新の時期）を確かめ${hasEstimates ? "、推定で補った項目を実際の値で答え直し" : ""}てください。`;
     case "uncertain":
-      return "必要額の幅が、いまの保障を跨いでいます。この位置関係のとき、診断は「減らせる」とも「足りない」とも言い切りません。推定で補った項目を実際の値で答えると幅が狭まり、判定が確定に近づきます。";
+      return `必要額の幅が、いまの保障を跨いでいます。この位置関係のとき、診断は「減らせる」とも「足りない」とも言い切りません。${hasEstimates ? "推定で補った項目を実際の値で答えると" : "答えた区分を具体的な値で答え直すと"}幅が狭まり、過不足の判定が確定に近づきます。`;
     case "shortage":
       return `${hasRange ? "緩めに見た幅の左端にも" : "この必要額にも"}、いまの保障が届いていません。前提を見直すか、不足分の備え方を検討する段階です。`;
     default:
@@ -340,7 +338,11 @@ function CaseCard({
   const shortfallVerdict = {
     label: DEATH_LABEL[v3],
     tone: SHORTFALL_TONE[v3],
-    body: shortfallBody(v3, r.range.low !== r.range.high),
+    body: shortfallBody(
+      v3,
+      r.range.low !== r.range.high,
+      estimations.length + ownStandardEstimates(r, survivorLabel).length > 0,
+    ),
   };
   const expenseItems = [
     { label: "ご家族の生活費（子育て期）", amount: r.expense.livingChild, basis: "当社基準" },
@@ -391,10 +393,11 @@ function CaseCard({
           （death.ts の sufficient 分岐）。同じ名前で呼ぶと、グラフと結論が矛盾して見える。
           **呼び名はレンジ全体の必要額の判定（`rangeVerdict`）で選ぶ。** `r.range` は回答の幅で包絡した額なので、
           代表値の判定（`r.verdict`）で呼ぶと、不足分を含む幅を「葬儀・予備費」と呼んでしまう（2026-10-17・QA） */}
-      <div className={s.amount}>
-        {AMOUNT_LABEL[rangeKey] ?? AMOUNT_LABEL.sufficient}：
-        {formatRange(r.range.low, r.range.high)}
-      </div>
+      {/* 呼び名と金額を分ける。金額は文に埋めず、独立した大きな数字にする（DoD (b)・2026-10-17） */}
+      <p className={s.amountLabel}>{AMOUNT_LABEL[rangeKey] ?? AMOUNT_LABEL.sufficient}</p>
+      <p className={s.amount}>
+        <RangeText text={formatRange(r.range.low, r.range.high)} />
+      </p>
       <p className={s.basis}>{AMOUNT_NOTE[rangeKey] ?? AMOUNT_NOTE.sufficient}</p>
 
       {/* 現在の保障との比較 */}
@@ -721,13 +724,6 @@ export default async function ResultPage({
   const hh = figures.household;
 
   /**
-   * 減らせる箇所（無ければ「見つかりませんでした」と明示する＝沈黙で誤解させない）。
-   * **ヒーローと同じ `figures` から作る**（設計レビュー #2）。旧 `householdHeadline` は過剰の閾値が
-   * 上端の1.5倍で、ヒーローが「減らせる可能性」でもここが「見つかりませんでした」になっていた
-   */
-  const reducibleText = reducibleSentence(figures);
-
-  /**
    * リスク別健康診断表の6行（仕様 §5.3）。
    *
    * **死亡は本人・配偶者を2行に分ける。** 個人の判定が正で、世帯の集約（組み替えの余地など）は
@@ -817,7 +813,8 @@ export default async function ResultPage({
     return {
       key: `death-${who}`,
       title: `死亡（${who}）`,
-      subtitle: "遺されたご家族の生活",
+      // 配偶者も子もいない世帯に「遺されたご家族」と書かない（UX レビュー §指摘・2026-10-17）
+      subtitle: input.spouse || input.children.length > 0 ? "遺されたご家族の生活" : "葬儀・身の回りの整理",
       tone: v === "pending" ? "none" : TONE[v],
       verdictLabel: DEATH_LABEL[v],
       precisionLabel: "計算済み",
@@ -837,24 +834,35 @@ export default async function ResultPage({
       note: `${reason}${body}`,
       // 判定を支えている前提（仕様 §5.3 の開示6点）。`ample` 系のときだけ engine が返す
       assumptions: dr.assumptions.map((a) => ({ label: a.label ?? "前提", note: a.note })),
-      // 前提の重みを図にする。金額は算定結果（income）から取り、UI では作らない
+      /**
+       * 前提の重みを図にする。金額は算定結果（income）から取り、UI では作らない。
+       * **本人の行は冒頭「この結論を決めている前提」が同じ図と感度文を持つ**ので、ここでは出さない
+       * （置換であって共存ではない・2026-10-17 最初の2画面の作り直し）。前提の全項目は折りたたみに残す。
+       */
       premiseWeight:
-        dr.assumptions.length > 0 && dr.income.total > 0 && dr.income.survivorWork > 0
+        who === "配偶者" &&
+        dr.assumptions.length > 0 &&
+        dr.income.total > 0 &&
+        dr.income.survivorWork > 0
           ? {
               share: dr.income.survivorWork / dr.income.total,
               totalText: `約${money(dr.income.total)}`,
               onPremiseText: `約${money(dr.income.survivorWork)}`,
-              survivorLabel: who === "本人" ? "遺されたご家族" : "あなた",
+              survivorLabel: "あなた",
             }
           : null,
       premiseSensitivity:
-        dr.assumptions.length > 0 ? sensitivityFor(who === "本人" ? "self" : "spouse") : null,
+        who === "配偶者" && dr.assumptions.length > 0 ? sensitivityFor("spouse") : null,
       /**
        * **答えの幅で判定が変わるなら、露出部に出す**（2026-09-23 オーナー裁定）。
        * 判定が動きうるという事実を折りたたみの中に入れない。
        */
       crossingNote: band?.note ?? null,
-      link: { href: "#death-detail", label: "詳しく →" },
+      // 単身世帯は死亡の詳細（STEP1〜4）を持たないので、冒頭の前提（内訳の図）へ
+      link:
+        dr.years.total === 0
+          ? { href: "#key-premise", label: "内訳 →" }
+          : { href: "#death-detail", label: "詳しく →" },
     };
   };
 
@@ -998,35 +1006,10 @@ export default async function ResultPage({
   const caption = `${input.self.age}歳・${input.self.employment === "employee" ? "会社員" : input.self.employment === "self" ? "自営・フリーランス" : "無職"}${input.spouse ? `・配偶者${input.spouse.age}歳` : "・配偶者なし"}${input.children.length > 0 ? `・子${input.children.length}人` : "・子なし"}`;
 
   /**
-   * 必要額が葬儀費用だけになる世帯に添える1行（仕様 §5.3）。
-   * 本人と配偶者のどちらもその状態のときだけ出す。片方だけなら世帯の話にならない。
-   */
-  /**
-   * `組み替えの余地` に添える金額の1行（仕様 §5.3・2026-09-21）。
-   *
-   * **旧「検査値パネル」（`Vitals`）の「世帯の過不足」タイルの移し先。**
-   * あちらは「減らせる額（世帯）約1,800万円 ／ 一方で約200万円足りません」と
-   * 両方の金額を出していたが、ヒーローの見出しは**金額を1つも出さない**。
-   * 撤去にあたって、その2つをここで復元する。
-   *
-   * **不足している側は過不足軸（`Verdict3`）で名指す。** ニーズ軸ではない
-   * （CLAUDE.md「判定には必ず軸名を添える」）。
-   */
-  /**
-   * 見直し導線に再掲する「次にお知らせが要りそうな時期」。
+   * 次の見直しのめやす（次の一歩に添える）。
    * **段差チャートの段差①と同じ材料**（`projectDeath` の年次）から取る。
    * 画面で年を作らない ── 図と導線で別の年を出すと、どちらが正か分からなくなる。
    */
-  /**
-   * ヒーローが既に「減らせる額」を出しているか（同一事実の2回表示を避ける）。
-   *
-   * ヒーローの見出しは `reducible` のとき差額を、`rebalanceable` のときは
-   * `rebalanceNote` が「約◯◯は減らせる一方…」を出す。
-   * どちらでもない世帯（`uncertain` / `shortage` / `pending`）では、
-   * 減らせる額はヒーローに出ないので、下の単独セクションが唯一の露出になる。
-   */
-  const heroShowsReducible = hh.verdict === "reducible" || hh.verdict === "rebalanceable";
-
   const watchYear = (() => {
     const rows = selfProjection.rows;
     for (let i = 1; i < rows.length; i++) {
@@ -1087,43 +1070,79 @@ export default async function ResultPage({
   ];
   const sourcesNote = `制度パラメータ版 ${result.paramVersion} に、各値の出典URLと施行日を記録しています。下の当社基準には公的出典がありません。`;
 
-  const deathResults = [result.self, ...(result.spouse ? [result.spouse] : [])];
-  // レンジ全体の必要額の判定（ニーズ軸）で見る。代表値だけで「葬儀費用だけ」と言わない（2026-10-17・QA）
-  const funeralOnlyNote = deathResults.every((r) => (r.rangeVerdict ?? r.verdict) === "ample")
-    ? "公的な年金と資産で、遺されたご家族の生活費はまかなえる見込みです。上乗せで要るのは葬儀費用だけです。この判定は、遺されたご家族が働き続ける前提に立っています（前提は下の各行に出しています）。"
-    : deathResults.every((r) => (r.rangeVerdict ?? r.verdict) === "not_needed")
-      ? "扶養しているご家族がいないため、上乗せの保障は要りません。見込むのは葬儀費用だけです。"
+  /**
+   * 最初の2画面（結論・次の一歩・前提1点）の材料。すべて `figures` と感度（src/calc）から来る。
+   * **不足額を2人分の合計で出さない。** 人ごとの行に、その人の差の幅を出す（2026-10-17・オーナー判断カードの推奨）。
+   */
+  const selfEstimated = ownStandardEstimates(result.self, "配偶者").length > 0;
+  const premise = keyPremise(
+    figures,
+    survivorIncomeSensitivity(params, input, "self", asOfDate, ri.bands),
+    selfEstimated,
+  );
+  const roundUnit = v(params, "roundUnit");
+  const rows = personRows(figures);
+  const spouseRow = rows.find((x) => x.who === "spouse") ?? null;
+  const estimatedCount = estimations.length + (selfEstimated ? 1 : 0);
+
+  /**
+   * 診断表の行のうち、貯蓄で受ける行（病気・失業）の過不足の判定（過不足軸）。単身世帯の案内文に使う（§6-10）
+   */
+  const savingsVerdicts = ["sick_short", "sick_long", "unemployment"]
+    .map((k) => bySc[k])
+    .filter((x) => x && x.status !== "not_supported")
+    .map((x) => x.verdict ?? "pending");
+  const soloLead =
+    result.self.years.total === 0
+      ? [
+          "この世帯では、死亡より病気や失業の影響のほうが大きくなります。",
+          savingsVerdicts.length > 0 && savingsVerdicts.every((x) => x === "reducible")
+            ? "病気と失業は、いまの貯蓄で受けられる水準です。"
+            : "病気と失業の過不足は、下の各行で見てください。",
+          bySc.disability?.status === "not_supported"
+            ? "1年半を超えて働けない場合は、まだ計算していません。"
+            : "",
+        ].join("")
       : null;
 
   return (
     <main className={s.page}>
-      {/* 1. 冒頭ヒーロー（移植元 result.html 冒頭）。判定は §1 の世帯4値 */}
-      <Hero
-        verdict={hh.verdict}
+      {/*
+        最初の2画面（2026-10-17・最初の2画面の作り直し。§5 の並べ直し案）。
+        1. 結論（判定バッジ＋1文＋人ごとの行＋数直線1本） 2. 次の一歩（1つ） 3. この結論を決めている前提（1点）。
+        旧ヒーロー・よみときのサマリー・ページ下の「次の一歩」の数字ブロックはここに置き換えた
+        （同じ結論を3回くり返さない・置換であって共存ではない）。
+      */}
+      <Conclusion
         caption={caption}
-        diffText={heroDiffText(figures)}
-        breakdownNote={heroBreakdownNote(figures)}
-        funeralOnlyNote={funeralOnlyNote}
-        rebalanceNote={rebalanceNote(figures)}
-        totalLabel={heroTotalLabel(figures)}
-        coverageText={heroCoverageText(figures)}
-        partialNote={partialNote(figures)}
-        needText={formatRange(hh.totalNeed.low, hh.totalNeed.high)}
-        needHasRange={hh.totalNeed.low !== hh.totalNeed.high}
-        needQualifier={heroNeedQualifier(figures)}
+        fmt={(yen) => formatRange(yen, yen)}
+        headline={conclusionHeadline(figures)}
+        householdBadge={HERO_BADGE[hh.verdict]}
+        householdTone={HERO_TONE[hh.verdict]}
         modeText={LIVING_LEVEL_LABEL[livingLevel].name}
+        nextStep={nextStepSentence(
+          figures,
+          { self: input.self.employment, spouse: input.spouse?.employment ?? null },
+          estimatedCount,
+        )}
+        noReducible={noReducibleSentence(figures)}
+        partialNote={partialNote(figures)}
+        premise={premise}
+        premiseFmt={(yen) => formatManApprox(yen, roundUnit)}
+        reason={conclusionReason(figures)}
+        reviewYear={watchYear}
+        rows={rows}
       />
 
-      {/* 照合表 #4：暮らし方の前提トグル。**ヒーロー直下**（仕様 §5.3 のページ順） */}
-      <LivingDial
-        absorbedNote={absorbedNote}
-        current={livingLevel}
-        hrefFor={(lv) => `/result?${withLivingLevel(q, lv)}`}
-      />
-
-      {/* 3. 玄関：リスク別健康診断表（仕様 §5.3）。この下に死亡の詳細が縦1本で続く */}
+      {/* 根拠 1：リスク別健康診断表（仕様 §5.3） */}
       <RiskTable
         caption={caption}
+        countUnit={
+          unsupportedCount > 0
+            ? `つのリスクを並べました（うち${unsupportedCount}つは未算定）`
+            : "つのリスクを診ました"
+        }
+        lead={soloLead}
         rows={riskRows}
         // 貯蓄で受ける行（制度式で概算）があるときだけ、その共通の受け皿の額を注記に立てる
         sharedSavingsText={
@@ -1132,127 +1151,22 @@ export default async function ResultPage({
       />
 
       {/*
-        **既にある数字を、あるべき声量にする**（DoD (a)(b)）。
-        算定基準日とパラメータ版は、この結果が「いつの・どの制度で」出たかの情報で、
-        散文の中に沈めると出どころが読めない。
+        暮らし方の前提（照合表 #4）。**結論の上から根拠の側へ移した**（§5-5：STEP2 の直前）。
+        結論を読む前に1画面ぶんの選択 UI が来ていた。結論には選んでいる前提の名前だけを出す。
       */}
-      <p className={s.meta}>
-        これは<strong>概算・要精査</strong>です ／ 算定基準日{" "}
-        {/* 日本時間の日付（UTC で切ると Cloud Run では JST 0〜9時に前日になる・2026-09-22） */}
-        <span className={s.metaValue}>{jstDate(asOfDate)}</span> ／ 使用パラメータ版{" "}
-        <span className={s.metaValue}>{result.paramVersion}</span>
-      </p>
-
-      {/* やさしい説明（T-07）。数値はAIに書かせず算定結果を差し込む。
-          鍵が無ければ AI を呼ばず、テンプレのまま出す（AIを止めても成立する） */}
-      <Narration
-        // 入力（クエリ）が変わったら状態ごと作り直す。目盛りの切り替えは同じページへの遷移なので、
-        // key が無いと useState が最初の説明文を持ったまま残る（2026-10-17・QA）
-        key={q.toString()}
-        aiEnabled={Boolean(process.env.GEMINI_API_KEY)}
-        initialText={narrate(result).text}
-        query={q.toString()}
-        /* **持っている数字を露出に出す。** すべて算定結果から来ている（画面で作らない） */
-        summary={{
-          verdict: HERO_BADGE[hh.verdict],
-          tone: HERO_TONE[hh.verdict],
-          needText: formatRange(hh.totalNeed.low, hh.totalNeed.high),
-          coverageText: heroCoverageText(figures),
-          totalLabel: heroTotalLabel(figures),
-        }}
-        values={placeholderValues(result)}
+      <LivingDial
+        absorbedNote={absorbedNote}
+        current={livingLevel}
+        hrefFor={(lv) => `/result?${withLivingLevel(q, lv)}`}
       />
 
-      {/* この診断で分かること／分からないこと（先に線を引く・T-06） */}
-      <div className={s.section}>
-        <div className={s.scope}>
-          {/*
-            **診た件数は既にある数字**（診断表の行数）。あるべき声量で出す（DoD (a)(b)）。
-            「何を診たか」を先に線引きするこの節の、いちばん要約された数でもある。
-          */}
-          {/*
-            **算定できた数と並べた数を分ける**（2026-10-17・ChatGPT の UX レビュー1回目）。
-            「診ました」は全行を評価し終えたように読めるが、計算未対応の行は正直な空欄で、
-            過不足の判定（過不足軸）も出していない。数は診断表の行（`precisionTone`）から数える。
-          */}
-          <p className={s.scopeCount}>
-            <span className={s.scopeNum}>{riskRows.length}</span>
-            <span className={s.scopeUnit}>
-              {unsupportedCount > 0
-                ? `つのリスクを並べました（うち${unsupportedCount}つは未算定）`
-                : "つのリスクを診ました"}
-            </span>
-          </p>
-          <p>
-            <strong>この診断で分かること：</strong>{" "}
-            あなたに万一のとき、遺されたご家族の生活・教育・住まいに必要なお金と、いまの保険との過不足の目安です。
-          </p>
-          <p>
-            <strong>この診断で分からないこと（扱いません）：</strong>{" "}
-            家計全体の最適化、就業不能・介護・学資などの個別の備え、具体的な保険商品の良し悪し。ここは線を引いています。
-          </p>
-        </div>
-      </div>
-
       {/*
-        減らせる箇所（CLAUDE.md「出力に必ず含めること」）。
-
-        **必須＝ページのどこかに必ず1回出ること。**
-        ヒーローの見出し（`いまの保障、約◯◯ぶん 減らせる可能性があります`）や
-        `rebalanceNote`（`約◯◯は減らせる一方…`）が同じ金額を出している世帯では、
-        **単独セクションを出さない** ── 同一事実の2回表示は反復であって開示ではない
-        （分担文の統合と同じ裁定基準・2026-09-21 オーナー確定）。
-
-        **0件のときは必ず出す。** 「見つかりませんでした」を沈黙で置き換えない。
+        根拠 2・3：本人 → 配偶者の死亡の詳細（STEP1〜4）。
+        **単身世帯では出さない**（§5 の世帯ごとの差）。遺す相手がいない世帯では算定期間が0年で、
+        STEP2〜4 は描く材料を持たない。必要額（葬儀などの費用）と保障の内訳は冒頭の前提1点の図が持つ。
       */}
-      <div className={s.section}>
-        {reducibleText && heroShowsReducible ? null : reducibleText ? (
-          <div className={s.reduce}>
-            {/* **既にある金額を、あるべき声量にする**（DoD (b) の組版を (a) の解に使う） */}
-            <strong>減らせそうな箇所：</strong> {reducibleText}
-            保険料が浮くのは良い知らせです（いまの前提では）。
-          </div>
-        ) : (
-          <div className={s.reduceNone}>減らせる箇所は、今回の前提では見つかりませんでした。</div>
-        )}
-      </div>
-
-      {/*
-        2028年の年金改正の該当/非該当（事実として中立に明示）。
-
-        **開示の型を当てて畳む**（2026-09-21・視覚の DoD (a)）。
-        実測でこの注記だけで 746px あり、前後の散文と合わせて
-        **図も大きな数字も無い区間を2画面ぶん**作っていた。
-        露出は該当/非該当の1行（決定的な部分）、全文は文字数を明示した1タップの奥。
-        **開示を減らしたのではなく、決定的な1点を前に出して残りを畳んだ**（CLAUDE.md）。
-      */}
-      <div className={s.section}>
-        <div className={s.reformNote}>
-          <strong>2028年の年金改正について：</strong>{" "}
-          {result.reform2028.applicable ? "この改正の対象になります。" : "この改正の対象外です。"}
-          <Fold count={`（${result.reform2028.reason.length}字）`} label="この判断の根拠を読む">
-            <p className={s.reformBody}>{result.reform2028.reason}</p>
-          </Fold>
-        </div>
-      </div>
-
-      {/* 因数分解（本人・配偶者）
-          **全幅にはしない。** 一度広げてみたが、SVG は viewBox で伸縮するので
-          図を広げると軸の文字まで拡大されて崩れる。30本の棒も6列の表も720pxで足りており、
-          実際に幅を必要としていたのは検査値パネル（4列）だけだった。 */}
-      <div className={`${s.section} ${s.sectionMajor}`} id="death-detail">
-        {/*
-          **単身世帯は「正直な空欄」の型に置き換える**（仕様 §5.3・2026-09-21）。
-          遺す相手がいない世帯では算定期間が0年で、STEP2〜4 は描く材料を持たない。
-          空データで図を描くと、壊れた絵になる。
-        */}
-        {result.self.years.total === 0 ? (
-          <SoloCase
-            needLabel={AMOUNT_LABEL[result.self.verdict] ?? AMOUNT_LABEL.sufficient}
-            needText={formatRange(result.self.range.low, result.self.range.high)}
-            title="あなたが亡くなった場合"
-          />
-        ) : (
+      {result.self.years.total > 0 && (
+        <div className={`${s.section} ${s.sectionMajor}`} id="death-detail">
           <CaseCard
             childCount={input.children.length}
             chips={answerChips(input, input.coverageSelf)}
@@ -1271,67 +1185,121 @@ export default async function ResultPage({
             title="あなたが亡くなった場合"
             gapText={gapSentence(figures.self)}
             bandNote={bandWidenedNote(figures.self)}
-            roundUnit={v(params, "roundUnit")}
+            roundUnit={roundUnit}
             workFrom={input.spouse && input.spouse.income > 0 ? "配偶者の年収" : null}
           />
-        )}
-        {/* 配偶者側は**要約1行＋開閉**にする。
-            同じ長さのカードが2つ続くと、体感の長さが倍になって読まれなくなる。
-            ただしタブにはしない ── 世帯の結論（rebalanceable）は両方を見ないと意味が伝わらず、
-            タブだと片方が最後まで見られない可能性がある。
-            **閉じていても判定と金額は要約に出す**ので、結論そのものは必ず届く。 */}
-        {result.spouse && spouseProjection && (
-          <details className={s.spouseCase}>
-            <summary className={s.spouseSummary}>
-              <span className={s.spouseSummaryTitle}>配偶者が亡くなった場合</span>
-              {/* **判定と過不足を並べない。** verdict（必要額の大きさ）と gap（いまの保障との差）は
-                  別の話なので、つなげると「十分に足りています／約200万円 足りていません」のような
-                  矛盾した1行になる（実際になった）。要約では行動につながる過不足を優先し、
-                  過不足が出ていないときだけ判定を出す。両方の意味は開けば書いてある。 */}
-              <span className={s.spouseSummaryVerdict}>
-                {figures.spouse ? <WithAmounts text={gapSentence(figures.spouse)} /> : null}
-              </span>
-            </summary>
-            <CaseCard
-              childCount={input.children.length}
-              chips={answerChips(input, input.coverageSpouse ?? null)}
-              coverage={input.coverageSpouse ?? null}
-              danshinCovered={danshinCovered}
-              editHref={editHref}
-              estimations={estimations}
-              terms={terms}
-              koseiFrom={input.spouse?.employment === "employee" ? "配偶者は会社員" : null}
-              pj={spouseProjection}
-              r={result.spouse}
-              /* **配偶者が亡くなるケースでは遺族は本人。** `result.reform2028` は
-                 遺族＝配偶者のケースで作られているので、そのまま出すと別人の年齢で判定した
-                 注記を出すことになる（2026-09-21 の検品で発見） */
-              reform2028Reason={
-                reform2028({
-                  survivorAge: input.self.age,
-                  asOfYear,
-                  hasChildren: input.children.length > 0,
-                }).reason
-              }
-              livingBand={livingBand}
-              loan={input.housing.loan ?? null}
-              survivorLabel="あなた"
-              title="配偶者が亡くなった場合"
-              gapText={figures.spouse ? gapSentence(figures.spouse) : ""}
-              bandNote={figures.spouse ? bandWidenedNote(figures.spouse) : null}
-              roundUnit={v(params, "roundUnit")}
-              workFrom={input.self.income > 0 ? "あなたの年収" : null}
-            />
-          </details>
-        )}
-      </div>
+          {/* 配偶者側は**要約1行＋開閉**にする。閉じていても過不足は要約に出す */}
+          {result.spouse && spouseProjection && (
+            <details className={s.spouseCase}>
+              <summary className={s.spouseSummary}>
+                <span className={s.spouseSummaryTitle}>配偶者が亡くなった場合</span>
+                {/*
+                  閉じていても過不足は出す。差の幅は**独立した大きな数字**にする（冒頭の人ごとの行と同じ値・
+                  `personRows`）。文に埋めると、閉じた箱が文字だけの区間になる（DoD (a)(b)）
+                */}
+                {spouseRow && (
+                  <span className={s.spouseSummaryVerdict}>
+                    <span className={s.spouseSummaryLabel}>{spouseRow.mainLabel}</span>
+                    <span className={s.spouseSummaryValue}>
+                      <RangeText text={spouseRow.mainText} />
+                    </span>
+                  </span>
+                )}
+              </summary>
+              <CaseCard
+                childCount={input.children.length}
+                chips={answerChips(input, input.coverageSpouse ?? null)}
+                coverage={input.coverageSpouse ?? null}
+                danshinCovered={danshinCovered}
+                editHref={editHref}
+                estimations={estimations}
+                terms={terms}
+                koseiFrom={input.spouse?.employment === "employee" ? "配偶者は会社員" : null}
+                pj={spouseProjection}
+                r={result.spouse}
+                /* **配偶者が亡くなるケースでは遺族は本人。** `result.reform2028` は
+                   遺族＝配偶者のケースで作られているので、別人の年齢で判定した注記を出さない */
+                reform2028Reason={
+                  reform2028({
+                    survivorAge: input.self.age,
+                    asOfYear,
+                    hasChildren: input.children.length > 0,
+                  }).reason
+                }
+                livingBand={livingBand}
+                loan={input.housing.loan ?? null}
+                survivorLabel="あなた"
+                title="配偶者が亡くなった場合"
+                gapText={figures.spouse ? gapSentence(figures.spouse) : ""}
+                bandNote={figures.spouse ? bandWidenedNote(figures.spouse) : null}
+                roundUnit={roundUnit}
+                workFrom={input.self.income > 0 ? "あなたの年収" : null}
+              />
+            </details>
+          )}
+        </div>
+      )}
 
       {/*
-        進路 what-if（子がいる世帯だけ）。
-        **参照材なので畳む**（2026-09-21・視覚の DoD (a)）。件数を露出に出す。
+        根拠 4：この結果のよみとき（T-07）。数値は AI に書かせず算定結果を差し込む。
+        **数字のサマリーは出さない**（§5-7）。結論の数字は冒頭に1回だけ出ている。
+        鍵が無ければ AI を呼ばず、テンプレのまま出す（AI を止めても成立する）
       */}
-      {eduWhatIf.length > 0 && (
-        <div className={s.section}>
+      <Narration
+        // 入力（クエリ）が変わったら状態ごと作り直す（2026-10-17・QA）
+        key={q.toString()}
+        aiEnabled={Boolean(process.env.GEMINI_API_KEY)}
+        initialText={narrate(result).text}
+        query={q.toString()}
+        values={placeholderValues(result)}
+      />
+
+      {/*
+        末尾の折りたたみ（すべて件数つき・§5-8〜12）。参照材をここにまとめる。
+        露出は見出しの1行だけで、中身は開けばすべてある（開示の規約）。
+      */}
+      <div className={`${s.section} ${s.tail}`}>
+        <h2 className={s.tailHead}>参考と前提</h2>
+        {/*
+          **使った根拠の数を、あるべき声量で出す**（視覚の DoD (a)）。よみときから末尾まで図も大きな数字も無く、
+          1画面を超える文字だけの区間になっていた。数は下の折りたたみの件数と同じ（params から数える）。
+        */}
+        <div className={s.tailStats}>
+          <p className={s.tailStat}>
+            <span className={s.tailStatLabel}>公的な出典</span>
+            <span className={s.tailStatValue}>{usedSources.length}件</span>
+          </p>
+          <p className={s.tailStat}>
+            <span className={s.tailStatLabel}>当社基準</span>
+            <span className={s.tailStatValue}>{Object.keys(params.ownStandard).length}件</span>
+          </p>
+        </div>
+
+        <Fold count="（2項目）" label="この診断で分かること・まだ分からないこと">
+          <p className={s.basis}>
+            分かること：死亡・病気・失業のときの、いまの保障や貯蓄との過不足の目安です。
+          </p>
+          <p className={s.basis}>
+            まだ扱っていないこと：就業不能（計算はまだです）・介護・老後・保険商品の良し悪しです。
+          </p>
+        </Fold>
+
+        {/*
+          2028年の年金改正。**対象外の世帯では1行**（UX_REVIEW 1回目・§5-9）。
+          対象の世帯は、試算がまだ改正前の制度であることを同じ行で言う（影響の向きと反映の有無）。
+        */}
+        <Fold
+          count="（理由1件）"
+          label={
+            result.reform2028.applicable
+              ? "2028年の年金改正：配偶者の遺族年金の受け取り方が変わる対象です。この試算は改正前の制度で計算しています"
+              : "2028年の年金改正：この世帯は対象外です"
+          }
+        >
+          <p className={s.reformBody}>{result.reform2028.reason}</p>
+        </Fold>
+
+        {eduWhatIf.length > 0 && (
           <Fold
             count={`（${eduWhatIf.length}通り・お子さん合計）`}
             label="進路で教育費はこう変わる"
@@ -1349,69 +1317,19 @@ export default async function ResultPage({
               必要な保障額も上がります。
             </p>
           </Fold>
-        </div>
-      )}
+        )}
 
-      {/*
-        平均の中立併記（社会的証明＝煽りにしない。平均は目標ではない）。
-        **参照材なので畳む**（2026-09-21・視覚の DoD (a)）。
-      */}
-      <div className={s.section}>
-        <Fold label="ご参考：世帯の死亡保険金額の平均">
-          <div className={s.reformNote}>
-            <strong>ご参考：</strong> 世帯の死亡保険金額の平均は約
-            {formatMan(v(params, "householdDeathCoverageAvg"))}
-            です（生命保険文化センター）。ただし
-            <strong>平均は目標ではありません</strong>
-            。必要な額は世帯の前提で大きく変わります。額の大小ではなく、
-            <strong>あなたの前提での必要額（上の目安）</strong>で見てください。
-          </div>
-        </Fold>
-      </div>
-
-      {/* 次の一歩（T-06）。文面は保険業法の自己診断サンプル（正式レビュー前） */}
-      <div className={s.section}>
-        <h2 className={s.h2}>次の一歩</h2>
-        {/*
-          **導線カードに、本文の数字を再掲する**（2026-09-21・視覚の DoD (a)）。
-          契約を確かめるときに見比べるのはこの2つの数なので、**再掲であって装飾ではない**。
-          値は `householdSummary` から来ており、ここで作っていない。
-        */}
-        <div className={s.narrationSummary}>
-          <AxisBadge badgeClassName={`${s.narrationBadge} ${s[HERO_TONE[hh.verdict]] ?? ""}`}>
-            {HERO_BADGE[hh.verdict]}
-          </AxisBadge>
-          <span className={s.narrationStat}>
-            <span className={s.narrationStatLabel}>
-              必要額のめやす{heroTotalLabel(figures) ? `（${heroTotalLabel(figures)}）` : ""}
-            </span>
-            <span className={s.narrationStatValue}>
-              <RangeText text={formatRange(hh.totalNeed.low, hh.totalNeed.high)} />
-            </span>
-          </span>
-          <span className={s.narrationStat}>
-            <span className={s.narrationStatLabel}>いまの保障</span>
-            <span className={s.narrationStatValue}>
-              {heroCoverageText(figures)}
-            </span>
-          </span>
-        </div>
-        {/*
-          **人ごとの過不足の判定（過不足軸）から組み立てる**（UX #2・設計レビュー #2）。
-          不足の入口は被保険者の働き方で変える（勤め先が無い人に団体保険を案内しない）。
-        */}
-        {nextStepLines(figures, {
-          self: input.self.employment,
-          spouse: input.spouse?.employment ?? null,
-        }).map((line) => (
-          <p className={s.meta} key={line}>
-            <WithAmounts text={line} />
+        {/* 平均の中立併記（社会的証明＝煽りにしない。平均は目標ではない） */}
+        <Fold count="（1件）" label="ご参考：世帯の死亡保険金額の平均">
+          <p className={s.basis}>
+            世帯の死亡保険金額の平均は約{formatMan(v(params, "householdDeathCoverageAvg"))}
+            です（生命保険文化センター）。平均は目標ではありません。必要な額は、あなたの前提での必要額（上の目安）で見てください。
           </p>
-        ))}
+        </Fold>
 
-        {/* 選ぶ基準（もっと知りたい）。押したときだけ開く。押下記録は T-09（計測）で対応 */}
+        {/* 選ぶ基準。動かす理由がある人がいるときだけ */}
         {hasActionableGap(figures) && (
-          <Fold count="（4点）" label="もっと知りたい：保険を選ぶときの基準">
+          <Fold count="（4点）" label="保険を選ぶときの基準">
             <ul className={s.list}>
               <li>いくらの保障が必要か（この診断の目安）</li>
               <li>いつまで必要か（末子の独立・配偶者の年齢）</li>
@@ -1425,77 +1343,13 @@ export default async function ResultPage({
           </Fold>
         )}
 
-        <p className={s.basis}>
-          ※ このサービスは特定の商品を勧めたり、申込みへ誘導したりしません（制度・一般情報の提供）。
-          次の一歩の案内は専門家レビュー前のサンプルです。
-        </p>
-      </div>
-
-      {/* 続きを受け取る導線（T-13）。**出典より下に置かない。**
-          唯一「こちらから声をかける」機能が、最下部のテキストリンク1本では見つからない。
-          ただし CTA の赤は使わない。押させたい場所ではなく、選べる場所として出す。 */}
-      <div className={`${s.section} ${s.watchCard}`}>
-        <h2 className={s.h3}>このあと、状況が変わったら</h2>
-        {/*
-          **導線カードに、本文の数字を再掲する**（DoD (a)）。
-          お知らせが効いてくるのはこの年なので、再掲であって装飾ではない。
-          年は段差チャートと同じ `projectDeath` の出力から来ている。
-        */}
-        {selfProjection.rows.length > 0 && (
-          <p className={s.narrationSummary}>
-            <span className={s.narrationStat}>
-              <span className={s.narrationStatLabel}>
-                {watchYear === null ? "お知らせが対象にする期間" : "次にお知らせが要りそうな時期"}
-              </span>
-              <span className={s.narrationStatValue}>
-                {watchYear === null
-                  ? // 公的収入が動かない世帯（遺族がいない等）では節目が無い。
-                    // **数字が無いと言わず、お知らせが対象にする期間の終端を出す**
-                    `${selfProjection.rows[selfProjection.rows.length - 1].year}年まで`
-                  : `${watchYear}年ごろ`}
-              </span>
-            </span>
-          </p>
-        )}
-        {SAVE_ENABLED ? (
-          <>
-            <p className={s.watchLead}>
-              お子さんの進学など、必要な保障が変わる時期にだけ一言お知らせします。
-              保存するのは今日の入力（範囲）と結果の要点だけで、
-              <strong>お知らせに金額は書きません</strong>。いつでも削除できます。
-            </p>
-            <Link className={s.watchButton} href={`/save?${q.toString()}`}>
-              この結果を保存してお知らせを受け取る
-            </Link>
-          </>
-        ) : (
-          <p className={s.watchLead}>お知らせを受け取る機能は、いま準備中です。</p>
-        )}
-        <p className={s.basis}>※ 保存しなくても、この結果はURLをブックマークすれば見返せます。</p>
-      </div>
-
-      {/*
-        照合表 #9「使った前提と出典」。**移植元は result.html の同名ブロック。**
-        ここで旧「参考（公的機関）」のリンク箇条書きと、その下の散文1段落を**置換**した
-        ── 同じ出典がリスト・散文・滝のキャプションの3か所に散っていた。
-      */}
-      <div className={s.section}>
-        <UsedSources items={usedSources} note={sourcesNote} />
-      </div>
-
-      {/*
-        当社基準（照合表 #9 の後半）。
-        **当社基準は手書きで並べない。** `params` の `ownStandard` を**在庫一覧としてそのまま出す**
-        ── 散らばった当社基準が一覧されていないと、増えたときに画面だけ古くなる。
-        2026-09-21、葬儀・予備費の「床として使う置き方」をここに昇格させた
-        （時期の根拠がどの文書にも無いと全文確認で分かったため）。
-      */}
-      {/* **参照材なので畳む**（視覚の DoD (a)）。在庫であることが要点なので件数を露出に出す */}
-      <div className={s.section}>
+        {/* 照合表 #9「使った前提と出典」。件数は出典と当社基準を分けて出す（§指摘） */}
         <Fold
-          count={`（全${Object.keys(params.ownStandard).length}件）`}
-          label="当社基準（公的出典のない当社の見立て）"
+          count={`（出典${usedSources.length}件・当社基準${Object.keys(params.ownStandard).length}件）`}
+          label="使った前提と出典"
         >
+          <UsedSources items={usedSources} note={sourcesNote} />
+          <h3 className={s.h3}>当社基準（公的出典のない当社の見立て）</h3>
           <ul className={s.list}>
             {/* **値も並べる**（2026-09-22）。名前だけ見せて値を隠すと開示の意味が半減する */}
             {Object.entries(params.ownStandard).map(([key, e]) => {
@@ -1512,25 +1366,48 @@ export default async function ResultPage({
         </Fold>
       </div>
 
+      {/* 続きを受け取る導線（T-13）。**準備中のあいだは出さない**（§指摘：押せない導線を見せない） */}
+      {SAVE_ENABLED && (
+        <div className={`${s.section} ${s.watchCard}`}>
+          <h2 className={s.h3}>このあと、状況が変わったら</h2>
+          <p className={s.watchLead}>
+            お子さんの進学など、必要な保障が変わる時期にだけ一言お知らせします。
+            保存するのは今日の入力（範囲）と結果の要点だけで、
+            <strong>お知らせに金額は書きません</strong>。いつでも削除できます。
+          </p>
+          <Link className={s.watchButton} href={`/save?${q.toString()}`}>
+            この結果を保存してお知らせを受け取る
+          </Link>
+          <p className={s.basis}>※ 保存しなくても、この結果はURLをブックマークすれば見返せます。</p>
+        </div>
+      )}
+
+      {/*
+        フッター（1回だけ）：概算・要精査／算定基準日／パラメータ版＋文面の確定前の注記＋入力をやり直す。
+        算定基準日とパラメータ版は「いつの・どの制度で」出たかの情報なので、値は強調する。
+      */}
       <div className={s.draftNote}>
-        次の一歩・選ぶ基準の文面は、保険業法の正式な弁護士レビュー（OI-01）後に確定します（現在はサンプル）。
-        <br />
+        <p className={s.footHead}>
+          これは<strong>概算・要精査</strong>です
+        </p>
+        <div className={s.tailStats}>
+          <p className={s.tailStat}>
+            <span className={s.tailStatLabel}>算定基準日</span>
+            {/* 日本時間の日付（UTC で切ると Cloud Run では JST 0〜9時に前日になる・2026-09-22） */}
+            <span className={s.tailStatValue}>{jstDate(asOfDate)}</span>
+          </p>
+          <p className={s.tailStat}>
+            <span className={s.tailStatLabel}>使用パラメータ版</span>
+            <span className={s.tailStatValue}>{result.paramVersion}</span>
+          </p>
+        </div>
+        <p className={s.footNote}>
+          次の一歩・選ぶ基準の文面は、保険業法の正式な弁護士レビュー（OI-01）後に確定します（現在はサンプル）。
+        </p>
         <Link className={s.link} href={`/wizard?${q.toString()}`}>
           入力をやり直す
         </Link>
       </div>
-
-      {/*
-        照合表 #10：`check.html` 末尾の黒帯を**ページ最下部**へ（キックオフの積み残し）。
-        診断表の直下ではなく最下部に置くのは、この2行が**全部読み終えた人への一文**だから。
-        玄関（診断表）の直後に置くと、まだ根拠を見ていない人に結論だけ言う形になる。
-      */}
-      <aside className={s.statement}>
-        <p className={s.statementHead}>万が一しか診ない計算機は、要らない。</p>
-        <p className={s.statementBody}>
-          人生のリスクを、正直な精度表示つきで、全部診る。それが「お金の主治医」の仕事です。
-        </p>
-      </aside>
     </main>
   );
 }

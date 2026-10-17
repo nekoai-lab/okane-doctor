@@ -120,10 +120,19 @@
   margin: 0 0 var(--space-2);
 }
 
+.amountLabel {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: var(--space-3) 0 0;
+}
+
+/* 金額は明朝の独立した大きな数字（DoD (b)） */
 .amount {
-  font-size: var(--font-size-std-xl);
+  font-family: var(--mk-font-display);
+  font-size: 28px;
   font-weight: var(--font-weight-bold);
-  margin: var(--space-2) 0;
+  line-height: 1.35;
+  margin: 2px 0 var(--space-2);
 }
 
 .verdictLine {
@@ -711,8 +720,20 @@
 }
 
 .spouseSummaryVerdict {
-  font-size: var(--font-size-std-s);
-  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+}
+
+.spouseSummaryLabel {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.spouseSummaryValue {
+  font-family: var(--mk-font-display);
+  font-size: 24px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.35;
 }
 
 /* 開いたときは、中のカードの枠が二重にならないようにする */
@@ -831,4 +852,54 @@
   color: #b9c4bd;
   line-height: 1.8;
   margin: 0;
+}
+
+/* 末尾の折りたたみ（参照材）。見出しは1つ、行間は詰める（§指摘：閉じた見出しの間の空白） */
+.tail {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tailHead {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 var(--space-2);
+}
+
+.tailStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: 0 0 var(--space-2);
+}
+
+.tailStat {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tailStatLabel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.tailStatValue {
+  font-family: var(--mk-font-display);
+  font-size: 22px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.footHead {
+  font-size: 15px;
+  margin: 0 0 var(--space-2);
+  color: var(--color-text);
+}
+
+.footNote {
+  font-size: 13px;
+  line-height: 1.7;
+  margin: var(--space-2) 0;
 }
