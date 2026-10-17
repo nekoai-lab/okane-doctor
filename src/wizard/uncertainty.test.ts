@@ -14,7 +14,7 @@ import type { WizardSelections } from "./types.js";
 import { dialFor } from "../calc/simulate.js";
 import { toCompleteSelections } from "./complete.js";
 import { LIVING_LEVELS } from "./dial.js";
-import { bandInputsFor, crossingDrivers, normalizeEnds } from "./uncertainty.js";
+import { bandInputs, crossingDrivers, normalizeEnds } from "./uncertainty.js";
 import { decodeSelections } from "./url.js";
 
 const P = loadParams("2026-08");
@@ -364,17 +364,16 @@ describe("暮らし方の目盛りは、幅の両端にもそろって渡る（2
     ),
   );
   if (!sel) throw new Error("代表世帯の URL が完全な回答になっていない");
-  const ends = normalizeEnds(P, sel, AS_OF);
   const lows = LIVING_LEVELS.map((lv) => dialFor(P, lv));
 
   it("全候補に同じ目盛りが付く", () => {
     for (const d of lows) {
-      for (const input of bandInputsFor(ends, d)) expect(input.lifestyleDial).toBe(d);
+      for (const input of bandInputs(P, sel, AS_OF, d)) expect(input.lifestyleDial).toBe(d);
     }
   });
 
   it("目盛りを動かすと、カードの必要額（包絡）も動く", () => {
-    const highs = lows.map((d) => envelope(P, bandInputsFor(ends, d), AS_OF, "self").high);
+    const highs = lows.map((d) => envelope(P, bandInputs(P, sel, AS_OF, d), AS_OF, "self").high);
     expect(new Set(highs).size).toBeGreaterThan(1);
   });
 });

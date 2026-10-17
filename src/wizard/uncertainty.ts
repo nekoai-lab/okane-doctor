@@ -31,7 +31,7 @@
  */
 import type { DiagnoseInput } from "../calc/index.js";
 import type { AnswerBand, ParamSet } from "../params/index.js";
-import { diagnose } from "../calc/index.js";
+import { calcDeath, diagnose, outOfScope, toHousehold } from "../calc/index.js";
 import {
   ASSETS_LABEL,
   INCOME_LABEL,
@@ -123,6 +123,87 @@ export type FieldEnds = Partial<
   Record<"selfIncome" | "spouseIncome" | "living" | "assets" | "loan", End>
 >;
 
+/** 幅を持ちうる入力（軸）。`FieldEnds` のキーと同じ */
+type AxisKey = keyof FieldEnds;
+const AXES: AxisKey[] = ["selfIncome", "spouseIncome", "living", "assets", "loan"];
+type AxisValues = Record<AxisKey, number>;
+
+/** 代表値の入力から、各軸の値を読む */
+function pointValues(base: DiagnoseInput): AxisValues {
+  return {
+    selfIncome: base.self.income,
+    spouseIncome: base.spouse?.income ?? 0,
+    living: base.monthlyLiving,
+    assets: base.assets,
+    loan: base.housing.type === "own" ? (base.housing.loan ?? 0) : 0,
+  };
+}
+
+/** 各軸を端（入力ごとに `per`、指定が無ければ `end`）に置いた値 */
+function endValues(
+  p: ParamSet,
+  sel: WizardSelections,
+  base: DiagnoseInput,
+  end: End,
+  per: FieldEnds,
+): AxisValues {
+  const floor = p.ownStandard.incomeBandFloor.value;
+  const pv = pointValues(base);
+  const spouseCode = sel.spouseIncome;
+  return {
+    selfIncome: bandEnd(
+      p.inputRanges.incomeBand[sel.selfIncome],
+      per.selfIncome ?? end,
+      pv.selfIncome,
+      floor,
+    ),
+    spouseIncome:
+      base.spouse && spouseCode
+        ? bandEnd(
+            p.inputRanges.incomeBand[spouseCode],
+            per.spouseIncome ?? end,
+            pv.spouseIncome,
+            floor,
+          )
+        : pv.spouseIncome,
+    // 年収から推定する世帯では生活費は軸にならない（`build` が年収から組み直す）
+    living:
+      sel.livingCost === "estimate"
+        ? pv.living
+        : livingEnd(p.inputRanges.monthlyLivingBand[sel.livingCost], per.living ?? end, pv.living),
+    assets: bandEnd(p.inputRanges.assetsBand[sel.assets], per.assets ?? end, pv.assets),
+    loan:
+      base.housing.type === "own" && sel.loan && base.housing.loan
+        ? livingEnd(p.inputRanges.loanBand[sel.loan], per.loan ?? end, pv.loan)
+        : pv.loan,
+  };
+}
+
+/**
+ * 軸の値から入力を組む。**端の入力も、区分の内側の入力も、ここ1か所で組む**（写しを2本にしない）。
+ * 生活費を「年収から推定」した世帯では、**年収の値に連動させて**生活費を組み直す。
+ */
+function build(
+  p: ParamSet,
+  sel: WizardSelections,
+  base: DiagnoseInput,
+  vals: AxisValues,
+): DiagnoseInput {
+  const spouseIncome = base.spouse ? vals.spouseIncome : 0;
+  const monthlyLiving =
+    sel.livingCost === "estimate" ? estimatedLiving(p, vals.selfIncome + spouseIncome) : vals.living;
+  let housing = base.housing;
+  if (housing.type === "own" && sel.loan && housing.loan) housing = { ...housing, loan: vals.loan };
+  return {
+    ...base,
+    self: { ...base.self, income: vals.selfIncome },
+    spouse: base.spouse ? { ...base.spouse, income: vals.spouseIncome } : null,
+    monthlyLiving,
+    assets: vals.assets,
+    housing,
+  };
+}
+
 function atEnd(
   p: ParamSet,
   sel: WizardSelections,
@@ -132,48 +213,8 @@ function atEnd(
 ): { input: DiagnoseInput; fields: UncertainField[] } {
   const base = normalize(p, sel, asOf);
   const fields: UncertainField[] = [];
-
   const floor = p.ownStandard.incomeBandFloor.value;
-  const selfIncome = bandEnd(
-    p.inputRanges.incomeBand[sel.selfIncome],
-    per.selfIncome ?? end,
-    base.input.self.income,
-    floor,
-  );
-  const spouseCode = sel.spouseIncome;
-  const spouseIncome =
-    base.input.spouse && spouseCode
-      ? bandEnd(
-          p.inputRanges.incomeBand[spouseCode],
-          per.spouseIncome ?? end,
-          base.input.spouse.income,
-          floor,
-        )
-      : (base.input.spouse?.income ?? 0);
-
-  // 生活費：区分で答えたなら帯の端。年収から推定なら**年収の端に連動させて**組み直す
-  let monthlyLiving: number;
-  if (sel.livingCost === "estimate") {
-    monthlyLiving = estimatedLiving(p, selfIncome + (base.input.spouse ? spouseIncome : 0));
-  } else {
-    monthlyLiving = livingEnd(
-      p.inputRanges.monthlyLivingBand[sel.livingCost],
-      per.living ?? end,
-      base.input.monthlyLiving,
-    );
-  }
-
-  let housing = base.input.housing;
-  if (housing.type === "own" && sel.loan && housing.loan) {
-    const loan = livingEnd(p.inputRanges.loanBand[sel.loan], per.loan ?? end, housing.loan);
-    housing = { ...housing, loan };
-  }
-
-  const assets = bandEnd(
-    p.inputRanges.assetsBand[sel.assets],
-    per.assets ?? end,
-    base.input.assets,
-  );
+  const input = build(p, sel, base.input, endValues(p, sel, base.input, end, per));
 
   if (p.inputRanges.incomeBand[sel.selfIncome]) {
     fields.push({
@@ -213,17 +254,7 @@ function atEnd(
     });
   }
 
-  return {
-    input: {
-      ...base.input,
-      self: { ...base.input.self, income: selfIncome },
-      spouse: base.input.spouse ? { ...base.input.spouse, income: spouseIncome } : null,
-      monthlyLiving,
-      assets,
-      housing,
-    },
-    fields,
-  };
+  return { input, fields };
 }
 
 /**
@@ -312,14 +343,205 @@ export function normalizeEnds(p: ParamSet, sel: WizardSelections, asOf: Date): E
 }
 
 /**
- * 包絡に渡す入力（緩め端・厳しめ端・連動の候補）に、**暮らし方の目盛りをそろえて付ける**。
+ * 包絡に渡す入力をそろえる（帯の角・代表値・**区分の内側の極値**）。暮らし方の目盛りも全候補に同じものを付ける。
  *
- * 2026-10-16（QA で blocking）、結果画面がこれを付け忘れており、目盛りを動かすと
+ * 2026-10-16（QA で blocking）、結果画面が目盛りを付け忘れており、目盛りを動かすと
  * 内訳と年次表は動くのに、**死亡保障カードの必要額と判定だけ目盛り1のまま**だった。
  * 画面で組まずにここで組んで、テストで固定する。
+ *
+ * 2026-10-17（11回目の QA で blocking）からは、**帯の角だけでは足りない**ので区分の内側も探す（`bandSearch`）。
  */
-export function bandInputsFor(ends: Ends, lifestyleDial: number): DiagnoseInput[] {
-  return [ends.loose, ends.strict, ...ends.extra].map((input) => ({ ...input, lifestyleDial }));
+export function bandInputs(
+  p: ParamSet,
+  sel: WizardSelections,
+  asOf: Date,
+  lifestyleDial: number,
+): DiagnoseInput[] {
+  return bandSearch(p, sel, asOf, lifestyleDial).inputs;
+}
+
+export interface BandSearch {
+  /** 包絡に渡す入力（目盛りを付けたもの）。帯の角＋代表値＋内側で見つけた極値・枝ごとの代表 */
+  inputs: DiagnoseInput[];
+  /** 探索で `calcDeath` を回した回数（死亡ケースごとに1回と数える） */
+  evaluated: number;
+  /** 区切り点（端・折れ点）の格子の点数 */
+  gridPoints: number;
+}
+
+/** 折れ点を探すときに、まっすぐとみなす誤差（円）。生活費の推定の1円丸めが年数分積もっても届かない幅 */
+const LINEAR_TOLERANCE = 1_000;
+
+/**
+ * **区分の内側で必要額がいちばん高く・低くなる点を探す**（2026-10-17・11回目の QA で blocking）。
+ *
+ * 必要額は区分の中で単調ではない。`calcDeath` は差額（収入・資産 − 支出）で3つの枝に分かれ、
+ * 枝ごとに必要額の式が違う。
+ * - 上乗せが要る（`shortage`）：不足額に比例する
+ * - 当座資金（`sufficient`）：**生活費だけ**で決まる（葬儀・予備費＋生活費の数か月分）
+ * - 余裕（`ample`）：葬儀・予備費だけ
+ *
+ * 不足から外れた直後の当座資金は、不足の側の下限より高いことがある。だから**いちばん高い当座資金は
+ * 区分の角ではなく、枝の境目の手前**に出る。9回目の直しは帯の角（32組まで）だけを候補にしていたため、
+ * 実例（50代共働き・子なし・生活費は年収から推定・inc=lt800・sinc=lt400）では代表値の 600〜1,000万円が
+ * 最終の必要額 200〜800万円の**外**にはみ出し、保障1,000万円を「減らせる」と判定していた。
+ *
+ * **どう探すか（総当たりの格子ではなく、極値が出うる場所だけを回す）。**
+ * 各枝の中では、差額も生活費も入力の1次式（折れ点を除く）なので、枝の中での極値は
+ * 「区切り点の格子の点」か「格子の辺と枝の境目が交わる点」に出る（線形計画の頂点と同じ理屈）。
+ * 不足の境目（差額＝−しきい値）と余裕の境目（差額＝支出×率 > 0）は交わらないので、2つの境目が重なる点は考えなくてよい。
+ * 1. **区切り点**：各軸の端に加え、差額の**折れ点**（遺族の就労収入が「末子独立後の最低額」に切り替わる年収など）を
+ *    数値で探して入れる。式を写さないのは、エンジンの式が変わったときに黙って古くならないため
+ * 2. **格子**：区切り点の全組み合わせを回す
+ * 3. **境目**：格子の辺の両端で必要額の判定（ニーズ軸）が違えば、1円単位まで二分して境目の両側を回す
+ *
+ * 包絡（`envelope`）には全部を渡さず、死亡ケースごとの**最小・最大の点と、枝ごとの代表1点**だけを渡す
+ * （包絡は `diagnose` を回し直すので、候補の数がそのまま画面の重さになる）。帯の角はこれまでどおり全部渡す。
+ */
+export function bandSearch(
+  p: ParamSet,
+  sel: WizardSelections,
+  asOf: Date,
+  lifestyleDial: number,
+): BandSearch {
+  const ends = normalizeEnds(p, sel, asOf);
+  const withDial = (input: DiagnoseInput): DiagnoseInput => ({ ...input, lifestyleDial });
+  const corners = [ends.loose, ends.strict, ...ends.extra].map(withDial);
+  const base = ends.point.input;
+  const point = withDial(base);
+  // 算定できない世帯（`diagnose` が止める）では内側を探さない。止める場所は `diagnose` の1か所のまま
+  if (outOfScope(p, base)) return { inputs: corners, evaluated: 0, gridPoints: 0 };
+
+  const whos: Array<"self" | "spouse"> =
+    base.spouse && base.coverageSpouse !== undefined ? ["self", "spouse"] : ["self"];
+  let evaluated = 0;
+  const pv = pointValues(base);
+  const looseV = endValues(p, sel, base, "loose", {});
+  const strictV = endValues(p, sel, base, "strict", {});
+  const run = (vals: AxisValues) => {
+    const input = withDial(build(p, sel, base, vals));
+    evaluated += whos.length;
+    return { input, r: whos.map((w) => calcDeath(p, toHousehold(input, w))) };
+  };
+
+  // ---- 探した点のうち、死亡ケースごとの最小・最大と、枝ごとの代表1点を残す ----
+  type Pick = { low?: [number, DiagnoseInput]; high?: [number, DiagnoseInput] };
+  const picks: Pick[] = whos.map(() => ({}));
+  const byVerdict = whos.map(() => new Map<string, DiagnoseInput>());
+  const consider = (x: ReturnType<typeof run>) => {
+    x.r.forEach((r, i) => {
+      const pk = picks[i];
+      if (!pk.low || r.range.low < pk.low[0]) pk.low = [r.range.low, x.input];
+      if (!pk.high || r.range.high > pk.high[0]) pk.high = [r.range.high, x.input];
+      if (!byVerdict[i].has(r.verdict)) byVerdict[i].set(r.verdict, x.input);
+    });
+    return x;
+  };
+
+  // ---- 1. 区切り点：端・折れ点 ----
+  const axes: Array<{ key: AxisKey; values: number[] }> = [];
+  for (const key of AXES) {
+    const lo = Math.min(looseV[key], strictV[key]);
+    const hi = Math.max(looseV[key], strictV[key]);
+    if (lo === hi) continue;
+    // 動かしても差額が変わらない軸（団信ありのローン残高など）は格子に入れない
+    if (isInert(key, lo, hi)) continue;
+    // 代表値は格子の線に入れない（枝の中では1次式なので、極値は端と折れ点で区切った箱の辺にしか出ない）。
+    // 代表値そのものは候補に入れる（`point`）。線に入れると格子が軸ごとに1.5倍になり、重さだけが増える
+    const values = new Set([lo, hi]);
+    for (const k of kinksAlong(key, lo, hi)) values.add(k);
+    axes.push({ key, values: [...values].sort((a, b) => a - b) });
+  }
+
+  /**
+   * 差額の折れ点を数値で探す（ほかの軸は代表値に置く）。中点が両端を結ぶ直線から外れていれば折れ点があるので、
+   * 半分に割って続け、それ以上割っても外れが誤差の内に収まる区間の中点を折れ点として返す
+   */
+  function kinksAlong(key: AxisKey, lo: number, hi: number): number[] {
+    const margins = (x: number) => consider(run({ ...pv, [key]: x })).r.map((r) => r.margin);
+    const out: number[] = [];
+    const split = (a: number, ma: number[], b: number, mb: number[]): boolean => {
+      if (b - a < 2) return false;
+      const m = Math.floor((a + b) / 2);
+      const mm = margins(m);
+      const off = Math.max(
+        ...mm.map((v, i) => Math.abs(v - (ma[i] + ((mb[i] - ma[i]) * (m - a)) / (b - a)))),
+      );
+      if (off <= LINEAR_TOLERANCE) return false;
+      const left = split(a, ma, m, mm);
+      const right = split(m, mm, b, mb);
+      if (!left && !right) out.push(m);
+      return true;
+    };
+    split(lo, margins(lo), hi, margins(hi));
+    return out;
+  }
+
+  /** 軸の両端で、どの死亡ケースの差額も変わらなければ、その軸は必要額に効かない */
+  function isInert(key: AxisKey, lo: number, hi: number): boolean {
+    const a = consider(run({ ...pv, [key]: lo })).r;
+    const b = consider(run({ ...pv, [key]: hi })).r;
+    return a.every((r, i) => r.margin === b[i].margin && r.verdict === b[i].verdict);
+  }
+
+  // ---- 2. 格子：区切り点の全組み合わせ ----
+  const grid = new Map<string, ReturnType<typeof run>>();
+  const keyOf = (idx: number[]) => idx.join(",");
+  const valsOf = (idx: number[]): AxisValues => {
+    const vals = { ...pv };
+    axes.forEach((ax, i) => {
+      vals[ax.key] = ax.values[idx[i]];
+    });
+    return vals;
+  };
+  const walk = (i: number, idx: number[]) => {
+    if (i === axes.length) {
+      grid.set(keyOf(idx), consider(run(valsOf(idx))));
+      return;
+    }
+    for (let j = 0; j < axes[i].values.length; j++) walk(i + 1, [...idx, j]);
+  };
+  walk(0, []);
+
+  // ---- 3. 境目：格子の辺の両端で必要額の判定（ニーズ軸）が違えば、二分して境目の両側を回す ----
+  for (const [k, at] of grid) {
+    const idx = k === "" ? [] : k.split(",").map(Number);
+    axes.forEach((ax, i) => {
+      if (idx[i] + 1 >= ax.values.length) return;
+      const next = [...idx];
+      next[i] += 1;
+      const to = grid.get(keyOf(next));
+      if (!to) return;
+      whos.forEach((_, w) => {
+        if (at.r[w].verdict === to.r[w].verdict) return;
+        const vals = valsOf(idx);
+        const along = (x: number) => consider(run({ ...vals, [ax.key]: x }));
+        const bisect = (a: number, va: string, b: number, vb: string) => {
+          if (va === vb || b - a < 2) return;
+          const m = Math.floor((a + b) / 2);
+          const vm = along(m).r[w].verdict;
+          bisect(a, va, m, vm);
+          bisect(m, vm, b, vb);
+        };
+        bisect(ax.values[idx[i]], at.r[w].verdict, ax.values[next[i]], to.r[w].verdict);
+      });
+    });
+  }
+
+  const chosen = [
+    ...corners,
+    point,
+    ...picks.flatMap((pk) => [pk.low?.[1], pk.high?.[1]]),
+    ...byVerdict.flatMap((m) => [...m.values()]),
+  ].filter((x): x is DiagnoseInput => x !== undefined);
+  const seen = new Set<string>();
+  const inputs = chosen.filter((x) => {
+    const key = JSON.stringify(x);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return { inputs, evaluated, gridPoints: grid.size };
 }
 
 /**

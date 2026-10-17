@@ -157,8 +157,12 @@ describe("QA #1：年収の端は本人・配偶者で独立に組む（同じ�
   });
 
   /**
-   * **包絡は、帯の角（入力ごとに端を独立に選んだ全組み合わせ）の最小・最大と一致する。**
-   * 角は検査側で `inputAtEnds` から独立に作る。暮らし方の目盛りも全部の角に付ける
+   * **包絡は、帯の角（入力ごとに端を独立に選んだ全組み合わせ）の最小・最大を内側に含む。**
+   * 角は検査側で `inputAtEnds` から独立に作る。暮らし方の目盛りも全部の角に付ける。
+   *
+   * 9回目の直しでは「角の最小〜最大と**一致する**」を固定していたが、それは角しか見ていない実装の写しだった。
+   * 必要額は区分の内側で単調ではなく、角より外へ出る点が内側にある（11回目の QA）。
+   * 角より広がった分が本物の点であることは `interior.test.ts` の細かい格子が独立に確かめる
    */
   const both: End[] = ["loose", "strict"];
   const corners = (q: string, level: LivingLevel) => {
@@ -202,10 +206,12 @@ describe("QA #1：年収の端は本人・配偶者で独立に組む（同じ�
     ["幅の広い世帯", WIDE],
   ] as const) {
     for (const level of LIVING_LEVELS) {
-      it(`${name}（目盛り ${level}）：最終の必要額＝帯の角の最小〜最大`, () => {
+      it(`${name}（目盛り ${level}）：最終の必要額は帯の角の最小〜最大を含む`, () => {
         for (const c of corners(q, level)) {
           const fx = c.who === "self" ? c.f.self : c.f.spouse;
-          expect(fx?.need).toEqual({ low: c.low, high: c.high });
+          if (!fx) throw new Error("死亡ケースが無い");
+          expect(fx.need.low).toBeLessThanOrEqual(c.low);
+          expect(fx.need.high).toBeGreaterThanOrEqual(c.high);
         }
       });
     }
