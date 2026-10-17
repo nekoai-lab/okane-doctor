@@ -87,3 +87,12 @@
 - 判断の記録は PR #3 の `design/handoff/moshimo-lab-v2/review/DESIGN_DECISIONS.md`。トップ LP は別に作り直すので、v2 を入れる画面はもしもラボ（PR #6）と診断結果だけ
 - Codex の UX レビュー5回目（2026-10-17・139d1d2、PR #6 と合わせて）で ux-pass。記録は PR #6 の `design/UX_REVIEW.md`
 - 次の1手：QA のあとに部品見本のコード（金額の折り返し）を直したので request-qa をやり直す → マージ → PR #6
+
+## claude/lp-final-rlhc3h（トップ LP・2026-10-17・Claude Code）
+
+- 現状：オーナー最終承認のデザイン画像（PC・スマホ、`okane_doctor_lp_final_handoff.zip` の references/APPROVED_*.png）を正本に、トップ `/` を作り直した。PR #4 の上に積んでいる（テーマ・判定バッジ・イラストを共用）。旧 LP（`app/lp.css`・`public/lp/family-hero.jpg`）は撤去
+- 金額と判定は `topExample` から。結果画面と同じ入口（`resultInputs` → `resultFigures`）に通すよう直した（それまでは代表値のレンジで、LP の「診断結果の例を見る」の先と金額が割れていた）。内訳（生活費・教育費・住居費・その他）を返す欄を足した
+- 画像から変えた所：もしもラボの3枚は実装済みのシナリオ（病気・けが／亡くなる時期／配偶者の働き方）、「今すぐ」「無料」「10分」「安心して」は使わない（急かす語・品質の自称）、制度の見守りは「毎週」と書かず承認待ちに積まれる事実だけ
+- やり残し：05B ロゴは手で起こした仮 SVG（`app/top/Logo.tsx`）で、正式なベクター版の承認が要る。ラボのカードの挿絵（病室・子ども・家）は素材が無いので SVG アイコン。ボタンは承認画像どおりピル型で、テーマの「角丸12px」と違う（LP だけ）
+- `e2e/wizard.spec.ts` の重い経路は結果画面にスライダーを探して落ちる（この PR の差分外。ラボを分けたときから）
+- 次の1手：request-qa（qa-pass）と UX レビュー（ux-pass）。PR #4 のマージ後に向き先を main へ

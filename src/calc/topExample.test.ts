@@ -4,9 +4,10 @@
 import { describe, expect, it } from "vitest";
 import { loadParams } from "../params/index.js";
 import { toCompleteSelections } from "../wizard/complete.js";
-import { normalize } from "../wizard/normalize.js";
+import { decodeLivingLevel } from "../wizard/dial.js";
+import { resultInputs } from "../wizard/resultInputs.js";
 import { decodeSelections } from "../wizard/url.js";
-import { diagnose } from "./index.js";
+import { resultFigures } from "./figures.js";
 import { TOP_EXAMPLE_QUERY, topExample } from "./topExample.js";
 import { verdict3 } from "./verdict3.js";
 
@@ -15,18 +16,30 @@ const AS_OF = new Date("2026-10-15T12:00:00+09:00");
 
 describe("topExample（トップの試算例）", () => {
   const ex = topExample(P, AS_OF);
-  const complete = toCompleteSelections(decodeSelections(new URLSearchParams(TOP_EXAMPLE_QUERY)));
+  const q = new URLSearchParams(TOP_EXAMPLE_QUERY);
+  const complete = toCompleteSelections(decodeSelections(q));
   if (!complete) throw new Error("入力が揃っていない");
-  const { input } = normalize(P, complete, AS_OF);
-  const r = diagnose(P, input, AS_OF).self;
+  const { input, bands } = resultInputs(P, complete, decodeLivingLevel(q), AS_OF);
+  const f = resultFigures(P, input, bands, AS_OF).self;
+  const r = f.point;
 
-  it("金額は結果画面と同じ diagnose の出力そのもの", () => {
+  it("金額は結果画面と同じ resultFigures の出力そのもの（押した先の結果画面と食い違わない）", () => {
     expect(ex.total).toBe(r.expense.total);
     expect(ex.pension).toBe(r.income.pensionBasic + r.income.pensionKosei + r.income.chukoreiKafu);
     expect(ex.survivorWork).toBe(r.income.survivorWork);
     expect(ex.assets).toBe(r.income.assets);
-    expect(ex.need).toEqual(r.range);
+    expect(ex.need).toEqual(f.need);
+    expect(ex.verdict).toBe(f.verdict);
     expect(ex.coverage).toBe(input.coverageSelf);
+  });
+
+  it("内訳は diagnose の支出そのもので、足すと総額になる", () => {
+    expect(ex.expense.living).toBe(r.expense.livingChild + r.expense.livingAlone);
+    expect(ex.expense.education).toBe(r.expense.education);
+    expect(ex.expense.housing).toBe(r.expense.housing);
+    expect(ex.expense.other).toBe(r.expense.funeral);
+    const { living, education, housing, other } = ex.expense;
+    expect(living + education + housing + other).toBe(ex.total);
   });
 
   it("世帯は LP の説明どおり（37歳・配偶者35歳・子2歳・団信あり）", () => {
