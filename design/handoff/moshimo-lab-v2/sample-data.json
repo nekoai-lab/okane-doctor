@@ -1,0 +1,2289 @@
+{
+  "query": "v=1&sb=1986&emp=self&sp=1&spb=1988&spe=none&ch=2018-2021&edu=private&inc=lt400&sinc=none&as=lt100&liv=lt35&ho=rent&cvs=none&cvsp=none",
+  "version": "2026.08",
+  "data": {
+    "work": [
+      {
+        "level": "answer",
+        "now": {
+          "age": 40,
+          "year": 2026,
+          "children": [
+            8,
+            5
+          ],
+          "low": 62000000,
+          "high": 106000000,
+          "middle": 84000000,
+          "verdict": "shortage",
+          "reducible": 0,
+          "shortage": 62000000,
+          "crossing": null,
+          "assumptions": [
+            "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+          ],
+          "annualIncome": 0
+        },
+        "points": [
+          {
+            "age": 40,
+            "year": 2026,
+            "children": [
+              8,
+              5
+            ],
+            "low": 62000000,
+            "high": 106000000,
+            "middle": 84000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 62000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 41,
+            "year": 2027,
+            "children": [
+              9,
+              6
+            ],
+            "low": 60000000,
+            "high": 102000000,
+            "middle": 81000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 60000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 42,
+            "year": 2028,
+            "children": [
+              10,
+              7
+            ],
+            "low": 56000000,
+            "high": 95000000,
+            "middle": 75500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 56000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 43,
+            "year": 2029,
+            "children": [
+              11,
+              8
+            ],
+            "low": 52000000,
+            "high": 89000000,
+            "middle": 70500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 52000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 44,
+            "year": 2030,
+            "children": [
+              12,
+              9
+            ],
+            "low": 48000000,
+            "high": 83000000,
+            "middle": 65500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 48000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 45,
+            "year": 2031,
+            "children": [
+              13,
+              10
+            ],
+            "low": 44000000,
+            "high": 77000000,
+            "middle": 60500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 44000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 46,
+            "year": 2032,
+            "children": [
+              14,
+              11
+            ],
+            "low": 41000000,
+            "high": 71000000,
+            "middle": 56000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 41000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 47,
+            "year": 2033,
+            "children": [
+              15,
+              12
+            ],
+            "low": 37000000,
+            "high": 65000000,
+            "middle": 51000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 37000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 48,
+            "year": 2034,
+            "children": [
+              16,
+              13
+            ],
+            "low": 34000000,
+            "high": 60000000,
+            "middle": 47000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 34000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 49,
+            "year": 2035,
+            "children": [
+              17,
+              14
+            ],
+            "low": 32000000,
+            "high": 56000000,
+            "middle": 44000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 32000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 50,
+            "year": 2036,
+            "children": [
+              18,
+              15
+            ],
+            "low": 29000000,
+            "high": 51000000,
+            "middle": 40000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 29000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 51,
+            "year": 2037,
+            "children": [
+              19,
+              16
+            ],
+            "low": 26000000,
+            "high": 47000000,
+            "middle": 36500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 26000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 52,
+            "year": 2038,
+            "children": [
+              20,
+              17
+            ],
+            "low": 24000000,
+            "high": 42000000,
+            "middle": 33000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 24000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 53,
+            "year": 2039,
+            "children": [
+              21,
+              18
+            ],
+            "low": 21000000,
+            "high": 38000000,
+            "middle": 29500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 21000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 54,
+            "year": 2040,
+            "children": [
+              22,
+              19
+            ],
+            "low": 17000000,
+            "high": 31000000,
+            "middle": 24000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 17000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 55,
+            "year": 2041,
+            "children": [
+              23,
+              20
+            ],
+            "low": 14000000,
+            "high": 25000000,
+            "middle": 19500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 14000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 56,
+            "year": 2042,
+            "children": [
+              24,
+              21
+            ],
+            "low": 10000000,
+            "high": 20000000,
+            "middle": 15000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 10000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 57,
+            "year": 2043,
+            "children": [
+              25,
+              22
+            ],
+            "low": 7000000,
+            "high": 15000000,
+            "middle": 11000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 7000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 58,
+            "year": 2044,
+            "children": [
+              26,
+              23
+            ],
+            "low": 7000000,
+            "high": 14000000,
+            "middle": 10500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 7000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 59,
+            "year": 2045,
+            "children": [
+              27,
+              24
+            ],
+            "low": 6000000,
+            "high": 12000000,
+            "middle": 9000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 6000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 60,
+            "year": 2046,
+            "children": [
+              28,
+              25
+            ],
+            "low": 5000000,
+            "high": 11000000,
+            "middle": 8000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 5000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 61,
+            "year": 2047,
+            "children": [
+              29,
+              26
+            ],
+            "low": 5000000,
+            "high": 10000000,
+            "middle": 7500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 5000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 62,
+            "year": 2048,
+            "children": [
+              30,
+              27
+            ],
+            "low": 4000000,
+            "high": 8000000,
+            "middle": 6000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 4000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 63,
+            "year": 2049,
+            "children": [
+              31,
+              28
+            ],
+            "low": 3000000,
+            "high": 7000000,
+            "middle": 5000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 3000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 64,
+            "year": 2050,
+            "children": [
+              32,
+              29
+            ],
+            "low": 3000000,
+            "high": 6000000,
+            "middle": 4500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 3000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          }
+        ]
+      },
+      {
+        "level": "half",
+        "now": {
+          "age": 40,
+          "year": 2026,
+          "children": [
+            8,
+            5
+          ],
+          "low": 62000000,
+          "high": 106000000,
+          "middle": 84000000,
+          "verdict": "shortage",
+          "reducible": 0,
+          "shortage": 62000000,
+          "crossing": null,
+          "assumptions": [
+            "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+          ],
+          "annualIncome": 0
+        },
+        "points": [
+          {
+            "age": 40,
+            "year": 2026,
+            "children": [
+              8,
+              5
+            ],
+            "low": 62000000,
+            "high": 106000000,
+            "middle": 84000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 62000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 41,
+            "year": 2027,
+            "children": [
+              9,
+              6
+            ],
+            "low": 60000000,
+            "high": 102000000,
+            "middle": 81000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 60000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 42,
+            "year": 2028,
+            "children": [
+              10,
+              7
+            ],
+            "low": 56000000,
+            "high": 95000000,
+            "middle": 75500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 56000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 43,
+            "year": 2029,
+            "children": [
+              11,
+              8
+            ],
+            "low": 52000000,
+            "high": 89000000,
+            "middle": 70500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 52000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 44,
+            "year": 2030,
+            "children": [
+              12,
+              9
+            ],
+            "low": 48000000,
+            "high": 83000000,
+            "middle": 65500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 48000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 45,
+            "year": 2031,
+            "children": [
+              13,
+              10
+            ],
+            "low": 44000000,
+            "high": 77000000,
+            "middle": 60500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 44000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 46,
+            "year": 2032,
+            "children": [
+              14,
+              11
+            ],
+            "low": 41000000,
+            "high": 71000000,
+            "middle": 56000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 41000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 47,
+            "year": 2033,
+            "children": [
+              15,
+              12
+            ],
+            "low": 37000000,
+            "high": 65000000,
+            "middle": 51000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 37000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 48,
+            "year": 2034,
+            "children": [
+              16,
+              13
+            ],
+            "low": 34000000,
+            "high": 60000000,
+            "middle": 47000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 34000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 49,
+            "year": 2035,
+            "children": [
+              17,
+              14
+            ],
+            "low": 32000000,
+            "high": 56000000,
+            "middle": 44000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 32000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 50,
+            "year": 2036,
+            "children": [
+              18,
+              15
+            ],
+            "low": 29000000,
+            "high": 51000000,
+            "middle": 40000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 29000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 51,
+            "year": 2037,
+            "children": [
+              19,
+              16
+            ],
+            "low": 26000000,
+            "high": 47000000,
+            "middle": 36500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 26000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 52,
+            "year": 2038,
+            "children": [
+              20,
+              17
+            ],
+            "low": 24000000,
+            "high": 42000000,
+            "middle": 33000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 24000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 53,
+            "year": 2039,
+            "children": [
+              21,
+              18
+            ],
+            "low": 21000000,
+            "high": 38000000,
+            "middle": 29500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 21000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 54,
+            "year": 2040,
+            "children": [
+              22,
+              19
+            ],
+            "low": 17000000,
+            "high": 31000000,
+            "middle": 24000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 17000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 55,
+            "year": 2041,
+            "children": [
+              23,
+              20
+            ],
+            "low": 14000000,
+            "high": 25000000,
+            "middle": 19500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 14000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 56,
+            "year": 2042,
+            "children": [
+              24,
+              21
+            ],
+            "low": 10000000,
+            "high": 20000000,
+            "middle": 15000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 10000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 57,
+            "year": 2043,
+            "children": [
+              25,
+              22
+            ],
+            "low": 7000000,
+            "high": 15000000,
+            "middle": 11000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 7000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 58,
+            "year": 2044,
+            "children": [
+              26,
+              23
+            ],
+            "low": 7000000,
+            "high": 14000000,
+            "middle": 10500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 7000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 59,
+            "year": 2045,
+            "children": [
+              27,
+              24
+            ],
+            "low": 6000000,
+            "high": 12000000,
+            "middle": 9000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 6000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 60,
+            "year": 2046,
+            "children": [
+              28,
+              25
+            ],
+            "low": 5000000,
+            "high": 11000000,
+            "middle": 8000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 5000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 61,
+            "year": 2047,
+            "children": [
+              29,
+              26
+            ],
+            "low": 5000000,
+            "high": 10000000,
+            "middle": 7500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 5000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 62,
+            "year": 2048,
+            "children": [
+              30,
+              27
+            ],
+            "low": 4000000,
+            "high": 8000000,
+            "middle": 6000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 4000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 63,
+            "year": 2049,
+            "children": [
+              31,
+              28
+            ],
+            "low": 3000000,
+            "high": 7000000,
+            "middle": 5000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 3000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 64,
+            "year": 2050,
+            "children": [
+              32,
+              29
+            ],
+            "low": 3000000,
+            "high": 6000000,
+            "middle": 4500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 3000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          }
+        ]
+      },
+      {
+        "level": "zero",
+        "now": {
+          "age": 40,
+          "year": 2026,
+          "children": [
+            8,
+            5
+          ],
+          "low": 62000000,
+          "high": 106000000,
+          "middle": 84000000,
+          "verdict": "shortage",
+          "reducible": 0,
+          "shortage": 62000000,
+          "crossing": null,
+          "assumptions": [
+            "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+          ],
+          "annualIncome": 0
+        },
+        "points": [
+          {
+            "age": 40,
+            "year": 2026,
+            "children": [
+              8,
+              5
+            ],
+            "low": 62000000,
+            "high": 106000000,
+            "middle": 84000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 62000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 41,
+            "year": 2027,
+            "children": [
+              9,
+              6
+            ],
+            "low": 60000000,
+            "high": 102000000,
+            "middle": 81000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 60000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 42,
+            "year": 2028,
+            "children": [
+              10,
+              7
+            ],
+            "low": 56000000,
+            "high": 95000000,
+            "middle": 75500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 56000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 43,
+            "year": 2029,
+            "children": [
+              11,
+              8
+            ],
+            "low": 52000000,
+            "high": 89000000,
+            "middle": 70500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 52000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 44,
+            "year": 2030,
+            "children": [
+              12,
+              9
+            ],
+            "low": 48000000,
+            "high": 83000000,
+            "middle": 65500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 48000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 45,
+            "year": 2031,
+            "children": [
+              13,
+              10
+            ],
+            "low": 44000000,
+            "high": 77000000,
+            "middle": 60500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 44000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 46,
+            "year": 2032,
+            "children": [
+              14,
+              11
+            ],
+            "low": 41000000,
+            "high": 71000000,
+            "middle": 56000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 41000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 47,
+            "year": 2033,
+            "children": [
+              15,
+              12
+            ],
+            "low": 37000000,
+            "high": 65000000,
+            "middle": 51000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 37000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 48,
+            "year": 2034,
+            "children": [
+              16,
+              13
+            ],
+            "low": 34000000,
+            "high": 60000000,
+            "middle": 47000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 34000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 49,
+            "year": 2035,
+            "children": [
+              17,
+              14
+            ],
+            "low": 32000000,
+            "high": 56000000,
+            "middle": 44000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 32000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 50,
+            "year": 2036,
+            "children": [
+              18,
+              15
+            ],
+            "low": 29000000,
+            "high": 51000000,
+            "middle": 40000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 29000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 51,
+            "year": 2037,
+            "children": [
+              19,
+              16
+            ],
+            "low": 26000000,
+            "high": 47000000,
+            "middle": 36500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 26000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 52,
+            "year": 2038,
+            "children": [
+              20,
+              17
+            ],
+            "low": 24000000,
+            "high": 42000000,
+            "middle": 33000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 24000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 53,
+            "year": 2039,
+            "children": [
+              21,
+              18
+            ],
+            "low": 21000000,
+            "high": 38000000,
+            "middle": 29500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 21000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 54,
+            "year": 2040,
+            "children": [
+              22,
+              19
+            ],
+            "low": 17000000,
+            "high": 31000000,
+            "middle": 24000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 17000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 55,
+            "year": 2041,
+            "children": [
+              23,
+              20
+            ],
+            "low": 14000000,
+            "high": 25000000,
+            "middle": 19500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 14000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 56,
+            "year": 2042,
+            "children": [
+              24,
+              21
+            ],
+            "low": 10000000,
+            "high": 20000000,
+            "middle": 15000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 10000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 57,
+            "year": 2043,
+            "children": [
+              25,
+              22
+            ],
+            "low": 7000000,
+            "high": 15000000,
+            "middle": 11000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 7000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 58,
+            "year": 2044,
+            "children": [
+              26,
+              23
+            ],
+            "low": 7000000,
+            "high": 14000000,
+            "middle": 10500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 7000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 59,
+            "year": 2045,
+            "children": [
+              27,
+              24
+            ],
+            "low": 6000000,
+            "high": 12000000,
+            "middle": 9000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 6000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 60,
+            "year": 2046,
+            "children": [
+              28,
+              25
+            ],
+            "low": 5000000,
+            "high": 11000000,
+            "middle": 8000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 5000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 61,
+            "year": 2047,
+            "children": [
+              29,
+              26
+            ],
+            "low": 5000000,
+            "high": 10000000,
+            "middle": 7500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 5000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 62,
+            "year": 2048,
+            "children": [
+              30,
+              27
+            ],
+            "low": 4000000,
+            "high": 8000000,
+            "middle": 6000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 4000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 63,
+            "year": 2049,
+            "children": [
+              31,
+              28
+            ],
+            "low": 3000000,
+            "high": 7000000,
+            "middle": 5000000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 3000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          },
+          {
+            "age": 64,
+            "year": 2050,
+            "children": [
+              32,
+              29
+            ],
+            "low": 3000000,
+            "high": 6000000,
+            "middle": 4500000,
+            "verdict": "shortage",
+            "reducible": 0,
+            "shortage": 3000000,
+            "crossing": null,
+            "assumptions": [
+              "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+            ],
+            "annualIncome": 0
+          }
+        ]
+      }
+    ],
+    "sickness": [
+      {
+        "id": "hospital",
+        "title": "短期入院・手術",
+        "months": 1,
+        "lowEnd": "one_month",
+        "need": {
+          "low": 61500,
+          "high": 294833,
+          "assumptions": [
+            "月あたりの医療費を100万円として上限を計算した",
+            "世帯合算・21,000円ルールは見込んでいない（自己負担は実際にはこれより下がりうる）",
+            "働けない期間を1か月として計算した",
+            "保険外の自己負担（差額ベッド・交通費など）を月10万円と見込んだ（当社基準・公的出典なし）",
+            "国民健康保険には傷病手当金が無いため0円とした（自営・フリーランス・無職）",
+            "幅の下端は医療費の自己負担1か月ぶんだけ、上端は全期間ぶんに保険外の負担と収入の減少まで足したもの"
+          ],
+          "premises": [
+            {
+              "label": "保険外の自己負担は月10万円",
+              "note": "差額ベッド・交通費などを月10万円と置いた扱いです（当社基準・公的出典なし）。実際が少なければ必要額は減ります。"
+            },
+            {
+              "label": "働けない期間は1か月",
+              "note": "これより長引けば、必要額はこの試算より増えます。"
+            },
+            {
+              "note": "月あたりの医療費を100万円として上限を計算した"
+            },
+            {
+              "note": "世帯合算・21,000円ルールは見込んでいない（自己負担は実際にはこれより下がりうる）"
+            },
+            {
+              "note": "国民健康保険には傷病手当金が無いため0円とした（自営・フリーランス・無職）"
+            },
+            {
+              "label": "幅の下端は医療費1か月ぶん",
+              "note": "いちばん軽く済んだ場合として、医療費の自己負担を1か月ぶんだけ見込んだ扱いです。上端は全期間ぶんに保険外の負担と収入の減少まで足しています。"
+            }
+          ],
+          "sources": [
+            "2026年8月1日施行（第1段階）／協会けんぽ「高額療養費」多数回該当",
+            "健康保険法第99条／協会けんぽ「傷病手当金」"
+          ]
+        },
+        "savingsVerdict": "reducible"
+      },
+      {
+        "id": "injury",
+        "title": "けがで3か月働けない",
+        "months": 3,
+        "lowEnd": "one_month",
+        "need": {
+          "low": 61500,
+          "high": 884500,
+          "assumptions": [
+            "月あたりの医療費を100万円として上限を計算した",
+            "世帯合算・21,000円ルールは見込んでいない（自己負担は実際にはこれより下がりうる）",
+            "働けない期間を3か月として計算した",
+            "保険外の自己負担（差額ベッド・交通費など）を月10万円と見込んだ（当社基準・公的出典なし）",
+            "国民健康保険には傷病手当金が無いため0円とした（自営・フリーランス・無職）",
+            "幅の下端は医療費の自己負担1か月ぶんだけ、上端は全期間ぶんに保険外の負担と収入の減少まで足したもの"
+          ],
+          "premises": [
+            {
+              "label": "保険外の自己負担は月10万円",
+              "note": "差額ベッド・交通費などを月10万円と置いた扱いです（当社基準・公的出典なし）。実際が少なければ必要額は減ります。"
+            },
+            {
+              "label": "働けない期間は3か月",
+              "note": "これより長引けば、必要額はこの試算より増えます。"
+            },
+            {
+              "note": "月あたりの医療費を100万円として上限を計算した"
+            },
+            {
+              "note": "世帯合算・21,000円ルールは見込んでいない（自己負担は実際にはこれより下がりうる）"
+            },
+            {
+              "note": "国民健康保険には傷病手当金が無いため0円とした（自営・フリーランス・無職）"
+            },
+            {
+              "label": "幅の下端は医療費1か月ぶん",
+              "note": "いちばん軽く済んだ場合として、医療費の自己負担を1か月ぶんだけ見込んだ扱いです。上端は全期間ぶんに保険外の負担と収入の減少まで足しています。"
+            }
+          ],
+          "sources": [
+            "2026年8月1日施行（第1段階）／協会けんぽ「高額療養費」多数回該当",
+            "健康保険法第99条／協会けんぽ「傷病手当金」"
+          ]
+        },
+        "savingsVerdict": "uncertain"
+      },
+      {
+        "id": "stroke",
+        "title": "脳卒中・心筋梗塞で半年休む",
+        "months": 6,
+        "lowEnd": "full_period",
+        "need": {
+          "low": 317700,
+          "high": 1717700,
+          "assumptions": [
+            "4か月目から多数回該当として上限が下がる前提（連続して該当するものとした）",
+            "月あたりの医療費を100万円として上限を計算した",
+            "世帯合算・21,000円ルールは見込んでいない（自己負担は実際にはこれより下がりうる）",
+            "働けない期間を6か月として計算した",
+            "保険外の自己負担（差額ベッド・交通費など）を月10万円と見込んだ（当社基準・公的出典なし）",
+            "国民健康保険には傷病手当金が無いため0円とした（自営・フリーランス・無職）",
+            "幅の下端は医療費の自己負担6か月ぶん（保険外も収入減もゼロ）、上端はそこに保険外の負担と収入の減少まで足したもの"
+          ],
+          "premises": [
+            {
+              "label": "保険外の自己負担は月10万円",
+              "note": "差額ベッド・交通費などを月10万円と置いた扱いです（当社基準・公的出典なし）。実際が少なければ必要額は減ります。"
+            },
+            {
+              "label": "働けない期間は6か月",
+              "note": "これより長引けば、必要額はこの試算より増えます。"
+            },
+            {
+              "note": "4か月目から多数回該当として上限が下がる前提（連続して該当するものとした）"
+            },
+            {
+              "note": "月あたりの医療費を100万円として上限を計算した"
+            },
+            {
+              "note": "世帯合算・21,000円ルールは見込んでいない（自己負担は実際にはこれより下がりうる）"
+            },
+            {
+              "note": "国民健康保険には傷病手当金が無いため0円とした（自営・フリーランス・無職）"
+            },
+            {
+              "label": "幅の下端は医療費6か月ぶん（収入減なしの場合）",
+              "note": "6か月の休職が起きた前提での最良ケースとして、医療費の自己負担を全期間ぶん見込み、保険外の負担と収入の減少はゼロと置いた扱いです。もっと軽く済む場合は、上の「病気・けが（短期）」の行が受け持ちます。"
+            }
+          ],
+          "sources": [
+            "2026年8月1日施行（第1段階）／協会けんぽ「高額療養費」多数回該当",
+            "健康保険法第99条／協会けんぽ「傷病手当金」"
+          ]
+        },
+        "savingsVerdict": "uncertain"
+      },
+      {
+        "id": "cancer",
+        "title": "がんで1年休職",
+        "months": 12,
+        "lowEnd": "full_period",
+        "need": {
+          "low": 584100,
+          "high": 3384100,
+          "assumptions": [
+            "4か月目から多数回該当として上限が下がる前提（連続して該当するものとした）",
+            "月あたりの医療費を100万円として上限を計算した",
+            "世帯合算・21,000円ルールは見込んでいない（自己負担は実際にはこれより下がりうる）",
+            "働けない期間を12か月として計算した",
+            "保険外の自己負担（差額ベッド・交通費など）を月10万円と見込んだ（当社基準・公的出典なし）",
+            "国民健康保険には傷病手当金が無いため0円とした（自営・フリーランス・無職）",
+            "幅の下端は医療費の自己負担12か月ぶん（保険外も収入減もゼロ）、上端はそこに保険外の負担と収入の減少まで足したもの"
+          ],
+          "premises": [
+            {
+              "label": "保険外の自己負担は月10万円",
+              "note": "差額ベッド・交通費などを月10万円と置いた扱いです（当社基準・公的出典なし）。実際が少なければ必要額は減ります。"
+            },
+            {
+              "label": "働けない期間は12か月",
+              "note": "これより長引けば、必要額はこの試算より増えます。"
+            },
+            {
+              "note": "4か月目から多数回該当として上限が下がる前提（連続して該当するものとした）"
+            },
+            {
+              "note": "月あたりの医療費を100万円として上限を計算した"
+            },
+            {
+              "note": "世帯合算・21,000円ルールは見込んでいない（自己負担は実際にはこれより下がりうる）"
+            },
+            {
+              "note": "国民健康保険には傷病手当金が無いため0円とした（自営・フリーランス・無職）"
+            },
+            {
+              "label": "幅の下端は医療費12か月ぶん（収入減なしの場合）",
+              "note": "12か月の休職が起きた前提での最良ケースとして、医療費の自己負担を全期間ぶん見込み、保険外の負担と収入の減少はゼロと置いた扱いです。もっと軽く済む場合は、上の「病気・けが（短期）」の行が受け持ちます。"
+            }
+          ],
+          "sources": [
+            "2026年8月1日施行（第1段階）／協会けんぽ「高額療養費」多数回該当",
+            "健康保険法第99条／協会けんぽ「傷病手当金」"
+          ]
+        },
+        "savingsVerdict": "uncertain"
+      },
+      {
+        "id": "mental",
+        "title": "こころの不調で休職",
+        "months": 18,
+        "lowEnd": "full_period",
+        "need": {
+          "low": 850500,
+          "high": 5050500,
+          "assumptions": [
+            "4か月目から多数回該当として上限が下がる前提（連続して該当するものとした）",
+            "月あたりの医療費を100万円として上限を計算した",
+            "世帯合算・21,000円ルールは見込んでいない（自己負担は実際にはこれより下がりうる）",
+            "働けない期間を18か月として計算した",
+            "保険外の自己負担（差額ベッド・交通費など）を月10万円と見込んだ（当社基準・公的出典なし）",
+            "国民健康保険には傷病手当金が無いため0円とした（自営・フリーランス・無職）",
+            "幅の下端は医療費の自己負担18か月ぶん（保険外も収入減もゼロ）、上端はそこに保険外の負担と収入の減少まで足したもの"
+          ],
+          "premises": [
+            {
+              "label": "保険外の自己負担は月10万円",
+              "note": "差額ベッド・交通費などを月10万円と置いた扱いです（当社基準・公的出典なし）。実際が少なければ必要額は減ります。"
+            },
+            {
+              "label": "働けない期間は18か月",
+              "note": "これより長引けば、必要額はこの試算より増えます。"
+            },
+            {
+              "note": "4か月目から多数回該当として上限が下がる前提（連続して該当するものとした）"
+            },
+            {
+              "note": "月あたりの医療費を100万円として上限を計算した"
+            },
+            {
+              "note": "世帯合算・21,000円ルールは見込んでいない（自己負担は実際にはこれより下がりうる）"
+            },
+            {
+              "note": "国民健康保険には傷病手当金が無いため0円とした（自営・フリーランス・無職）"
+            },
+            {
+              "label": "幅の下端は医療費18か月ぶん（収入減なしの場合）",
+              "note": "18か月の休職が起きた前提での最良ケースとして、医療費の自己負担を全期間ぶん見込み、保険外の負担と収入の減少はゼロと置いた扱いです。もっと軽く済む場合は、上の「病気・けが（短期）」の行が受け持ちます。"
+            }
+          ],
+          "sources": [
+            "2026年8月1日施行（第1段階）／協会けんぽ「高額療養費」多数回該当",
+            "健康保険法第99条／協会けんぽ「傷病手当金」"
+          ]
+        },
+        "savingsVerdict": "uncertain"
+      }
+    ],
+    "savings": {
+      "low": 500000,
+      "high": 1000000
+    },
+    "coverage": 0,
+    "hasSpouse": true,
+    "employee": false,
+    "minAge": 40,
+    "postIndepMinIncome": 1000000,
+    "maxBenefitMonths": 18,
+    "deathSource": "日本年金機構 令和8年度年金額"
+  },
+  "display": [
+    {
+      "id": "hospital",
+      "amount": "約6〜29万円",
+      "verdict": "reducible"
+    },
+    {
+      "id": "injury",
+      "amount": "約6〜88万円",
+      "verdict": "uncertain"
+    },
+    {
+      "id": "stroke",
+      "amount": "約32〜172万円",
+      "verdict": "uncertain"
+    },
+    {
+      "id": "cancer",
+      "amount": "約58〜338万円",
+      "verdict": "uncertain"
+    },
+    {
+      "id": "mental",
+      "amount": "約85〜505万円",
+      "verdict": "uncertain"
+    }
+  ],
+  "points": [
+    {
+      "age": 40,
+      "year": 2026,
+      "children": [
+        8,
+        5
+      ],
+      "low": 62000000,
+      "high": 106000000,
+      "middle": 84000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 62000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約6,200万〜1億600万円"
+    },
+    {
+      "age": 41,
+      "year": 2027,
+      "children": [
+        9,
+        6
+      ],
+      "low": 60000000,
+      "high": 102000000,
+      "middle": 81000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 60000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約6,000万〜1億200万円"
+    },
+    {
+      "age": 42,
+      "year": 2028,
+      "children": [
+        10,
+        7
+      ],
+      "low": 56000000,
+      "high": 95000000,
+      "middle": 75500000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 56000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約5,600〜9,500万円"
+    },
+    {
+      "age": 43,
+      "year": 2029,
+      "children": [
+        11,
+        8
+      ],
+      "low": 52000000,
+      "high": 89000000,
+      "middle": 70500000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 52000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約5,200〜8,900万円"
+    },
+    {
+      "age": 44,
+      "year": 2030,
+      "children": [
+        12,
+        9
+      ],
+      "low": 48000000,
+      "high": 83000000,
+      "middle": 65500000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 48000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約4,800〜8,300万円"
+    },
+    {
+      "age": 45,
+      "year": 2031,
+      "children": [
+        13,
+        10
+      ],
+      "low": 44000000,
+      "high": 77000000,
+      "middle": 60500000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 44000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約4,400〜7,700万円"
+    },
+    {
+      "age": 46,
+      "year": 2032,
+      "children": [
+        14,
+        11
+      ],
+      "low": 41000000,
+      "high": 71000000,
+      "middle": 56000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 41000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約4,100〜7,100万円"
+    },
+    {
+      "age": 47,
+      "year": 2033,
+      "children": [
+        15,
+        12
+      ],
+      "low": 37000000,
+      "high": 65000000,
+      "middle": 51000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 37000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約3,700〜6,500万円"
+    },
+    {
+      "age": 48,
+      "year": 2034,
+      "children": [
+        16,
+        13
+      ],
+      "low": 34000000,
+      "high": 60000000,
+      "middle": 47000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 34000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約3,400〜6,000万円"
+    },
+    {
+      "age": 49,
+      "year": 2035,
+      "children": [
+        17,
+        14
+      ],
+      "low": 32000000,
+      "high": 56000000,
+      "middle": 44000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 32000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約3,200〜5,600万円"
+    },
+    {
+      "age": 50,
+      "year": 2036,
+      "children": [
+        18,
+        15
+      ],
+      "low": 29000000,
+      "high": 51000000,
+      "middle": 40000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 29000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約2,900〜5,100万円"
+    },
+    {
+      "age": 51,
+      "year": 2037,
+      "children": [
+        19,
+        16
+      ],
+      "low": 26000000,
+      "high": 47000000,
+      "middle": 36500000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 26000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約2,600〜4,700万円"
+    },
+    {
+      "age": 52,
+      "year": 2038,
+      "children": [
+        20,
+        17
+      ],
+      "low": 24000000,
+      "high": 42000000,
+      "middle": 33000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 24000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約2,400〜4,200万円"
+    },
+    {
+      "age": 53,
+      "year": 2039,
+      "children": [
+        21,
+        18
+      ],
+      "low": 21000000,
+      "high": 38000000,
+      "middle": 29500000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 21000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約2,100〜3,800万円"
+    },
+    {
+      "age": 54,
+      "year": 2040,
+      "children": [
+        22,
+        19
+      ],
+      "low": 17000000,
+      "high": 31000000,
+      "middle": 24000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 17000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約1,700〜3,100万円"
+    },
+    {
+      "age": 55,
+      "year": 2041,
+      "children": [
+        23,
+        20
+      ],
+      "low": 14000000,
+      "high": 25000000,
+      "middle": 19500000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 14000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約1,400〜2,500万円"
+    },
+    {
+      "age": 56,
+      "year": 2042,
+      "children": [
+        24,
+        21
+      ],
+      "low": 10000000,
+      "high": 20000000,
+      "middle": 15000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 10000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約1,000〜2,000万円"
+    },
+    {
+      "age": 57,
+      "year": 2043,
+      "children": [
+        25,
+        22
+      ],
+      "low": 7000000,
+      "high": 15000000,
+      "middle": 11000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 7000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約700〜1,500万円"
+    },
+    {
+      "age": 58,
+      "year": 2044,
+      "children": [
+        26,
+        23
+      ],
+      "low": 7000000,
+      "high": 14000000,
+      "middle": 10500000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 7000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約700〜1,400万円"
+    },
+    {
+      "age": 59,
+      "year": 2045,
+      "children": [
+        27,
+        24
+      ],
+      "low": 6000000,
+      "high": 12000000,
+      "middle": 9000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 6000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約600〜1,200万円"
+    },
+    {
+      "age": 60,
+      "year": 2046,
+      "children": [
+        28,
+        25
+      ],
+      "low": 5000000,
+      "high": 11000000,
+      "middle": 8000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 5000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約500〜1,100万円"
+    },
+    {
+      "age": 61,
+      "year": 2047,
+      "children": [
+        29,
+        26
+      ],
+      "low": 5000000,
+      "high": 10000000,
+      "middle": 7500000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 5000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約500〜1,000万円"
+    },
+    {
+      "age": 62,
+      "year": 2048,
+      "children": [
+        30,
+        27
+      ],
+      "low": 4000000,
+      "high": 8000000,
+      "middle": 6000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 4000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約400〜800万円"
+    },
+    {
+      "age": 63,
+      "year": 2049,
+      "children": [
+        31,
+        28
+      ],
+      "low": 3000000,
+      "high": 7000000,
+      "middle": 5000000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 3000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約300〜700万円"
+    },
+    {
+      "age": 64,
+      "year": 2050,
+      "children": [
+        32,
+        29
+      ],
+      "low": 3000000,
+      "high": 6000000,
+      "middle": 4500000,
+      "verdict": "shortage",
+      "reducible": 0,
+      "shortage": 3000000,
+      "crossing": null,
+      "assumptions": [
+        "末子独立後は年100万円程度の就労収入があるものとして算定しています（当社基準）。"
+      ],
+      "annualIncome": 0,
+      "amount": "約300〜600万円"
+    }
+  ]
+}

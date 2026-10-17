@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0-draft",
+  "status": "provisional crops; not production master art",
+  "assets": [
+    {
+      "id": "family",
+      "path": "assets/family-riverside.webp",
+      "width": 1448,
+      "height": 1086,
+      "source": "川辺を歩く笑顔の家族4人.png",
+      "usage": "reference/prototype",
+      "altDefault": "",
+      "caveat": "Approved concept style; check responsive crop and consistency"
+    },
+    {
+      "id": "family-wide",
+      "path": "assets/family-riverside-wide.webp",
+      "width": 1280,
+      "height": 720,
+      "variants": [
+        {
+          "path": "assets/family-riverside-wide-800.webp",
+          "width": 800,
+          "height": 450
+        }
+      ],
+      "source": "ChatGPT generated 2026-10-17 from IMAGE_PROMPTS.md A-1 (reference: 川辺を歩く笑顔の家族4人.png)",
+      "usage": "prototype home hero",
+      "altDefault": "",
+      "caveat": "Approved by Naomi 2026-10-17 as is (children's clothing differs from the original reference)",
+      "status": "approved"
+    },
+    {
+      "id": "senior",
+      "path": "assets/senior-portrait-crop.webp",
+      "width": 595,
+      "height": 722,
+      "source": "シニアパターン_コンセプトボード.png",
+      "usage": "reference/prototype",
+      "altDefault": "",
+      "caveat": "Cropped from concept board; prepare purpose-shot landscape hero before production"
+    },
+    {
+      "id": "single-male",
+      "path": "assets/single-male-portrait-crop.webp",
+      "width": 585,
+      "height": 621,
+      "source": "単身男性の未来設計コンセプトボード.png",
+      "usage": "reference/prototype",
+      "altDefault": "",
+      "caveat": "Cropped from concept board; prepare purpose-shot landscape hero before production"
+    },
+    {
+      "id": "single-female",
+      "path": "assets/single-female-portrait-crop.webp",
+      "width": 590,
+      "height": 605,
+      "source": "単身女性の安心ライフ_コンセプトボード.png",
+      "usage": "reference/prototype",
+      "altDefault": "",
+      "caveat": "Cropped from concept board; prepare purpose-shot landscape hero before production"
+    }
+  ]
+}
