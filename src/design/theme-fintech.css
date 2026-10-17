@@ -1,0 +1,151 @@
+/**
+ * Modern Fintech A のテーマ（2026-10-17・デザイン承認待ち）
+ *
+ * 正本：design/handoff/moshimo-lab-v2/tokens/（PR #3）。白・ネイビー・ブルーの金融 UI。
+ *
+ * **opt-in。`data-theme="fintech"` を付けた要素の中だけが変わる。** 付けていない画面は
+ * いまの見た目（Airbnb＋デジタル庁DS）のまま。承認されたら layout の <html> に付けて全体を切り替える。
+ *
+ * 上書きするのは tokens.css の**セマンティックトークンだけ**。UI コードは今までどおり
+ * `--color-*` を参照すればよく、テーマのために画面の CSS を書き換えなくてよい。
+ *
+ * **上書きしないもの（アクセシビリティの規則なので、テーマが変わっても残す）**
+ * - フォーカスリング（`--color-focus-*`。Yellow-300＋Black の2重。デジタル庁DSで変更禁止）
+ * - 判定の「アイコン＋ラベル＋色」の3点（色はここで決めるが、アイコンとラベルは部品側が必ず出す）
+ * - 不足を赤や CTA 色で塗らない（不足は茶寄りのオレンジ、CTA はブルー）
+ */
+[data-theme="fintech"] {
+  /* ============================================================
+   * プリミティブ（Modern Fintech A）。このファイルの中でだけ使う。
+   * 値は design/handoff/moshimo-lab-v2/tokens/tokens.css の --ml-* と同じ。
+   * ============================================================ */
+  --fa-navy-900: #0c2954;
+  --fa-navy-700: #124d94;
+  --fa-blue-600: #006ee6;
+  --fa-blue-500: #1678f2;
+  --fa-blue-100: #eaf4ff;
+  --fa-ink: #102a50;
+  --fa-ink-secondary: #536b87;
+  --fa-ink-muted: #61748a;
+  --fa-white: #ffffff;
+  --fa-surface-subtle: #f5f9fd;
+  --fa-surface-soft-blue: #eff7ff;
+  --fa-border: #d8e4f0;
+  --fa-positive: #16734a;
+  --fa-positive-bg: #e8f6ec;
+  --fa-attention: #925300;
+  --fa-attention-bg: #fff1de;
+  --fa-neutral: #506a84;
+  --fa-neutral-bg: #eef3f8;
+  --fa-chart-line: #d76a2b;
+  --fa-chart-range: #f7d7bf;
+  --fa-chart-grid: #e3eaf2;
+
+  /* ============================================================
+   * セマンティック（tokens.css と同じ名前を上書き）
+   * ============================================================ */
+
+  /* 面 */
+  --color-surface: var(--fa-white);
+  --color-surface-subtle: var(--fa-surface-subtle);
+  --color-surface-strong: var(--fa-blue-100);
+  --color-surface-inverse: var(--fa-navy-900);
+
+  /* 文字（白地のコントラスト：14.4 / 5.6 / 4.9） */
+  --color-text: var(--fa-ink);
+  --color-text-secondary: var(--fa-ink-secondary);
+  --color-text-muted: var(--fa-ink-muted);
+  --color-text-on-inverse: var(--fa-white);
+
+  /* 罫線 */
+  --color-border: var(--fa-border);
+  --color-divider: var(--fa-border);
+
+  /* 主要：CTA と利用者が動かすコントロールはブルー（白文字で 4.6:1）。
+     情報の線・進捗・選択枠はネイビー（ink） */
+  --color-primary: var(--fa-blue-600);
+  --color-primary-active: var(--fa-navy-700);
+  --color-primary-disabled: #a9c8ef;
+  --color-accent: var(--fa-ink);
+
+  /* リンク：ブルー＋下線（白地で 4.6:1。下線があるので色だけに頼らない） */
+  --color-link: var(--fa-blue-600);
+  --color-link-visited: var(--fa-navy-700);
+
+  /* 状態 */
+  --color-success: var(--fa-positive);
+  --color-success-text: var(--fa-positive);
+  --color-warning: var(--fa-attention);
+  --color-warning-text: var(--fa-attention);
+
+  /* 判定の色（アイコンとラベルは部品が出す） */
+  --color-verdict-shortage: var(--color-warning);
+  --color-verdict-shortage-text: var(--color-warning-text);
+  --color-verdict-reducible: var(--color-success);
+  --color-verdict-reducible-text: var(--color-success-text);
+  --color-verdict-adequate: var(--fa-neutral);
+  --color-verdict-none: var(--fa-neutral);
+
+  /* 判定バッジの地色（Fintech A で追加。tokens.css には無い名前） */
+  --color-verdict-shortage-bg: var(--fa-attention-bg);
+  --color-verdict-reducible-bg: var(--fa-positive-bg);
+  --color-verdict-neutral: var(--fa-neutral);
+  --color-verdict-neutral-bg: var(--fa-neutral-bg);
+  --color-note-bg: var(--fa-surface-soft-blue);
+  --color-note-text: #2d527c;
+  --color-note-warning-bg: #fff8eb;
+  --color-note-warning-text: #795011;
+
+  /* グラフ（必要額の帯・代表値の線） */
+  --chart-surface: var(--fa-white);
+  --chart-grid: var(--fa-chart-grid);
+  --chart-axis-text: var(--fa-ink-secondary);
+  --chart-need-range: var(--fa-chart-range);
+  --chart-need-line: var(--fa-chart-line);
+
+  /* 面の切り替え */
+  --color-tile-plain: var(--fa-white);
+  --color-tile-tinted: var(--fa-surface-subtle);
+  --color-tile-inverse: var(--fa-navy-900);
+
+  /* 字：金額も Noto Sans JP の太字（明朝の金額をやめる） */
+  --mk-font-display: var(--font-family);
+  --font-weight-bold: 700;
+
+  /* 形：ボタンは角丸 12px（ピルにしない）、カードは 16px */
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --radius-panel: 24px;
+
+  /* 奥行き：カードに薄い影を1段 */
+  --shadow-card: 0 4px 18px rgb(16 42 80 / 5%);
+
+  /* ============================================================
+   * 既存の画面が直接読んでいる --mk-*（結果画面の旧モック移植）も Fintech A に寄せる。
+   * これが無いと、テーマの中でも折りたたみの見出しや補足が温かい紙色のまま残る。
+   * 赤系・灰系・グラフの中間色は、意味（危険・未算定・系列）を変えないためそのまま。
+   * ============================================================ */
+  --mk-bg: var(--fa-surface-subtle);
+  --mk-surface: var(--fa-white);
+  --mk-surface-alt: var(--fa-surface-subtle);
+  --mk-ink: var(--fa-ink);
+  --mk-ink-2: var(--fa-ink);
+  --mk-muted: var(--fa-ink-secondary);
+  --mk-muted-2: var(--fa-ink-secondary);
+  --mk-hairline: var(--fa-border);
+  --mk-hairline-2: var(--fa-border);
+  --mk-border-btn: #b5cae1;
+  --mk-chip-border: var(--fa-border);
+  --mk-dashed: var(--fa-border);
+  --mk-green: var(--fa-positive);
+  --mk-green-deep: var(--fa-positive);
+  --mk-green-bg: var(--fa-positive-bg);
+  --mk-amber: var(--fa-attention);
+  --mk-amber-deep: var(--fa-attention);
+  --mk-amber-text: var(--fa-attention);
+  --mk-amber-bg: var(--fa-attention-bg);
+  --mk-amber-body: #795011;
+
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+}
