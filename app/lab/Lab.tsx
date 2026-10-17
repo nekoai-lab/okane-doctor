@@ -5,7 +5,8 @@ import type { LabData, LabPoint } from "../../src/calc/lab.js";
 import { labCoverageDifference, labRisingIntervals } from "../../src/calc/labView.js";
 import { formatMan, formatRange } from "../../src/design/tokens.js";
 import { HERO_BADGE } from "../result/Hero.js";
-import badge from "../result/hero.module.css";
+import badge from "../result/conclusion.module.css";
+import { VERDICT_TONE } from "../result/conclusionModel.js";
 import { Fold } from "../result/Fold.js";
 import { linearScale } from "../result/chartScale.js";
 import s from "./page.module.css";
@@ -43,14 +44,14 @@ function AmountRange({ low, high }: { low: number; high: number }) {
 }
 function Comparison({ point }: { point: LabPoint }) {
   return (
-    <strong className={`${s.verdictBadge} ${badge.badge} ${badge[point.verdict]}`}>
+    <strong className={`${s.verdictBadge} ${badge.badge} ${badge[VERDICT_TONE[point.verdict]]}`}>
       過不足の判定：{ICON[point.verdict]} {HERO_BADGE[point.verdict]}
     </strong>
   );
 }
 function SavingsBadge({ verdict }: { verdict: keyof typeof SAVINGS_LABEL }) {
   return (
-    <strong className={`${s.verdictBadge} ${badge.badge} ${badge[verdict]}`}>
+    <strong className={`${s.verdictBadge} ${badge.badge} ${badge[VERDICT_TONE[verdict]]}`}>
       貯蓄の判定：{SAVINGS_LABEL[verdict]}
     </strong>
   );
