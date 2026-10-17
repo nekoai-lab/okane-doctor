@@ -148,14 +148,18 @@ export function Hero(props: HeroProps) {
           <p className={s.statLabel}>
             いまの死亡保障{totalLabel ? `（${totalLabel}）` : ""}
           </p>
-          <p className={s.statValue}>{coverageText}</p>
+          <p className={s.statValue}>
+            <RangeText text={coverageText} />
+          </p>
         </div>
         <div>
           {/* **幅のないものを幅と呼ばない**（J1・数直線や滝の帯／目盛りの出し分けと同じ規約） */}
           <p className={s.statLabel}>
             必要額のめやす{needQualifier ?? (needHasRange ? "（幅）" : "")}
           </p>
-          <p className={`${s.statValue} ${s.need}`}>{needText}</p>
+          <p className={`${s.statValue} ${s.need}`}>
+            <RangeText text={needText} />
+          </p>
         </div>
         <div>
           <p className={s.statLabel}>暮らし方の前提</p>
@@ -165,5 +169,21 @@ export function Hero(props: HeroProps) {
 
       <p className={s.lead}>この数字がどう出たか、根拠をこのすぐ下にすべて示します。</p>
     </section>
+  );
+}
+
+/**
+ * 金額の幅は「〜」の後ろでだけ折り返す。
+ * 390px で「約400〜1,700万／円」と数字の途中で折れ、別の金額に読めたため（もしもラボと同じ直し）。
+ */
+function RangeText({ text }: { text: string }) {
+  const [start, end] = text.split("〜");
+  if (end === undefined) return <span className={s.nowrap}>{text}</span>;
+  return (
+    <>
+      <span className={s.nowrap}>{start}〜</span>
+      <wbr />
+      <span className={s.nowrap}>{end}</span>
+    </>
   );
 }
