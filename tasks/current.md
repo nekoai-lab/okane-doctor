@@ -166,7 +166,8 @@
 - 使った所：ファビコン（`app/favicon.ico` は承認の 16px と 32px をそのまま格納、`app/icon.png` は 32px）、アプリアイコン（`app/apple-icon.png`。承認シンボルを 180px に縮小して白で余白）、OG 画像（`app/opengraph-image.png`。承認フルロゴを 1.76 倍して 1200×630 の白地の中央）、もしもラボのヘッダー（`AppHeader` の仮の「●」を承認シンボル `public/brand/okane-doctor-symbol.png` に）
 - LP のロゴは触っていない（オーナー指示。#11 の SVG のまま）
 - やり残し：~~OG 画像の URL は `metadataBase` が無いので本番の URL が決まるまで localhost になる。~~ → chore/site-url で、ビルド時の `SITE_URL`（トリガーの置換変数 `_SITE_URL`）から `metadataBase` を作るようにした。初回デプロイのあと、トリガーに `_SITE_URL` を設定して再ビルドすれば本番 URL になる（公開リポジトリには URL を書かない）。タブ名も「お金の町医者」にした。OG 画像は 258px の切り出しを拡大しているので少し甘い（高解像度の原画があれば差し替える）。`app/layout.tsx` のタブ名がまだ旧名「お金の健康診断」
-- 次の1手：UX レビュー → request-qa → マージ（デプロイはまだしない）
+- 2026-10-18（Mac mini）：request-qa（ccf4ecf）blocking なしで qa-pass。Codex の UX レビュー（`design/UX_REVIEW.md` 24回目）は修正依頼：直さないと誤る1件（「貯蓄と同じくらい」が範囲の重なりでも出て、ほぼ同額に読める）、分かりにくい4件（12px 未満の文字、スマホで判定の列見出しとバッジの記号がない、不足世帯で前提が最初の2画面に入らない、「大丈夫のめやす」が曖昧）。スクショは Mac mini の `~/Projects/okane-doctor.wt/ux-pr22/design/inbox/shots-ccf4ecf/`
+- 次の1手：24回目の「貯蓄と同じくらい」を結果画面とラボで言い換える（計算は変えない）→ 残り4件 → スクショを PR に入れて UX 再レビュー（デプロイはまだしない）
 
 ## 公開向けの文書（2026-10-18・Claude Code・claude/project-thread-bbd45u）
 
