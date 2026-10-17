@@ -1,7 +1,7 @@
 /**
  * 05B「やわらかカーブ」ロゴ。
  *
- * マークは `public/brand/okane-doctor-mark.svg`（2026-10-17 受領の 05B マスター。家と顔の色だけ原画の紺にそろえた）。
+ * マークは `public/brand/okane-doctor-mark.svg`（2026-10-18 に 05B の原画からなぞり直したもの）。
  * ブランドの色をそのまま持つ画像なので、UI のトークンには通さず <img> で出す。
  * 文字（お金の町医者・添え書き）は本文と同じ書体で組み、読み上げは文字側が持つ。
  */
@@ -9,7 +9,7 @@ import s from "./top.module.css";
 
 export function LogoMark({ size = 40 }: { size?: number }) {
   return (
-    // biome-ignore lint/performance/noImgElement: 48×48 の SVG。next/image の最適化は効かない
+    // biome-ignore lint/performance/noImgElement: 小さな SVG。next/image の最適化は効かない
     <img
       className={s.logoMark}
       src="/brand/okane-doctor-mark.svg"
