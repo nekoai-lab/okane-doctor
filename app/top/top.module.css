@@ -71,6 +71,30 @@
   top: 8px;
 }
 
+/*
+  スマホの承認画像は「診断の流れ」を計算の仕組みより先に置く（PC は後ろ）。
+  並べ替えるのは中に操作できる要素の無い節だけなので、キーボードの移動順は変わらない。
+*/
+.main {
+  display: flex;
+  flex-direction: column;
+}
+.main > * {
+  order: 10;
+}
+.main > .hero {
+  order: 1;
+}
+.main > .features {
+  order: 2;
+}
+.main > .breather {
+  order: 3;
+}
+.main > .flow {
+  order: 4;
+}
+
 /* ---------- ロゴ ---------- */
 .logo {
   display: inline-flex;
@@ -1238,6 +1262,9 @@
 @media (min-width: 900px) {
   .page {
     --top-gutter: 40px;
+  }
+  .main {
+    display: block;
   }
   .mobileOnly {
     display: none;

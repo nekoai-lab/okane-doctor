@@ -180,7 +180,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main id="main">
+      <main id="main" className={s.main}>
         {/* ① ファーストビュー */}
         <section className={s.hero} aria-labelledby="hero-title">
           <picture className={s.heroPicture}>
