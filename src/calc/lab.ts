@@ -70,7 +70,9 @@ export function calculateLab(
   asOf: Date,
 ) {
   assertUsable(p, asOf);
-  const minAge = Math.max(40, input.self.age);
+  // スライダーはいまの年齢から（2026-10-17 オーナー決定）。仕様 §5.4 の「40〜64」の下限は
+  // 40歳未満の人だと左端が「いま」にならず、いまの必要額をラボで見られなかった
+  const minAge = input.self.age;
   const work = WORK_LEVELS.map((level) => ({
     level,
     now: labDeath(p, input, bands, input.self.age, level, asOf),

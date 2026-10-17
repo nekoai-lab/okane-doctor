@@ -49,6 +49,14 @@
 
 - PR #1 は 2026-10-17 にマージ済み（9eafaf8・ux-pass は UX レビュー3回目と末尾ルールの承認による）。PR #2 に main を取り込んだので request-qa をやり直す → マージ → G-0 のセットアップ → 初回デプロイ
 
+## もしもラボのスライダーをいまの年齢から（2026-10-17・Claude Code）
+
+- オーナー決定（2026-10-17・コンセプト整合のスレッド）：万一の年齢スライダーの始点を `max(40, 年齢)` から**いまの年齢**に。40歳未満の人は左端が「いま」にならず、いまの必要額をラボで見られなかった
+- 変えたのは `src/calc/lab.ts` の `minAge`、テストの年齢の表、前提の1文（`app/lab/Lab.tsx`）だけ。計算式・params・判定規則・ゴールデンは変えていない
+- 確認：lint・typecheck・test（880件）・build。390/1280px で単身世帯（30歳）がスライダー 30〜64歳・見出し「30歳で亡くなった場合」、右端へ動かすと「64歳」に追従。スクショ `design/screenshots/lab-slider-now-{sp,pc}.png`。代表3世帯のスクショは共有フォルダ `okane-doctor/screenshots/2026-10-17_lab-slider-now/`（MANIFEST.tsv にクエリ）
+- PR #6（ラボの Fintech 化）も `Lab.tsx` を触っている。衝突は前提の1文だけ
+- 仕様（`docs/redesign-spec-2026-09-21.md` §5.4）の「40〜64」は、文書の更新の PR（ADR・SPEC）でまとめて直す
+
 ## feat/moshimo-lab（作業ツリーで引き渡し・2026-10-17）
 
 - 小修正（2026-10-17・Codex）：配偶者回答収入0円の切替なし理由と次の一歩、時期カードの差を可能性表現へ統一、全金額レンジを「〜」直後のみ改行・過不足／貯蓄バッジを分割不可に修正（app/lab 内のみ）。tsc --noEmit・biome lint app/lab・vitest src/calc/lab.test.ts（23件）成功。計算・params・判定規則・スライダー下限は変更なし、lab.ts は型importのみ。実画面320px・独立レビューは未確認。commit・pushなし。
