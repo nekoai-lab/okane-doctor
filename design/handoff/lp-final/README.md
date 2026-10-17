@@ -25,7 +25,7 @@
 ## GitHub対象
 
 - 読み書き対象（ユーザー承認後）：`nekoai-lab/okane-doctor`
-- **厳禁**：ハッカソン提出版 `nekoai-lab/okane-kenko`、既存 Cloud Run の `okane-kenko` サービスを変更しない。
+- **厳禁**：前身の `nekoai-lab/okane-kenko`、既存 Cloud Run の `okane-kenko` サービスを変更しない。
 - `CLAUDE.md`, `AGENTS.md`, `UX_RULES.md`, `PRODUCT.md` と最新PRの状態を先に確認。デザイントークン更新のPR等の依存関係を確認し、mainへの直接pushはしない。
 
 ## 確認対象と完了条件
@@ -43,4 +43,4 @@
 
 ## Claude Codeへ最初に依頼すること
 
-正本と各PRを確認し、実装前に「再利用できるコード／新規実装部分／不足アセット／技術リスク」を短く報告する。その後、作業ブランチで実装・QAを進める。提出版リポジトリは変更しない。
+正本と各PRを確認し、実装前に「再利用できるコード／新規実装部分／不足アセット／技術リスク」を短く報告する。その後、作業ブランチで実装・QAを進める。okane-kenko のリポジトリは変更しない。

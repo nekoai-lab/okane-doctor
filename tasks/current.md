@@ -11,7 +11,7 @@
 ## 現状
 
 - new-project で作成（2026-10-16）
-- 提出版 `nekoai-lab/okane-kenko@e35a072` の中身を取り込む PR（ハーネスとの統合・本番に触る箇所の直し）
+- 前身 `nekoai-lab/okane-kenko@e35a072` の中身を取り込む PR（ハーネスとの統合・本番に触る箇所の直し）
 - 1回目の QA で blocking 2件 → 応急処置を入れた：ひとり親世帯は金額を出さず「まだ診断できません」、保存（お知らせ）は止めた（`src/watch/availability.ts`）
 - 2回目の QA で blocking 3件 → 直した：対象外の判定を `diagnose` の入口へ移して API も 422 で止める（`src/calc/scope.ts`）、暮らし方の目盛りを幅の両端にも渡す（`bandInputsFor`）、組み替えの余地は減らせる額 ≧ 不足額のときだけ（`verdict3.ts`・`index.ts`・仕様書 §1）
 - 判定の規則の変更は ADR-023 に記録した（オーナー確認済み）
@@ -159,12 +159,12 @@
 
 ## 公開向けの文書（2026-10-18・Claude Code・claude/project-thread-bbd45u）
 
-- 現状：README をコンセプト（町医者の比喩・体験の4段階・6リスク・中立の事業の形）、しくみ（エンジンと AI の責務境界・制度パラメータ・制度監視・ゴールデンテスト）、システム構成（Mermaid）、動かし方、まだ確定していないことに書き直した。ARCHITECTURE.md に構成図・処理の流れ（言語化・ラボの言葉・制度監視）・つないでいないもの・品質の仕組みを足した。`docs/アーキテクチャ図.html` は旧名を直し、提出版時点の図だと明記。`docs/STATUS.md` に提出版時点の記録だと明記
+- 現状：README をコンセプト（町医者の比喩・体験の4段階・6リスク・中立の事業の形）、しくみ（エンジンと AI の責務境界・制度パラメータ・制度監視・ゴールデンテスト）、システム構成（Mermaid）、動かし方、まだ確定していないことに書き直した。ARCHITECTURE.md に構成図・処理の流れ（言語化・ラボの言葉・制度監視）・つないでいないもの・品質の仕組みを足した。`docs/アーキテクチャ図.html` は旧名を直し、前身の okane-kenko 時点の図だと明記
 - 書いていないもの：本番 URL・プロジェクト ID・シークレット名・合言葉。「誰の何を変えたかったか」は README ではなく Zenn 記事にする（オーナー 2026-10-18）
 - `PRODUCT.md` は「人が書く」なので触っていない
-- やり残し（docs 以外なので別 PR）：`package.json` の description「AI×お金の健康」、`params/watch-sources.yaml` の罠ページが提出版の URL を指している
+- やり残し（docs 以外なので別 PR）：`package.json` の description「AI×お金の健康」、`params/watch-sources.yaml` の罠ページが okane-kenko の URL を指している
 - PR #18 でマージ済み（5cde78e）
-- 追記（2026-10-18）：オーナー指示「ハッカソンには触れない」。README・ARCHITECTURE.md・STATUS.md の冒頭・アーキテクチャ図.html の見出しから、ハッカソン名と「提出版・審査中」の言い方を外し「前身の okane-kenko」にした。CLAUDE.md の冒頭（開発ルール）と過去の記録（ADR・STATUS の本文・チェックリスト・docs/hackathon/）はそのまま
+- 追記（2026-10-18）：オーナー指示で、リポジトリ全体から大会に関する言い方を外し、okane-kenko は「前身」と呼ぶことにした（PR #19 と次の PR）。大会の準備だけを書いた文書（`docs/STATUS.md`・引き継ぎ・説明資料）は消し、残りの設計メモは `docs/design-notes/` に移した
 - 次の1手：request-qa → マージ（docs だけなので UX レビューは不要）
 
 ## feat/app-fintech（診断・保存・お知らせを Fintech A に・2026-10-18・Claude Code）

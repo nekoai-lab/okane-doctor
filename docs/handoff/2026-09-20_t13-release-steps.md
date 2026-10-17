@@ -1,8 +1,7 @@
 # T-13 気づき通知 ─ 公開までの手順（2026-09-20）
 
 > **この文書は「残りをどう終わらせるか」の作業手順書である。** 何を作るか・なぜそうするかは
-> [`docs/hackathon/2026-09-19_vol5-handoff.md`](../hackathon/2026-09-19_vol5-handoff.md)（方針と着手順の正本）と
-> [`docs/hackathon/2026-09-14_watch-notify-design.md`](../hackathon/2026-09-14_watch-notify-design.md)（設計）にある。
+> [`docs/design-notes/2026-09-14_watch-notify-design.md`](../design-notes/2026-09-14_watch-notify-design.md)（設計）にある。
 >
 > 作業を始める前に [`CLAUDE.md`](../../CLAUDE.md) を読むこと。
 
@@ -318,13 +317,12 @@ CLAUDE.md の規定により、`docs/ADR.md` と `docs/CONTEXT.md` はAIが勝�
 - [ ] `docs/SPEC.md` の Out of Scope 表：「継続伴走・再診断の自動トリガー＝Phase2」の行を着手済みに更新
 - [ ] `docs/ADR.md`：Phase A（DBなし）を崩す決定を追記（設計書 §9 が起票対象と明記）
 - [ ] `docs/TICKETS.md` の T-13 完了条件にチェックを入れる
-- [ ] `docs/STATUS.md` を更新（ハンドオフを書いたら STATUS も一緒に、が運用ルール）
 
-## この後（10/15 提出に向けて）
+## この後
 
-**フェーズ2b（制度側の自律監視）が本丸。** 審査軸②がいま空で、2a では埋まらない。
+**フェーズ2b（制度側の自律監視）が本丸。** 自律性の軸がいま空で、2a では埋まらない。
 設計から書き起こす。範囲・守る線・完了の合図は
-[`docs/hackathon/2026-09-19_vol5-handoff.md`](../hackathon/2026-09-19_vol5-handoff.md) §4-B にある。
+[`docs/design-notes/2026-09-20_param-watch-design.md`](../design-notes/2026-09-20_param-watch-design.md) にある。
 
 ## つまずきどころ（先に知っておくと早い）
 

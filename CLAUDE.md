@@ -9,7 +9,7 @@ AIコーディングエージェントは、作業を始める前に必ずこの
 
 <!-- この節は ai-dev-harness のテンプレートから。AGENTS.md（Codex 用）はこのファイルを指すだけ -->
 
-**お金の町医者（okane-doctor）** は、第5回ハッカソン提出版 `nekoai-lab/okane-kenko@e35a072` の後継。提出版は審査中（12/1 まで）なので、**同じ GCP プロジェクトにある本番サービス `okane-kenko` には触らない**（デプロイの構成は `docs/本番前チェックリスト.md`「G-0」）。
+**お金の町医者（okane-doctor）** は、前身 `nekoai-lab/okane-kenko@e35a072` の後継。okane-kenko は 12/1 まで凍結しているので、**同じ GCP プロジェクトにある本番サービス `okane-kenko` には触らない**（デプロイの構成は `docs/本番前チェックリスト.md`「G-0」）。
 
 ### よく使うコマンド
 

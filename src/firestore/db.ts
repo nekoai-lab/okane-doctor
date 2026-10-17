@@ -2,8 +2,8 @@
  * Firestore の入口（watch と paramwatch で共有する）。
  *
  * **データベース名は環境変数 `FIRESTORE_DATABASE_ID` から読み、未設定なら止める。**
- * okane-doctor は提出版 okane-kenko と同じ GCP プロジェクトで動く。
- * 既定のデータベース（`(default)`）には審査中の本番の承認記録・見守り世帯が入っているので、
+ * okane-doctor は前身の okane-kenko と同じ GCP プロジェクトで動く。
+ * 既定のデータベース（`(default)`）には okane-kenko の本番の承認記録・見守り世帯が入っているので、
  * 名前を省いて黙って既定に書き込む経路を残さない（壊れたら止まる、の Firestore 版）。
  *
  * 認証は Cloud Run の Application Default Credentials に委ねる（鍵をコードや env に置かない）。
