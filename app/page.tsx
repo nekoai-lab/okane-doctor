@@ -217,9 +217,6 @@ export default function Home() {
               </h1>
               <p className={s.heroLead}>
                 ご家族の状況から、もしものときに必要なお金と、いまの保障のバランスを根拠つきで確かめます。
-                <span className={s.mobileOnly}>
-                  気になる条件は「もしもラボ」でさらに確かめられます。
-                </span>
               </p>
             </div>
             <div className={s.heroActions}>

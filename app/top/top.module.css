@@ -54,9 +54,6 @@
 .nowrap {
   white-space: nowrap;
 }
-.mobileOnly {
-  display: inline;
-}
 
 .skip {
   position: absolute;
@@ -1428,9 +1425,6 @@
   }
   .main {
     display: block;
-  }
-  .mobileOnly {
-    display: none;
   }
   .nav {
     display: flex;
