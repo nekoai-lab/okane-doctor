@@ -11,6 +11,7 @@ import { resultInputs } from "../../src/wizard/resultInputs.js";
 import { decodeSelections } from "../../src/wizard/url.js";
 import {
   bandWidenedNote,
+  gapHeadline,
   gapSentence,
   heroBreakdownNote,
   heroCoverageText,
@@ -56,6 +57,14 @@ describe("不足世帯：ヒーローの金額は2人分の合計だと名乗り
       `いまの保障より、${formatRange(f.self.need.low, f.self.need.high)} 足りていません。`,
     );
   });
+  it("畳んだ要約の呼び名と金額は、差の文と同じ幅（金額を文に埋めない）", () => {
+    const h = gapHeadline(f.self);
+    expect(h).toEqual({
+      label: "いまの保障より足りない額",
+      amount: formatRange(f.self.gap.low, f.self.gap.high),
+    });
+    expect(gapSentence(f.self)).toContain(h?.amount ?? "×");
+  });
   it("STEP3 の最終行が代表値より広いなら、その旨と代表値の幅を言う", () => {
     const note = bandWidenedNote(f.self) ?? "";
     expect(note).toContain(formatRange(f.self.point.range.low, f.self.point.range.high));
@@ -87,6 +96,8 @@ describe("圏内は「足りています」と言わない", () => {
     };
     expect(gapSentence(fake)).not.toContain("足りています");
     expect(gapSentence(fake)).toContain("言い切りません");
+    // 差額を言わない判定では、要約に金額を立てない（文で言う）
+    expect(gapHeadline(fake)).toBeNull();
   });
   it("単身では合計の呼び名を付けない", () => {
     expect(heroTotalLabel(figuresOf(SINGLE))).toBeNull();

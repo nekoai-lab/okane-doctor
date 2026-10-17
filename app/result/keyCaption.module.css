@@ -14,6 +14,8 @@
 
 .key {
   color: #a5aca7;
+  /* キーは1語。「当社基／準:」と折らない（2026-10-17・UX レビュー2回目） */
+  white-space: nowrap;
 }
 
 .value {

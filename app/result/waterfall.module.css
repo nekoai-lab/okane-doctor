@@ -74,6 +74,14 @@
   color: var(--mk-amber-text);
 }
 
+/* 結論行：ラベルの下に金額（横に並べると幅のある金額にラベルが押されて縦に折れる） */
+.headStack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
 /* 金額は明朝。視覚の DoD (b)：滝でも金額が主役 */
 .amount {
   font-family: var(--mk-font-display);
@@ -89,6 +97,8 @@
 .amountNeed {
   font-size: 20px;
   color: var(--mk-amber-text);
+  /* 下端・上端はそれぞれ分割不可（RangeText）。折り返すなら「〜」の後ろだけ */
+  white-space: normal;
 }
 .amountSurplus {
   color: var(--mk-green-mid);

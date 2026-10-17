@@ -13,6 +13,7 @@
  *
  * **金額はここで作らない。** 受け取った額を描くだけ。
  */
+import { RangeText } from "./AmountText.js";
 import s from "./soloCase.module.css";
 
 export function SoloCase({
@@ -37,7 +38,9 @@ export function SoloCase({
 
       <div className={s.amountBlock}>
         <p className={s.amountLabel}>{needLabel}</p>
-        <p className={s.amount}>{needText}</p>
+        <p className={s.amount}>
+          <RangeText text={needText} />
+        </p>
       </div>
 
       {/*

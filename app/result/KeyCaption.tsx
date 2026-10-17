@@ -12,13 +12,16 @@
  * **台帳・滝など、出どころを示すすべての場所でこれを使う。**
  * 場所ごとに別のマークアップを書くと、また記法が分かれる。
  */
+import { WithAmounts } from "./AmountText.js";
 import s from "./keyCaption.module.css";
 
 export function KeyCaption({ label, value }: { label: string; value: string }) {
   return (
     <span className={s.caption}>
       <span className={s.key}>{label}:</span>
-      <span className={s.value}>{value}</span>
+      <span className={s.value}>
+        <WithAmounts text={value} />
+      </span>
     </span>
   );
 }

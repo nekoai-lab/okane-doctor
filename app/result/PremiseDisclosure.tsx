@@ -15,6 +15,7 @@
  *
  * **金額も判定も、ここでは作らない。** すべて `simulate` の出力から来た文字列を描くだけ。
  */
+import { WithAmounts } from "./AmountText.js";
 import s from "./riskTable.module.css";
 
 /** 前提の重み。`share` は帯の描画にだけ使う比率（0〜1）で、画面に出す金額は文字列のほう */
@@ -59,7 +60,11 @@ export function PremiseDisclosure({ weight, sensitivity, items }: PremiseDisclos
       )}
 
       {/* **露出部は帯の直下にこの1文だけ。** 帯の内訳は、この文が金額ごと持っている */}
-      {sensitivity && <p className={s.sensitivity}>{sensitivity.text}</p>}
+      {sensitivity && (
+        <p className={s.sensitivity}>
+          <WithAmounts text={sensitivity.text} />
+        </p>
+      )}
 
       {items.length > 0 && (
         // **件数を出す。** 「すべて見る」だけだと、何件隠れているのか分からない
