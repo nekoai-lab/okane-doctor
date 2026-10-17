@@ -19,6 +19,7 @@ import { VERDICT_BADGE } from "../../../src/design/fintech/verdict.js";
 import "../../../src/design/theme-fintech.css";
 import type { Verdict3 } from "../../../src/calc/verdict3.js";
 import { formatRange } from "../../../src/design/tokens.js";
+import { RangeText } from "../../result/AmountText.js";
 import { DEATH_LABEL } from "../../result/verdictLabels.js";
 import s from "./page.module.css";
 
@@ -77,7 +78,9 @@ export default function FintechPreview() {
       <Card title="金額の見せ方">
         <p className={s.small}>本人が40歳で万一のことがあった場合（見本の値）</p>
         <p className={s.label}>必要な死亡保障のめやす</p>
-        <p className={s.amount}>{formatRange(SAMPLE_DEATH_40.low, SAMPLE_DEATH_40.high)}</p>
+        <p className={s.amount}>
+          <RangeText text={formatRange(SAMPLE_DEATH_40.low, SAMPLE_DEATH_40.high)} />
+        </p>
         <VerdictBadge
           {...VERDICT_BADGE.shortage}
           label={DEATH_LABEL.shortage}
