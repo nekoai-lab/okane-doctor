@@ -1,0 +1,23 @@
+/*
+  キー・バリュー型のキャプション（`回答: 子2人` / `出典: 日本年金機構`）
+
+  **枠は付けずテキストのみ。** サイズと墨の薄さは出典バッジと同じトークン。
+  キーはバリューより一段薄い ── 毎行に出る定型部分なので、目に入るのは値のほうでよい。
+*/
+.caption {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.key {
+  color: #a5aca7;
+  /* キーは1語。「当社基／準:」と折らない（2026-10-17・UX レビュー2回目） */
+  white-space: nowrap;
+}
+
+.value {
+  color: #8d968f;
+}

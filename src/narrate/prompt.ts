@@ -1,0 +1,133 @@
+/**
+ * AI言語化のプロンプト（T-07）─ **ベイクオフと本番の共通の正本**。
+ *
+ * ここを1か所にしている理由：採点したプロンプトと本番のプロンプトが別物だと、
+ * ベイクオフの点数が本番の品質を保証しなくなる。文面のコピーを2つ置かない。
+ *
+ * 中身は機能仕様書 §5.4/§5.5 の骨子を、いまの narrate の枠
+ * （プレースホルダだけを書かせ、差し込みはこちら側）に合わせたもの。
+ * §5.4 の「静的→動的」の順序に従い、変わらないものを前に置く。
+ *
+ * 禁止語の辞書はここに書かない（検査側 = guard.ts に置く）。AIに手本を見せないため。
+ */
+import type { HouseholdDiagnosis } from "../calc/types.js";
+
+/** 出力の受け取り方。json=一括生成（ベイクオフ） / text=ストリーミング（本番） */
+export type OutputMode = "json" | "text";
+
+/** 規則と文体。出力形式より前に置く（形式が変わっても中身は変わらない） */
+const CORE = `あなたは公的保障と家計の「翻訳者」です。判断者ではありません。
+
+# 絶対規則
+1. 金額・年数・割合を、あなた自身が書いてはいけません。数字は下記のプレースホルダだけで表します。算用数字も漢数字も本文に書かないでください。
+2. 保険商品の名称・保険会社名を出さない。加入や申し込みを勧める表現を使わない。
+3. 不安を煽らない。「大変なことになる」「今すぐ」「絶対」のような圧をかける言い方をしない。
+4. 断定的な将来予測をしない。「概算」「目安」であることを保つ。
+5. 家計全体の最適化や投資の助言はしない。**支出・住まい・暮らしの見直しを勧めない**（この診断の範囲外）。「減らせる」と書いてよいのは**保険の保障額**の話だけ。
+6. 算定結果に「減らせる余地」があるときは必ず触れる。無いのに「ある」と書かない。
+7. **結論を言い直さない。** 金額がその額になった理由を書く ── 下に示す「金額を押し上げている上位2項目」に必ず触れ、なぜそれが大きいのかを1文で言う。
+8. 期間のプレースホルダが渡されているときは必ず使う。「いつまで必要なのか」が分からないと、金額だけが独り歩きする。
+9. **{{selfRange}} は必ず使う。** 差額だけを書くと、何に対する差なのかが読み手に分からない。
+
+# 使えるプレースホルダ（これ以外は使用禁止）
+{{conclusion}}      … 結論のことば
+{{selfRange}}       … 遺されたご家族に必要な保障の目安（レンジ）
+{{gapAmount}}       … いまの保険との差額
+{{yearsDependent}}  … お子さんが独立するまでの年数（子がいる世帯のみ）
+{{yearsAlone}}      … その後、配偶者が65歳になるまでの年数（配偶者がいる世帯のみ）
+
+# 文体
+中学生が読める語彙で書く。専門用語（団信・遺族厚生年金・高額療養費）は初出で1行の注釈を添える。
+「あなたの世帯では」の視点で書き、一般論を語らない。
+「いまの前提では」を必ず添える。
+褒めるときは状態を褒める。本人の選択に帰属できるものだけを本人のものとして書き、制度のおかげは制度のおかげと書く。`;
+
+const OUTPUT: Record<OutputMode, string> = {
+  json: `# 出力
+{"template": "本文"} という JSON を返す。本文は3〜6文の日本語。`,
+  // ストリーミングでは本文がそのまま画面に流れるので、前置きや囲みが付くとそのまま出てしまう。
+  text: `# 出力
+本文だけを出力する。見出し・箇条書き・引用符・前置き・後書きを付けない。3〜6文の日本語。`,
+};
+
+export function systemPrompt(mode: OutputMode): string {
+  return `${CORE}\n\n${OUTPUT[mode]}`;
+}
+
+/** 支出の内訳ラベル（結果画面と同じ言い方にそろえる。画面と文で呼び名が違うと迷子になる） */
+const EXPENSE_LABEL: Record<string, string> = {
+  livingChild: "ご家族の生活費（子育て期）",
+  livingAlone: "ご家族の生活費（末子独立後）",
+  education: "教育費",
+  housing: "住居費（団信なしのローン残高）",
+  funeral: "葬儀・予備費",
+};
+
+/**
+ * 金額を押し上げている上位2項目を、**こちらで決めて渡す**。
+ *
+ * 算定結果の JSON を丸ごと渡して「大事なところに触れて」と言うだけでは、AI は結論を
+ * 言い直すだけになった（2026-08-30 の盲検採点で両モデルとも同じ欠点が出た）。
+ * 何が大きいかは計算すれば分かることなので、AI に探させない。
+ */
+function topDrivers(d: HouseholdDiagnosis): string[] {
+  return Object.entries(d.self.expense)
+    .filter(([k, v]) => k in EXPENSE_LABEL && typeof v === "number" && v > 0)
+    .sort((a, b) => (b[1] as number) - (a[1] as number))
+    .slice(0, 2)
+    .map(([k]) => EXPENSE_LABEL[k]);
+}
+
+/**
+ * 動的部分。**氏名等の識別情報は渡さない（AR-09）** ─ 算定結果の構造化JSONだけを渡す。
+ */
+export function buildUserContent(d: HouseholdDiagnosis): string {
+  const pending = d.self.gap.kind === "pending";
+  const uncertain = d.householdHeadline.kind === "uncertain";
+  const placeholderNote = pending
+    ? "この世帯は今の保険が分かっていないため過不足を出していません。{{gapAmount}} は使わないでください。過不足を断定せず、証券が見つかれば比べられることを伝えてください。"
+    : uncertain
+      ? "この世帯は、必要額の幅がいまの保障を跨いでいます。減らせるとも足りないとも言い切らないでください。{{gapAmount}} は使わないでください。"
+      : "この世帯は過不足が出ています。{{gapAmount}} を使えます。";
+
+  const period: string[] = [];
+  if (d.self.years.dependent > 0) period.push("{{yearsDependent}} が使えます");
+  if (d.self.years.alone > 0) period.push("{{yearsAlone}} が使えます");
+  const periodNote =
+    period.length > 0
+      ? `期間のプレースホルダ：${period.join("／")}。必ず使ってください。`
+      : "この世帯に期間のプレースホルダはありません。年数に触れないでください。";
+
+  // {{selfRange}} の意味は verdict で入れ替わる。「足りない額」と「当座資金」を
+  // 同じ言い方で書かせると、収入が支出を上回る世帯で読者が混乱する。
+  const rangeMeaning: Record<string, string> = {
+    shortage: "{{selfRange}} は「いまの備えに対して足りない額」です。",
+    sufficient:
+      "{{selfRange}} は不足額ではありません。収入・資産で支出はまかなえる見込みで、これは「万一の直後に手元に置いておく当座資金（葬儀・予備費と生活費1〜2年分）」の目安です。そう分かるように書いてください。",
+    ample:
+      "{{selfRange}} は「葬儀・予備費」の目安です。収入・資産が支出を大きく上回るため、上乗せの保障は要りません。そう言い切ってください。",
+    not_needed:
+      "{{selfRange}} は「葬儀・予備費」の目安です。扶養するご家族がいないため、大きな死亡保障は要りません。",
+    mixed:
+      "{{selfRange}} は、答えた区分の幅をすべて含めた必要額の目安です。区分のどこにあたるかで、上乗せの保障が要る場合と要らない場合があります。そう分かるように書いてください。{{selfRange}} 全体を「葬儀・予備費」や「当座資金」と呼ばないでください。「上乗せの保障は要りません」と言い切らないでください。",
+  };
+
+  /**
+   * **呼び名はレンジ全体の必要額の判定（ニーズ軸）で選ぶ**（2026-10-17・QA で blocking）。
+   * JSON の `self.verdict` は代表値1点の判定で、`self.range` は回答の幅で包絡したレンジ。
+   * 代表値の判定で選ぶと、不足分を含むレンジを「葬儀・予備費」と呼ばせてしまう
+   */
+  const rangeKey = d.self.rangeVerdict ?? d.self.verdict;
+  const pointNote =
+    d.self.rangeVerdict !== undefined && d.self.rangeVerdict !== d.self.verdict
+      ? "算定結果の self.verdict は、答えた区分の代表値1点で見た必要額の判定です。{{selfRange}} 全体の判定ではないので、self.verdict を根拠に {{selfRange}} を呼ばないでください。\n"
+      : "";
+
+  return `${placeholderNote}
+${pointNote}${rangeMeaning[rangeKey] ?? rangeMeaning.sufficient}
+${periodNote}
+金額を押し上げている上位2項目：${topDrivers(d).join(" / ")}。この2つに必ず触れてください。
+
+算定結果（この中の値だけが事実です。ここに無いことを書かないでください）:
+${JSON.stringify(d, null, 2)}`;
+}

@@ -1,0 +1,899 @@
+/* **幅を2種類に分ける。**
+   散文は 720px（1行が長すぎると目が戻れない）、図と表は 1,120px（デジタル庁DSの
+   コンテンツ最大幅）。モバイルではどちらも画面幅いっぱいなので影響しない。 */
+.page {
+  max-width: var(--layout-content-max);
+  margin: 0 auto;
+  padding: var(--space-5) var(--layout-margin-mobile) var(--space-9);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+/* 判定は「アイコン＋ラベル＋色」の3点で出す。ただし色は左ボーダーとアイコンに置き、
+   文字は高コントラストの本文色にする（オレンジ地にオレンジ文字＝低コントラストを避ける）。
+   大きな原色ブロックは煽りになるので、地は中立トーンにとどめる。 */
+.headline {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  border-left: 6px solid var(--color-border);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  font-size: var(--font-size-std-l);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-5);
+}
+
+/* 減らせる・足りている＝良い知らせ（グリーン） */
+.good {
+  border-left-color: var(--color-success);
+}
+.good .icon {
+  color: var(--color-success);
+}
+
+/* 不足はエラーではないので赤にしない。Warning（オレンジ） */
+.warn {
+  border-left-color: var(--color-warning);
+}
+.warn .icon {
+  color: var(--color-warning);
+}
+
+/* 保留（過不足を出していない）。良し悪しの色を付けず中立に出す */
+.pending {
+  border-left-color: var(--color-text-muted);
+  font-size: var(--font-size-std-m);
+  font-weight: var(--font-weight-normal);
+}
+.pending .icon {
+  color: var(--color-text-muted);
+}
+
+.icon {
+  font-size: 1.4em;
+  line-height: 1;
+}
+
+.meta {
+  font-size: var(--font-size-std-s);
+  color: var(--color-text-secondary);
+  margin: var(--space-1) 0;
+}
+
+/* 次の一歩の案内。本文の大きさで（20px で1人2〜3文が1画面を文字だけで埋めていた・UX レビュー2回目） */
+.nextLine {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text-secondary);
+  margin: var(--space-2) 0;
+}
+
+/* 基準日・パラメータ版。既にある数字を、あるべき声量で */
+.metaValue {
+  font-family: var(--mk-font-display);
+  font-size: 18px;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.list {
+  margin: var(--space-3) 0;
+  padding-left: var(--space-5);
+}
+
+/* 件数の行（出典の件数と同じ組版）。既にある数字を文に埋めずに立てる */
+.countLine {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 0 0 var(--space-1);
+  color: var(--mk-ink);
+}
+
+.countNum {
+  font-family: var(--mk-font-display);
+  font-size: var(--font-size-std-l);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.countUnit {
+  font-size: 13.5px;
+  font-weight: var(--font-weight-bold);
+}
+
+/* Airbnb の編集面と同じ「濃い文字＋下線」。色ではなく下線でリンクだと分からせる
+   （白地の青は 3.1:1 しか出ず、本文のリンク色には使えない）。 */
+.link {
+  color: var(--color-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/*
+  セクション間隔。**40px → 32px に詰めた**（2026-09-21・視覚の DoD (a)）。
+  散文のセクションが続く区間で、余白だけで1画面ぶんの空白が積み上がっていた。
+  **DoD のためにアンカーを飾りとして足すのは本末転倒**（「汎用ビジュアルで代替しない」の裏面）
+  なので、図を増やすのではなく間隔を詰めて画面に収める。
+*/
+.section {
+  margin: var(--space-5) 0;
+}
+
+.caseCard {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.caseTitle {
+  font-size: var(--font-size-std-m);
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 var(--space-2);
+}
+
+.amount {
+  margin: var(--space-2) 0;
+}
+
+/* 金額の呼び名。金額の上に置く（文の中に金額を埋めない・DoD (b)） */
+.amountLabel {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+/* 金額そのもの。明朝の大サイズで主役に（DoD (b)） */
+.amountValue {
+  font-family: var(--mk-font-display);
+  font-size: var(--font-size-std-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.verdictLine {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--font-weight-bold);
+  margin: var(--space-2) 0;
+}
+.verdictLine.good {
+  color: var(--color-success-text);
+}
+.verdictLine.warn {
+  color: var(--color-warning-text);
+}
+
+/* 子の年齢での時間軸（見落としの可視化）。事実として中立に出す */
+.timeline {
+  font-size: var(--font-size-std-s);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-control);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-3) 0;
+}
+.timelineBar {
+  display: flex;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  margin-top: var(--space-2);
+}
+.segDep {
+  background: var(--color-accent);
+}
+.segAlone {
+  background: var(--color-border);
+}
+
+.subhead {
+  font-size: var(--font-size-std-s);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.rows {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-3);
+  align-items: baseline;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.rowLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.basis {
+  font-size: var(--font-size-std-xs);
+  color: var(--color-text-secondary);
+}
+
+.rowAmount {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.total {
+  font-weight: var(--font-weight-bold);
+  border-bottom: none;
+  border-top: 2px solid var(--color-border);
+  margin-top: var(--space-1);
+}
+
+/* この結果のよみとき（AI言語化）。露出は冒頭1文だけ */
+.narration {
+  font-size: var(--font-size-std-m);
+  line-height: var(--line-height-body-loose);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-subtle);
+}
+
+/*
+  参照材の折りたたみ見出し（進路 what-if・当社基準一覧）。
+  **露出は件数つきの1行だけ。** 開いた中が完全な記録であることは変えない（開示の規約）。
+*/
+.foldHead {
+  cursor: pointer;
+  min-height: var(--target-min);
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-std-m);
+  font-weight: var(--font-weight-bold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/*
+  よみときの既定露出サマリー。**持っている数字を、あるべき声量で出す**（DoD (a)(b)）。
+  金額は算定結果から来ており、ここで作っていない。
+*/
+/*
+  **台帳の文法にそろえる**（2026-09-21）── ラベルは小さく、値は明朝で行頭から。
+  390px で横2列にすると、右の値が折れて右端に張り付いた（実際に崩れた）。
+  数字の再掲は DoD (a) の解なので消さず、**組み方だけ台帳に合わせて縦積みにする**。
+*/
+.narrationSummary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+
+.narrationBadge {
+  font-size: var(--font-size-std-s);
+  font-weight: var(--font-weight-bold);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  border: 1.5px solid var(--mk-grey-border);
+  color: var(--mk-muted-2);
+  white-space: nowrap;
+}
+.narrationBadge.ok {
+  border-color: var(--mk-green);
+  color: var(--mk-green-deep);
+  background: var(--mk-green-bg);
+}
+.narrationBadge.check {
+  border-color: var(--mk-amber);
+  color: var(--mk-amber-deep);
+  background: var(--mk-amber-bg);
+}
+.narrationBadge.short {
+  border-color: var(--mk-red);
+  color: var(--mk-red-deep);
+  background: var(--mk-red-bg);
+}
+
+/* 台帳の行と同じ：ラベル（小）の下に値（明朝）。行頭でそろえる */
+.narrationStat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  width: 100%;
+}
+
+.narrationStatLabel {
+  font-size: var(--font-size-std-xs);
+  color: var(--color-text-secondary);
+}
+
+.narrationStatValue {
+  font-family: var(--mk-font-display);
+  font-size: 20px;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 折りたたみ見出しの件数。**既にある数字**なので、あるべき声量で出す */
+.foldCount {
+  font-family: var(--mk-font-display);
+  font-size: 20px;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  margin: 0 1px;
+}
+
+/* 折りたたみの中の全文。露出部と同じ読み味にそろえる */
+.narrationFull {
+  font-size: var(--font-size-std-m);
+  line-height: var(--line-height-body-loose);
+  margin: var(--space-3) 0 0;
+}
+
+/* この診断で分かること/分からないこと（先に線を引く） */
+.scope {
+  border-left: 6px solid var(--color-accent);
+  background: var(--color-surface-subtle);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  /* 本文の大きさに戻す（20px で2段落が1画面の半分を占めていた・UX レビュー2回目） */
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+/* 診たリスクの件数と未算定の数。既にある数字を、文に埋めずに立てる */
+.scopeCount {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-6);
+}
+
+.scopeStat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.scopeNum {
+  font-family: var(--mk-font-display);
+  font-size: var(--font-size-std-l);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.scopeUnit {
+  font-size: var(--font-size-body);
+}
+
+.scope p {
+  margin: var(--space-1) 0;
+}
+
+/* 「もっと知りたい：選ぶ基準」の開閉 */
+.criteria {
+  margin: var(--space-2) 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  padding: var(--space-2) var(--space-4);
+}
+.criteria > summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-bold);
+  min-height: var(--target-min);
+  display: flex;
+  align-items: center;
+}
+
+.reduce {
+  border-left: 6px solid var(--color-success);
+  background: var(--color-surface-subtle);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+}
+/* 既にある金額を、あるべき声量で（文章に埋めない・DoD (b)） */
+.reduceAmount {
+  font-family: var(--mk-font-display);
+  font-size: 20px;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  margin: 0 2px;
+}
+
+.reduceNone {
+  border-left: 6px solid var(--color-border);
+  background: var(--color-surface-subtle);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-control);
+  color: var(--color-text-secondary);
+}
+
+.assumptions {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-5);
+  font-size: var(--font-size-std-s);
+  color: var(--color-text-secondary);
+}
+
+/* 折りたたみの中の根拠本文。露出の1行と同じ読み味にそろえる */
+.reformBody {
+  margin: var(--space-2) 0 0;
+}
+.reformDetails {
+  margin-top: var(--space-2);
+}
+.reformDetails > summary {
+  cursor: pointer;
+  min-height: var(--target-min);
+  display: flex;
+  align-items: center;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* 制度改正（2028）の該当/非該当。事実として中立に出す（煽らない） */
+.reformNote {
+  border-left: 6px solid var(--color-text-muted);
+  background: var(--color-surface-subtle);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-std-s);
+}
+
+/* 支出と収入の対比（主グラフ・デザイン方針「グラフの設計」1）
+   色相＝支出/収入の意味、内訳は明度差。棒は装飾で、数字は下の内訳表が正。 */
+.compare {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.barBlock {
+  display: grid;
+  gap: var(--space-1);
+}
+.barHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-size: var(--font-size-std-s);
+}
+.bar {
+  display: flex;
+  gap: 2px; /* 隣接した塗りが混ざって見えるのを防ぐ（背景色の隙間） */
+  height: 16px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--chart-grid);
+}
+.barSeg {
+  min-width: 2px;
+}
+/* 内訳表の行に置く色の印（色だけで意味を伝えないための「印＋ラベル＋数値」） */
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: var(--space-2);
+  vertical-align: baseline;
+}
+
+/* 引き算が見えるグラフ（ウォーターフォール）
+   横向きの段組み。幅393pxで縦棒5本にするとラベルが潰れるため。 */
+.wfRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-divider);
+  font-size: var(--font-size-std-s);
+}
+.wfLabel {
+  color: var(--color-text-body);
+}
+.wfTrack {
+  position: relative;
+  display: block;
+  height: 14px;
+  border-radius: var(--radius-pill);
+  background: var(--chart-grid);
+  overflow: hidden;
+}
+.wfBar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: var(--radius-pill);
+}
+.wfAmount {
+  justify-self: end;
+  font-variant-numeric: tabular-nums;
+}
+.wfResult {
+  border-bottom: none;
+  border-top: 2px solid var(--color-border);
+  font-size: var(--font-size-std-m);
+}
+/* 判定は「アイコン＋ラベル＋色」の3点で出す。色だけで意味を伝えない */
+.wfGood {
+  color: var(--color-success-text);
+  font-weight: var(--font-weight-bold);
+}
+.wfWarn {
+  color: var(--color-warning-text);
+  font-weight: var(--font-weight-bold);
+}
+
+/* ------------------------------------------------------------
+ * 年次キャッシュフロー（US-04b）
+ *
+ * **2軸にしない**（デザイン方針の禁止事項）。残高の棒と、年ごとの表を縦に並べる。
+ * 棒は装飾で、値は文と表が正。色だけで意味を伝えない。
+ * ------------------------------------------------------------ */
+.cashflow {
+  margin: var(--space-5) 0;
+}
+
+
+
+/* マイナス側は 0 の線から下に伸びる */
+
+
+
+
+
+/* 貯蓄が尽きた年は Warning（オレンジ）。赤はシステムエラー専用 */
+
+
+
+
+.cfPoints {
+  margin: var(--space-3) 0;
+  padding-left: var(--space-5);
+  font-size: var(--font-size-std-s);
+}
+
+.cfPoints li {
+  margin-bottom: var(--space-1);
+}
+
+/* 「残高」が何を指すかの但し書き。診断表の「いまの貯蓄」と取り違えさせない */
+.cfNote {
+  display: block;
+  font-size: var(--font-size-dense);
+  color: var(--color-text-secondary);
+}
+
+.cfEvents {
+  font-size: var(--font-size-dense);
+  color: var(--color-text-secondary);
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+/* 必要保障額の推移（US-04d）。棒＝必要額、横線＝いまの保障。同じ縦軸で2軸にしない */
+
+
+
+/* いまの保障。位置が意味を持つので、破線ではなく実線＋高コントラストにする */
+
+/* SVGグラフの枠。図・凡例・見出しをひとまとまりにする */
+.chartFigure {
+  margin: var(--space-4) 0;
+}
+
+.chartTitle {
+  font-size: var(--font-size-dense);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.chartSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chartLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  list-style: none;
+  padding: 0;
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-dense);
+  color: var(--color-text-secondary);
+}
+
+.chartLegendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chartLegendChip {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.chartLegendLine {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  flex: none;
+}
+
+/* ------------------------------------------------------------
+ * 文章の幅
+ *
+ * 図と表はページ幅（1,120px）いっぱいを使ってよいが、**散文は 720px に絞る**。
+ * 1行が長すぎると目が行を戻せない（2026-08-31 の「読みづらい」の主因）。
+ * ------------------------------------------------------------ */
+.prose {
+  max-width: var(--layout-reading-max);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ------------------------------------------------------------
+ * 見出しの階層（docs/デザイン仕様.html のタイポスケール）
+ *
+ * 結果画面には h1 が無く、節見出しがすべて div だった。仕様書は
+ * Dsp-48B-140 / Std-24B-150 / Std-18B-160 / Std-16N-170 の4段階を
+ * 定義しているのに、実装は「大きい数字」と「本文」の2段階しか使っておらず、
+ * 全部が同じ平面に並んで見えていた（2026-08-31 の「縦に羅列」の原因）。
+ * ------------------------------------------------------------ */
+.h1 {
+  font-size: var(--font-size-std-l); /* Std-28 */
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--tracking-heading);
+  margin: 0;
+}
+
+.h2 {
+  font-size: var(--font-size-std-m); /* Std-24B-150 */
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+  margin: 0 0 var(--space-4);
+}
+
+.h3 {
+  font-size: var(--font-size-std-xs); /* Std-18B-160 */
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+  color: var(--color-text);
+  margin: var(--space-5) 0 var(--space-2);
+}
+
+/* セクションの余白は階層をつける。すべて同じ間隔だと区切りが見えない */
+.sectionMajor {
+  margin-top: var(--space-8);
+}
+
+@media (min-width: 768px) {
+  }
+
+/* ------------------------------------------------------------
+ * 全幅ブロックの抜き出し（full-bleed グリッド）
+ *
+ * 中央の列を「読み物の幅」に固定し、`.wide` を付けた要素だけが左右に張り出す。
+ * 負のマージンのような小細工を使わずに、**散文は720px・図と表は1,120px**を
+ * 1つのレイアウトで両立させる。モバイルでは min() が効いて両方とも画面幅になる。
+ * ------------------------------------------------------------ */
+.page {
+  display: grid;
+  grid-template-columns:
+    1fr
+    min(var(--layout-reading-max), 100%)
+    1fr;
+}
+
+.page > * {
+  grid-column: 2;
+}
+
+.page > .wide {
+  grid-column: 1 / -1;
+}
+
+/* 全幅ブロックの中にある文章までは広げない（図と表だけ広くしたい） */
+.cashflow .cfPoints,
+.cashflow .cfEvents,
+.cashflow .cfCaption,
+.cashflow .basis,
+.compare .basis {
+  max-width: var(--layout-reading-max);
+}
+
+@media (min-width: 768px) {
+  }
+
+/* ------------------------------------------------------------
+ * 配偶者のケース（要約＋開閉）
+ *
+ * 同じ長さのカードが2つ続くと体感の長さが倍になる。ただしタブにはしない ──
+ * 世帯の結論（rebalanceable）は両方を見ないと意味が伝わらず、タブだと片方が
+ * 最後まで見られない可能性がある。**閉じていても判定と金額は要約に出す。**
+ * ------------------------------------------------------------ */
+.spouseCase {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  margin-bottom: var(--space-5);
+}
+
+.spouseSummary {
+  cursor: pointer;
+  padding: var(--space-5);
+  min-height: var(--target-min);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.spouseSummaryTitle {
+  font-size: var(--font-size-std-m);
+  font-weight: var(--font-weight-bold);
+}
+
+.spouseSummaryVerdict {
+  font-size: var(--font-size-std-s);
+  color: var(--color-text-secondary);
+}
+
+/* 差額があるときの要約：呼び名の下に金額（金額を文に埋めない・DoD (b)） */
+.spouseSummaryHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spouseSummaryLabel {
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.spouseSummaryAmount {
+  font-family: var(--mk-font-display);
+  font-size: var(--font-size-std-m);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.3;
+}
+
+/* 開いたときは、中のカードの枠が二重にならないようにする */
+.spouseCase .caseCard {
+  border: none;
+  padding-top: 0;
+}
+
+/* ------------------------------------------------------------
+ * 注目する年（FPの表には無い部分）
+ * 全年を等しく並べても、どこを見ればよいかは分からない。先に抜き出す。
+ * ------------------------------------------------------------ */
+.keyYears {
+  margin: var(--space-5) 0;
+}
+
+/* ------------------------------------------------------------
+ * ことばの意味（用語の1行注釈）
+ * CLAUDE.md の「専門用語は初出で1行注釈」が結果画面で守られていなかった。
+ * 対面のFPなら口頭で補える部分を、紙が自分で説明しきる必要がある。
+ * ------------------------------------------------------------ */
+.terms {
+  margin: var(--space-2) 0 var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-subtle);
+  font-size: var(--font-size-dense);
+}
+
+.termRow {
+  display: grid;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+}
+
+.termRow:last-child {
+  margin-bottom: 0;
+}
+
+.termName {
+  font-weight: var(--font-weight-bold);
+}
+
+.termNote {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+/* 続きを受け取る導線（T-13）。
+   ブランドの赤（CTA）は使わない。押させたい場所ではなく「選べる場所」として出すため、
+   枠は ink 系の淡い面にする（デザイン方針：赤は CTA と利用者が動かすコントロールだけ）。 */
+.watchCard {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-5);
+  background: var(--color-surface-subtle);
+}
+
+.watchLead {
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-body);
+  margin: 0 0 var(--space-4);
+}
+
+.watchButton {
+  display: inline-block;
+  padding: 12px 20px;
+  border: 1px solid var(--color-text);
+  border-radius: 8px;
+  color: var(--color-text);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+}
+
+.watchButton:hover {
+  background: var(--color-surface);
+}
+
+/* 支出が尽きたあとの行。**棒が無いのは故障ではなく「引く先が無い」**という事実。
+   数字だけ残して黙らせると描画の失敗に見えるので、行ごと淡くして理由を添える。 */
+.wfUnused .wfLabel,
+.wfUnused .wfAmount {
+  color: var(--color-text-muted);
+}
+
+.wfNote {
+  display: block;
+  font-size: var(--font-size-std-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-normal);
+}
+
+/*
+  照合表 #10：`check.html` 末尾の黒帯。**ページ最下部に置く。**
+  全部読み終えた人への一文なので、玄関の直後には置かない。
+  色はモック（`docs/design-mock/tokens.css`）の ink / 反転テキストをそのまま使う。
+*/
+.statement {
+  background: #1e2a26;
+  border-radius: 16px;
+  padding: var(--space-6) var(--space-5);
+  /* 直前は畳んだ参照材だけなので、間を詰める（図も数字も無い末尾を短くする・UX レビュー2回目） */
+  margin: var(--space-5) 0 0;
+}
+
+.statementHead {
+  font-family: "Shippori Mincho", serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: #f7f5f0;
+  line-height: 1.5;
+  margin: 0 0 var(--space-2);
+}
+
+.statementBody {
+  font-size: 13px;
+  color: #b9c4bd;
+  line-height: 1.8;
+  margin: 0;
+}

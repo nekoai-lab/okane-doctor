@@ -1,0 +1,189 @@
+/* ウィザードの見た目。tokens.css のセマンティックトークンだけを参照する（プリミティブ禁止）。
+   フォーカスリングは tokens.css のグローバル :focus-visible に任せ、ここでは上書きしない。 */
+
+.page {
+  max-width: var(--layout-reading-max);
+  margin: 0 auto;
+  padding: var(--space-5) var(--layout-margin-mobile) var(--space-9);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.progress {
+  margin-bottom: var(--space-5);
+}
+
+.progressText {
+  font-size: var(--font-size-std-s);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.bar {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-subtle);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: var(--radius-pill);
+  transition: width 0.2s ease;
+}
+
+.stepTitle {
+  font-size: var(--font-size-std-xl);
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 var(--space-5);
+}
+
+.field {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--space-6);
+}
+
+.legend {
+  font-size: var(--font-size-std-m);
+  font-weight: var(--font-weight-bold);
+  padding: 0;
+  margin-bottom: var(--space-3);
+}
+
+.note {
+  font-size: var(--font-size-std-s);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-3);
+}
+
+.choices {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--target-min);
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* 選択は色だけに頼らない：ネイティブのラジオのドットでも伝わる */
+.choice:has(input:checked) {
+  border-color: var(--color-accent);
+  background: var(--color-surface-subtle);
+  font-weight: var(--font-weight-bold);
+}
+
+.selectRow {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* 生年・人数の選択。
+   以前はラベル側にだけ枠を付けていたため、中の <select> がブラウザ標準のまま残り、
+   同じ画面の選択肢カードと作りが2種類に見えていた（実機でいちばん押しづらい部品でもあった）。
+   ラベルは上に置き、操作部そのものを他のコントロールと同じ見た目にする。 */
+.select {
+  display: block;
+}
+
+.selectLabel {
+  display: block;
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-2);
+}
+
+.selectControl {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  min-height: var(--target-min);
+  padding: var(--space-3);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  /* iOS は 16px 未満の入力にフォーカスすると画面を勝手に拡大する */
+  font-size: 16px;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-7);
+}
+
+/* Airbnb の button-primary / button-secondary に合わせる。
+   48px 高・8px 角丸・ウェイト500。二次ボタンは白地に細い枠。 */
+.primary,
+.secondary {
+  min-height: 48px;
+  padding: 14px var(--space-5);
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.primary {
+  border: 0;
+  background: var(--color-primary);
+  color: var(--color-text-on-inverse);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--color-primary-active);
+}
+
+/* Airbnb の button-primary-disabled は「淡い Rausch 地に白文字」だが、
+   それだとコントラストが 1.3:1 しかなく**ラベルが読めない**。
+   地はそのままに、文字を濃い Rausch にして 4.7:1 を確保する。
+   まだ押せないことは、色の淡さとカーソルで十分に伝わる。 */
+.primary:disabled {
+  background: var(--color-primary-disabled);
+  color: var(--color-primary-active);
+  cursor: not-allowed;
+}
+
+.secondary {
+  border: 1px solid var(--color-text);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* 1問目の「戻る」は押せない。**押せる見た目のまま置かない**（どこへ戻るのか迷わせる） */
+.secondary:disabled {
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: default;
+}
+
+.helper {
+  font-size: var(--font-size-std-s);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-2);
+}
+
+/* 無効なボタンの理由。**色だけで「押せません」と伝えない。**
+   警告色は使わない ─ まだ何も間違っていない（これから選ぶだけ）ので、煽らない。 */
+.missing {
+  margin: var(--space-3) 0 0;
+  font-size: var(--font-size-std-s);
+  color: var(--color-text-secondary);
+}
