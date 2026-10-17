@@ -60,3 +60,11 @@
 .page > footer { margin-top: 20px; }
 .fallback { padding: 24px 16px; }
 .fallback h1 { font-size: 24px; }
+
+/* 2026-10-17・Codex の UX レビュー：前提・凡例・金額の基準を常に見せる */
+.chartPremise { margin: 12px 0 0; font-size: 13px; line-height: 1.7; color: var(--color-text); }
+.legend { margin: 4px 0 0; font-size: 12px; line-height: 1.7; color: var(--color-text-secondary); }
+.basis { font-weight: 700; }
+.rowBadge { display: block; margin-top: 4px; font-family: var(--font-body, inherit); font-size: 12px; font-weight: 400; }
+.page .rowBadge > span { white-space: nowrap; }
+.legendItem { white-space: nowrap; }

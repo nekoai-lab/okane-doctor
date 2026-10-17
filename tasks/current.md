@@ -91,4 +91,5 @@
 
 - もしもラボ（`/lab`）だけを Modern Fintech A の見た目にした（`app/lab/page.tsx` で `data-theme="fintech"`）。判定バッジは `VerdictBadge`、末尾の操作は `Button`、上部に `AppHeader`、グラフの帯と線は Fintech A のグラフ色、金額は Noto Sans JP の太字・ブルー。計算・判定・文言・URL は変えていない
 - 確認：PR #2 と同じ代表3世帯 × 390/320/1280 で横はみ出しなし・12px 未満の文字なし・44px 未満の操作なし（Playwright）。スクショ `design/screenshots/lab-fintech-*.png`
-- 次の1手：PR #4 と PR #2 のマージ後に request-qa と ux-pass
+- Codex の UX レビュー（4回目・直す必要あり）を受けて直した：病気・けが・休職と死亡保障を別カードにし、金額の基準（貯蓄を差し引く前／資産を差し引いた後）を常に見せる。グラフの前に固定した前提、上に凡例、下に保障線の注記。閉じた行に貯蓄の判定バッジ。記録は `design/UX_REVIEW.md` の4回目。計算・判定・URL は変えていない
+- 次の1手：Codex の再レビューで ux-pass。PR #4 のマージ後に request-qa
