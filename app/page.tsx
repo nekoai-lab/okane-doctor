@@ -24,6 +24,7 @@ import { loadParams } from "../src/params/index.js";
 import { jstDate } from "../src/time/jstYear.js";
 import "../src/design/theme-fintech.css";
 import { DEATH_LABEL, VERDICT_AXIS } from "./result/verdictLabels.js";
+import { CalcArt, FormArt, Leaf, ResultArt, Skyline, Spot, Sprig } from "./top/art.js";
 import { Icon } from "./top/icons.js";
 import { Logo } from "./top/Logo.js";
 import s from "./top/top.module.css";
@@ -197,6 +198,7 @@ export default function Home() {
               fetchPriority="high"
             />
           </picture>
+          <Sprig className={s.heroSprig} />
           <p className={s.heroHand} aria-hidden="true">
             家族の今と、
             <br />
@@ -233,7 +235,13 @@ export default function Home() {
         </section>
 
         {/* ② 診断結果でわかること（試算例の金額は topExample から） */}
-        <section className={s.features} id="features" aria-labelledby="features-title">
+        <section
+          className={`${s.features} ${s.curve}`}
+          id="features"
+          aria-labelledby="features-title"
+        >
+          <Leaf className={`${s.leaf} ${s.leafFeaturesA}`} />
+          <Leaf className={`${s.leaf} ${s.leafFeaturesB}`} />
           <div className={s.featuresGrid}>
             <div className={s.featuresIntro}>
               <SectionHead
@@ -318,9 +326,12 @@ export default function Home() {
               </div>
               <figcaption id="phone-caption" className={s.exampleCaption}>
                 <span className={s.exampleTag}>試算例</span>
-                {household.join("／")}。いまの死亡保障{formatMan(ex.coverage)}。
-                <br />
-                {dateText}・制度パラメータ {p.version} で計算した、結果画面と同じ値です。
+                <span className={s.captionLine}>{household.slice(0, 2).join("／")}</span>
+                <span className={s.captionLine}>{household.slice(2).join("／")}</span>
+                <span className={s.captionLine}>いまの死亡保障 {formatMan(ex.coverage)}</span>
+                <span className={s.captionLine}>
+                  {dateText}・制度パラメータ {p.version}。結果画面と同じ値です。
+                </span>
                 <Link className={s.inlineLink} href={exampleHref}>
                   この例の結果画面を見る
                 </Link>
@@ -382,6 +393,8 @@ export default function Home() {
         {/* ③ 計算の仕組み（金額を模さない図式） */}
         <section className={s.mechanism} id="mechanism" aria-labelledby="mechanism-title">
           <div className={s.mechanismInner}>
+            <Skyline className={s.mechanismSkyline} />
+            <Sprig className={s.mechanismSprig} />
             <div className={s.mechanismText}>
               <SectionHead id="mechanism-title" title="計算の仕組み" />
               <p className={s.mechanismClaim}>
@@ -401,13 +414,13 @@ export default function Home() {
                 <p className={s.eqHead}>必要なお金</p>
                 <ul>
                   <li>
-                    <span className={s.eqIcon}>{Icon.house(30)}</span>毎月の生活費
+                    <span className={s.eqIcon}>{Spot.house()}</span>毎月の生活費
                   </li>
                   <li>
-                    <span className={s.eqIcon}>{Icon.cap(30)}</span>教育費
+                    <span className={s.eqIcon}>{Spot.cap()}</span>教育費
                   </li>
                   <li>
-                    <span className={s.eqIcon}>{Icon.suitcase(30)}</span>その他の
+                    <span className={s.eqIcon}>{Spot.suitcase()}</span>その他の
                     <br />
                     まとまった費用
                   </li>
@@ -420,13 +433,13 @@ export default function Home() {
                 <p className={s.eqHead}>今ある支え</p>
                 <ul>
                   <li>
-                    <span className={s.eqIcon}>{Icon.bank(30)}</span>遺族年金
+                    <span className={s.eqIcon}>{Spot.bank()}</span>遺族年金
                   </li>
                   <li>
-                    <span className={s.eqIcon}>{Icon.piggy(30)}</span>貯蓄
+                    <span className={s.eqIcon}>{Spot.piggy()}</span>貯蓄
                   </li>
                   <li>
-                    <span className={s.eqIcon}>{Icon.briefcase(30)}</span>家族の収入
+                    <span className={s.eqIcon}>{Spot.briefcase()}</span>家族の収入
                   </li>
                 </ul>
               </div>
@@ -435,10 +448,8 @@ export default function Home() {
               </span>
               <div className={`${s.eqCol} ${s.eqResult}`}>
                 <p className={s.eqHead}>保険で備えたい額</p>
-                <div className={s.eqShield}>{Icon.shieldYen(84)}</div>
-                <p className={s.eqResultText}>
-                  必要なお金から、今ある支えを差し引いた金額の目安
-                </p>
+                <div className={s.eqShield}>{Spot.shieldYen()}</div>
+                <p className={s.eqResultText}>必要なお金から、今ある支えを差し引いた金額の目安</p>
               </div>
               <figcaption className={s.eqNote}>
                 ※ 金額は計算エンジンが算定します。遺族年金は日本年金機構などの公表値で計算します。
@@ -448,7 +459,8 @@ export default function Home() {
         </section>
 
         {/* ④ もしもラボ（実装済みのシナリオだけを紹介する） */}
-        <section className={s.lab} id="lab" aria-labelledby="lab-title">
+        <section className={`${s.lab} ${s.curve}`} id="lab" aria-labelledby="lab-title">
+          <Sprig className={s.labSprig} />
           <div className={s.labInner}>
             <div className={s.labIntro}>
               <h2 id="lab-title" className={s.labTitle}>
@@ -465,28 +477,31 @@ export default function Home() {
                 {Icon.arrow()}
               </Link>
             </div>
-            <ul className={s.labCards}>
-              <li className={s.labCard}>
-                <span className={s.labIcon}>{Icon.bed(40)}</span>
-                <h3>病気やけがで働けなくなったら？</h3>
-                <p>短期の入院から1年半の休職まで5つの場面で、必要なお金と貯蓄を比べます。</p>
-              </li>
-              <li className={s.labCard}>
-                <span className={s.labIcon}>{Icon.hourglass(40)}</span>
-                <h3>亡くなる時期が変わったら？</h3>
-                <p>65歳までの時期によって、必要なお金がどう変わるかを見ます。</p>
-              </li>
-              <li className={s.labCard}>
-                <span className={s.labIcon}>{Icon.people(40)}</span>
-                <h3>配偶者の働き方が変わったら？</h3>
-                <p>遺された配偶者の働き方を変えると、必要なお金がどう動くかを見ます。</p>
-              </li>
-            </ul>
+            <div className={s.labScenarios}>
+              <h3 className={s.labScenariosTitle}>ラボで確かめられる条件</h3>
+              <ul className={s.labCards}>
+                <li className={s.labCard}>
+                  <span className={s.labIcon}>{Icon.bed(40)}</span>
+                  <h4>病気やけがで働けなくなったら？</h4>
+                  <p>短期の入院から1年半の休職まで5つの場面で、必要なお金と貯蓄を比べます。</p>
+                </li>
+                <li className={s.labCard}>
+                  <span className={s.labIcon}>{Icon.hourglass(40)}</span>
+                  <h4>亡くなる時期が変わったら？</h4>
+                  <p>65歳までの時期によって、必要なお金がどう変わるかを見ます。</p>
+                </li>
+                <li className={s.labCard}>
+                  <span className={s.labIcon}>{Icon.people(40)}</span>
+                  <h4>配偶者の働き方が変わったら？</h4>
+                  <p>遺された配偶者の働き方を変えると、必要なお金がどう動くかを見ます。</p>
+                </li>
+              </ul>
+            </div>
           </div>
         </section>
 
         {/* ⑤ ライフステージごとの考え方（3つ均等。説明だけで、金額は出さない） */}
-        <section className={s.stages} id="stages" aria-labelledby="stages-title">
+        <section className={`${s.stages} ${s.curve}`} id="stages" aria-labelledby="stages-title">
           <div className={s.stagesInner}>
             <SectionHead
               id="stages-title"
@@ -504,51 +519,39 @@ export default function Home() {
                 <Link className={s.stageCard} href="/wizard">
                   <span className={s.stageTab}>子育て世帯</span>
                   {/* biome-ignore lint/performance/noImgElement: 承認済みのイラストをそのまま出す */}
-                  <img
-                    src="/illustrations/family/hero-riverside-wide-800.webp"
-                    alt=""
-                    width={800}
-                    height={450}
-                    className={s.stageImgFamily}
-                  />
+                  <img src="/top/stage-family.webp" alt="" width={640} height={456} />
                   <span className={s.stageText}>
                     子どもの教育費や、万一のときの生活費など、家族のこれからに必要な備えを診断します。
                   </span>
-                  <span className={s.stageChevron}>{Icon.chevron()}</span>
+                  <span className={s.stageGo}>
+                    診断をはじめる<span className={s.stageChevron}>{Icon.chevron()}</span>
+                  </span>
                 </Link>
               </li>
               <li>
                 <Link className={s.stageCard} href="/wizard">
                   <span className={s.stageTab}>単身</span>
                   {/* biome-ignore lint/performance/noImgElement: 承認済みのイラストをそのまま出す */}
-                  <img
-                    src="/illustrations/single-female/hero-weekend-800.webp"
-                    alt=""
-                    width={800}
-                    height={450}
-                    className={s.stageImgSingle}
-                  />
+                  <img src="/top/stage-single.webp" alt="" width={640} height={456} />
                   <span className={s.stageText}>
                     ご自身の生活費や、病気・けがで働けないときの備えを、扶養する人がいない前提で診断します。
                   </span>
-                  <span className={s.stageChevron}>{Icon.chevron()}</span>
+                  <span className={s.stageGo}>
+                    診断をはじめる<span className={s.stageChevron}>{Icon.chevron()}</span>
+                  </span>
                 </Link>
               </li>
               <li>
                 <Link className={s.stageCard} href="/wizard">
                   <span className={s.stageTab}>中高年・シニア</span>
                   {/* biome-ignore lint/performance/noImgElement: 承認済みのイラストをそのまま出す */}
-                  <img
-                    src="/illustrations/senior/hero-couple-800.webp"
-                    alt=""
-                    width={800}
-                    height={450}
-                    className={s.stageImgSenior}
-                  />
+                  <img src="/top/stage-senior.webp" alt="" width={640} height={456} />
                   <span className={s.stageText}>
                     お子さんの独立後の配偶者の暮らしや、病気で休むときの備えを、年齢に合わせて診断します。
                   </span>
-                  <span className={s.stageChevron}>{Icon.chevron()}</span>
+                  <span className={s.stageGo}>
+                    診断をはじめる<span className={s.stageChevron}>{Icon.chevron()}</span>
+                  </span>
                 </Link>
               </li>
             </ul>
@@ -556,7 +559,7 @@ export default function Home() {
         </section>
 
         {/* ⑥ 診断の流れ */}
-        <section className={s.flow} id="flow" aria-labelledby="flow-title">
+        <section className={`${s.flow} ${s.curve}`} id="flow" aria-labelledby="flow-title">
           <div className={s.flowInner}>
             <SectionHead
               id="flow-title"
@@ -574,7 +577,9 @@ export default function Home() {
                     家族構成・働き方・貯蓄など約10問。範囲で選べて、「分からない」でも進めます。
                   </p>
                 </div>
-                <span className={s.stepArt}>{Icon.form(56)}</span>
+                <span className={s.stepArt}>
+                  <FormArt />
+                </span>
               </li>
               <li className={s.step}>
                 <span className={s.stepNum} aria-hidden="true">
@@ -584,7 +589,9 @@ export default function Home() {
                   <h3>必要なお金を計算</h3>
                   <p>回答と公的制度の数値から、計算エンジンが必要なお金を計算します。</p>
                 </div>
-                <span className={s.stepArt}>{Icon.calculator(56)}</span>
+                <span className={s.stepArt}>
+                  <CalcArt />
+                </span>
               </li>
               <li className={s.step}>
                 <span className={s.stepNum} aria-hidden="true">
@@ -594,7 +601,9 @@ export default function Home() {
                   <h3>結果と考え方を確認</h3>
                   <p>いまの保障との過不足を、内訳と出典つきで確かめます。</p>
                 </div>
-                <span className={s.stepArt}>{Icon.document(56)}</span>
+                <span className={s.stepArt}>
+                  <ResultArt />
+                </span>
               </li>
             </ol>
           </div>
@@ -683,6 +692,9 @@ export default function Home() {
         {/* ⑨ 最後の入口 */}
         <section className={s.closing} aria-labelledby="closing-title">
           <div className={s.closingBand}>
+            <Skyline className={s.closingSkyline} tone="onBlue" />
+            <Leaf className={`${s.leaf} ${s.leafClosingA}`} />
+            <Leaf className={`${s.leaf} ${s.leafClosingB}`} />
             <p className={s.closingHand} aria-hidden="true">
               今の暮らしから、
               <br />

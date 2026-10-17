@@ -312,6 +312,33 @@
   line-height: 1.8;
 }
 
+/*
+  節の上端の曲線（承認画像の「曲線の境界」）。節の地と同じ色の楕円を、上の節に少しかぶせる。
+  isolation で節ごとの重なりを閉じ、楕円は節の地の上・中身の下に描く。
+*/
+.curve {
+  position: relative;
+  isolation: isolate;
+}
+.curve::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -20%;
+  right: -20%;
+  top: -26px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--curve-bg, var(--color-surface));
+  pointer-events: none;
+}
+.leaf {
+  position: absolute;
+  z-index: 0;
+  width: 26px;
+  pointer-events: none;
+}
+
 /* ---------- カード ---------- */
 .card {
   background: var(--color-surface);
@@ -349,18 +376,36 @@
 
 /* ==========================================================
    ① ファーストビュー（スマホ：文字 → 家族の絵 → ボタン）
-   スマホでは横長の絵を背景に敷かない。前景の絵として、家族4人の頭から足まで入る位置で切る。
+   横長の絵をそのまま背景にすると、390px では家族の誰かが切れる。
+   そこで絵は家族4人が入る位置で切り、上端を透かして文字の後ろの空の色につなぐ
+   （承認画像の「空と川辺が文字の後ろから人物まで続く」構成をこの形で作る）。
    ========================================================== */
 .hero {
   position: relative;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, var(--color-surface) 0%, var(--top-blue-soft) 100%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-primary) 16%, var(--color-surface)) 0%,
+    color-mix(in srgb, var(--color-primary) 7%, var(--color-surface)) 55%,
+    var(--top-blue-soft) 100%
+  );
+}
+.heroSprig {
+  position: absolute;
+  z-index: 1;
+  top: 6px;
+  right: -14px;
+  width: 76px;
+  transform: rotate(10deg);
+  pointer-events: none;
 }
 .heroPicture {
   order: 2;
   display: block;
   position: relative;
+  /* 絵の上半分（空）を見出しの説明文の後ろまで伸ばす */
+  margin-top: -72px;
 }
 .heroImg {
   width: 100%;
@@ -369,14 +414,16 @@
   object-fit: cover;
   /* 家族は絵の右 47〜95% にいる。この位置で切ると4人とも頭から足まで入る */
   object-position: 92% 40%;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 34%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 34%);
 }
 .heroPicture::after {
-  /* 絵の上端を文字の地になじませる */
+  /* 絵の下端をボタンの地になじませる */
   content: "";
   position: absolute;
-  inset: 0 0 auto;
-  height: 40px;
-  background: linear-gradient(180deg, var(--color-surface), transparent);
+  inset: auto 0 0;
+  height: 72px;
+  background: linear-gradient(0deg, var(--top-blue-soft), transparent);
 }
 .heroHand {
   display: none;
@@ -386,6 +433,8 @@
 }
 .heroCopy {
   order: 1;
+  position: relative;
+  z-index: 1;
   padding: 24px var(--top-gutter) 8px;
 }
 .heroTitle {
@@ -400,6 +449,11 @@
   font-size: 15px;
   line-height: 1.85;
   color: var(--color-text);
+  /* 空の絵に重なる部分も読めるよう、文字の周りだけ地の色でふちどる */
+  text-shadow:
+    0 0 2px var(--color-surface),
+    0 0 8px var(--color-surface),
+    0 0 14px var(--color-surface);
 }
 .heroActions {
   order: 3;
@@ -419,7 +473,24 @@
    ========================================================== */
 .features {
   padding: 48px var(--top-gutter) 40px;
-  background: var(--color-surface);
+  /* 診断結果の見本の後ろに、淡い空の色を敷く */
+  background: linear-gradient(
+    180deg,
+    var(--color-surface) 0%,
+    var(--top-blue-soft) 30%,
+    var(--top-blue-soft) 75%,
+    var(--color-surface) 100%
+  );
+}
+.leafFeaturesA {
+  top: 18px;
+  left: -6px;
+  transform: rotate(-35deg);
+}
+.leafFeaturesB {
+  top: 52%;
+  right: -8px;
+  transform: rotate(30deg);
 }
 .featuresGrid {
   max-width: var(--top-max);
@@ -646,10 +717,13 @@
 .exampleCaption {
   max-width: 420px;
   margin: 16px auto 0;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.7;
-  color: var(--color-text-secondary);
+  color: var(--color-text);
   text-align: center;
+}
+.captionLine {
+  display: block;
 }
 .exampleTag {
   display: inline-block;
@@ -740,14 +814,42 @@
    ③ 計算の仕組み
    ========================================================== */
 .mechanism {
-  padding: 48px var(--top-gutter);
-  background: linear-gradient(180deg, var(--top-blue-soft), var(--color-surface));
+  padding: 40px 10px;
+  background: var(--color-surface);
 }
 .mechanismInner {
+  position: relative;
+  overflow: hidden;
   max-width: var(--top-max);
   margin: 0 auto;
   display: grid;
   gap: 24px;
+  padding: 36px 8px 64px;
+  border-radius: var(--top-radius-xl);
+  background: linear-gradient(
+    180deg,
+    var(--top-blue-tint),
+    var(--top-blue-soft) 60%,
+    var(--color-surface)
+  );
+}
+.mechanismInner > :not(svg) {
+  position: relative;
+  z-index: 1;
+}
+.mechanismSkyline {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 56px;
+}
+.mechanismSprig {
+  position: absolute;
+  top: -8px;
+  left: -10px;
+  width: 70px;
+  transform: rotate(-90deg);
 }
 .mechanismText {
   display: grid;
@@ -805,11 +907,14 @@
 .eqIcon {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: var(--top-blue-soft);
-  color: var(--color-primary);
+}
+.eqIcon svg {
+  width: 54px;
+  height: 54px;
 }
 .eqOp {
   align-self: center;
@@ -831,8 +936,8 @@
   color: var(--color-primary);
 }
 .eqShield svg {
-  width: 64px;
-  height: 64px;
+  width: 88px;
+  height: 88px;
 }
 .eqResultText {
   padding: 4px 6px 14px;
@@ -845,16 +950,43 @@
   grid-column: 1 / -1;
   margin-top: 6px;
   text-align: center;
-  font-size: 12px;
-  color: var(--color-text-secondary);
+  font-size: 13px;
+  color: var(--color-text);
 }
 
 /* ==========================================================
    ④ もしもラボ
    ========================================================== */
 .lab {
-  padding: 48px var(--top-gutter);
-  background: var(--color-surface);
+  --curve-bg: var(--top-blue-soft);
+  padding: 48px var(--top-gutter) 64px;
+  background: var(--top-blue-soft);
+}
+.labSprig {
+  position: absolute;
+  z-index: 0;
+  right: -10px;
+  bottom: 0;
+  width: 60px;
+  transform: scaleY(-1) rotate(20deg);
+  pointer-events: none;
+}
+.labScenarios {
+  display: grid;
+  gap: 12px;
+}
+.labScenariosTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 900;
+}
+.labScenariosTitle::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
 }
 .labInner {
   max-width: var(--top-max);
@@ -884,6 +1016,7 @@
   gap: 10px;
 }
 .labCard {
+  /* 説明のカード。押せる見た目（影・矢印）を持たせず、操作はラボのボタンだけにする */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -892,7 +1025,6 @@
   border-radius: 18px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  box-shadow: var(--top-shadow);
   text-align: center;
 }
 .labIcon {
@@ -904,7 +1036,8 @@
   background: var(--top-blue-soft);
   color: var(--color-primary);
 }
-.labCard h3 {
+.labCard h4 {
+  margin: 0;
   font-size: 13px;
   font-weight: 900;
   line-height: 1.5;
@@ -940,9 +1073,9 @@
 .stageCard {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 44%;
-  grid-template-rows: auto 1fr;
-  min-height: 170px;
+  grid-template-columns: 1fr 50%;
+  grid-template-rows: auto 1fr auto;
+  min-height: 190px;
   border-radius: 18px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -963,41 +1096,39 @@
   clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
 }
 .stageCard img {
+  /* 人物の上半身を切り出した絵（public/top/stage-*.webp）。顔が上端で切れないよう上寄せ */
   grid-column: 2;
-  grid-row: 1 / 3;
+  grid-row: 1 / 4;
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-.stageImgFamily {
-  object-position: 80% 30%;
-}
-.stageImgSingle {
-  object-position: 70% 40%;
-}
-.stageImgSenior {
-  object-position: 72% 30%;
+  object-position: 50% 15%;
 }
 .stageText {
   grid-column: 1;
   grid-row: 2;
-  padding: 12px 8px 16px 16px;
+  padding: 12px 8px 6px 16px;
   font-size: 13.5px;
   line-height: 1.7;
 }
+.stageGo {
+  grid-column: 1;
+  grid-row: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 14px 16px;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
 .stageChevron {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: var(--color-surface);
-  color: var(--color-primary);
-  box-shadow: var(--top-shadow);
+  background: var(--top-blue-soft);
 }
 
 /* ==========================================================
@@ -1074,16 +1205,21 @@
   line-height: 1.7;
 }
 .stepArt {
+  /* 各カードの主役。入力画面 → 計算 → 結果確認 の絵 */
   grid-column: 1 / -1;
   justify-self: center;
   display: grid;
   place-items: center;
   width: 100%;
-  margin-top: 8px;
-  padding: 12px 0;
+  margin-top: 10px;
+  padding: 10px 0 6px;
   border-radius: 14px;
   background: var(--top-blue-soft);
-  color: var(--color-primary);
+}
+.stepArt svg {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
 }
 
 /* ==========================================================
@@ -1205,12 +1341,15 @@
   background: var(--color-surface);
 }
 .closingBand {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   max-width: 980px;
   margin: 0 auto;
   display: grid;
   justify-items: center;
   gap: 14px;
-  padding: 28px 20px;
+  padding: 28px 20px 72px;
   border-radius: var(--top-radius-xl);
   background: linear-gradient(
     135deg,
@@ -1219,6 +1358,28 @@
   );
   color: var(--color-text-on-inverse);
   text-align: center;
+}
+.closingSkyline {
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 52px;
+}
+.leafClosingA {
+  z-index: -1;
+  top: 10px;
+  left: 14px;
+  width: 30px;
+  transform: rotate(-30deg);
+}
+.leafClosingB {
+  z-index: -1;
+  top: 28px;
+  right: 16px;
+  width: 24px;
+  transform: rotate(35deg);
 }
 .closingHand {
   color: var(--color-text-on-inverse);
@@ -1304,6 +1465,9 @@
     position: absolute;
     inset: 0;
   }
+  .heroPicture {
+    margin-top: 0;
+  }
   .heroImg {
     position: absolute;
     top: -40px;
@@ -1313,6 +1477,16 @@
     max-width: none;
     aspect-ratio: auto;
     object-fit: initial;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .heroSprig {
+    top: auto;
+    bottom: 120px;
+    right: auto;
+    left: -14px;
+    width: 96px;
+    transform: rotate(-20deg);
   }
   .heroPicture::after {
     inset: 0;
@@ -1406,12 +1580,19 @@
 
   /* ③ 左に主張、右に3列の式 */
   .mechanism {
-    padding: 72px var(--top-gutter);
+    padding: 56px var(--top-gutter);
+  }
+  .mechanismSkyline {
+    height: 72px;
   }
   .mechanismInner {
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.6fr);
+    grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.9fr);
     align-items: center;
     gap: 40px;
+    padding: 48px 40px 88px;
+  }
+  .mechanismSprig {
+    width: 96px;
   }
   .mechanismText {
     text-align: left;
@@ -1437,7 +1618,7 @@
   .eqCol li {
     flex-direction: row;
     justify-content: flex-start;
-    gap: 14px;
+    gap: 10px;
     padding: 8px;
     font-size: 15px;
     text-align: left;
@@ -1445,13 +1626,17 @@
     border-radius: 12px;
   }
   .eqIcon {
-    width: 60px;
-    height: 60px;
+    width: 68px;
+    height: 68px;
     flex: none;
   }
+  .eqIcon svg {
+    width: 58px;
+    height: 58px;
+  }
   .eqShield svg {
-    width: 120px;
-    height: 120px;
+    width: 150px;
+    height: 150px;
   }
   .eqShield {
     padding: 36px 8px 16px;
@@ -1496,7 +1681,7 @@
     width: 56px;
     height: 56px;
   }
-  .labCard h3 {
+  .labCard h4 {
     font-size: 16px;
   }
   .labCard p {
@@ -1524,7 +1709,7 @@
   }
   .stageCard {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 150px 1fr;
+    grid-template-rows: auto 190px 1fr auto;
     min-height: 0;
   }
   .stageTab {
@@ -1537,12 +1722,11 @@
   }
   .stageText {
     grid-row: 3;
-    padding: 14px 44px 18px 16px;
+    padding: 14px 16px 8px;
   }
-  .stageChevron {
-    top: auto;
-    bottom: 16px;
-    transform: none;
+  .stageGo {
+    grid-row: 4;
+    padding: 0 16px 16px;
   }
 
   /* ⑥ 左に見出し、右に3ステップの横並び */
@@ -1614,7 +1798,7 @@
     align-items: center;
     text-align: left;
     gap: 24px;
-    padding: 24px 36px;
+    padding: 28px 56px 64px;
   }
   .closingNote {
     grid-column: 1 / -1;
@@ -1670,6 +1854,6 @@
     flex: none;
   }
   .stageCard {
-    grid-template-columns: 1fr 40%;
+    grid-template-columns: 1fr 44%;
   }
 }
