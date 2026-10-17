@@ -7,6 +7,7 @@
 import { manDigits, toMonthlyDisplay } from "../../src/design/ledgerRound.js";
 import type { Projection } from "../../src/calc/projection.js";
 import { REFORM_2028_NOT_APPLIED_TAIL } from "../../src/calc/reform2028.js";
+import { WithAmounts } from "./AmountText.js";
 import { Fold } from "./Fold.js";
 import { MonthlyLedger } from "./MonthlyLedger.js";
 import { StepChart, type StepYear } from "./StepChart.js";
@@ -282,13 +283,10 @@ export function Step2({
                   {r.childAges.length > 0 && `／お子さん${r.childAges.join("・")}歳`}
                 </p>
                 <p className={s.stepWhat}>
-                  {r.events.join("／")}
                   {/* **動いていない額を「◯から◯へ」と書かない。** 段差の無い年もあるため */}
-                  {pensionMoved && (
-                    <>
-                      。公的年金は月{man(prev.pension)}万円から{man(r.pension)}万円へ
-                    </>
-                  )}
+                  <WithAmounts
+                    text={`${r.events.join("／")}${pensionMoved ? `。公的年金は月${man(prev.pension)}万円から${man(r.pension)}万円へ` : ""}`}
+                  />
                 </p>
               </div>
             </li>

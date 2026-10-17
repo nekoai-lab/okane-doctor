@@ -14,6 +14,7 @@
  *
  * **金額はここで作らない。** 受け取った額を描くだけ。
  */
+import { RangeText, WithAmounts } from "./AmountText.js";
 import { KeyCaption } from "./KeyCaption.js";
 import s from "./waterfall.module.css";
 
@@ -126,10 +127,14 @@ export function Waterfall({
             {/* **引ききれなかった分を黙らせない。** その分が下の「余る分」になる */}
             {d.unusedPart > 0 && (
               <p className={s.overflow}>
-                {d.used === 0
-                  ? // 棒が出ない行。**「このうち」と書くと一部に読める**ので、全額だと書く
-                    `この全額が、総額を超えたぶんです（下の「前提どおりなら上回る分」へ）`
-                  : `このうち ${fmt(d.unusedPart)} は、総額を超えたぶんです（下の「前提どおりなら上回る分」へ）`}
+                <WithAmounts
+                  text={
+                    d.used === 0
+                      ? // 棒が出ない行。**「このうち」と書くと一部に読める**ので、全額だと書く
+                        `この全額が、総額を超えたぶんです（下の「前提どおりなら上回る分」へ）`
+                      : `このうち ${fmt(d.unusedPart)} は、総額を超えたぶんです（下の「前提どおりなら上回る分」へ）`
+                  }
+                />
               </p>
             )}
           </li>
@@ -148,17 +153,28 @@ export function Waterfall({
               />
             </div>
             {/* 余りがどの前提の上に乗っているかを、棒の隣で言う */}
-            <p className={s.surplusNote}>{surplusNote}</p>
+            <p className={s.surplusNote}>
+              <WithAmounts text={surplusNote} />
+            </p>
           </li>
         )}
 
         <li className={`${s.row} ${s.rowResult}`}>
-          <div className={s.head}>
+          {/*
+            **結論行はラベルの下に金額を置く**（2026-10-17・UX レビュー2回目）。
+            横並びのままだと、幅のある金額にラベルが押されて「＝民間保険で備え…」が
+            1〜2字ずつ縦に折れていた。ラベル → 金額 → 帯 の順で1つのまとまりにする。
+          */}
+          <div className={s.headStack}>
             <p className={`${s.label} ${s.labelResult}`}>= {result.label}</p>
             <p className={`${s.amount} ${s.amountNeed}`}>
-              {result.low === result.high
-                ? fmt(result.low)
-                : `${fmt(result.low)}〜${fmt(result.high)}`}
+              <RangeText
+                text={
+                  result.low === result.high
+                    ? fmt(result.low)
+                    : `${fmt(result.low)}〜${fmt(result.high)}`
+                }
+              />
             </p>
           </div>
           <div className={s.track}>
@@ -181,11 +197,17 @@ export function Waterfall({
               />
             )}
           </div>
-          <p className={s.resultNote}>{result.note}</p>
+          <p className={s.resultNote}>
+            <WithAmounts text={result.note} />
+          </p>
         </li>
       </ol>
 
-      {footnote && <p className={s.footnote}>{footnote}</p>}
+      {footnote && (
+        <p className={s.footnote}>
+          <WithAmounts text={footnote} />
+        </p>
+      )}
     </div>
   );
 }

@@ -15,7 +15,7 @@
  * **金額はここで作らない。** 受け取った文字列を描くだけ（CLAUDE.md「本番UIに金額をハードコードしない」）。
  */
 import Link from "next/link";
-import { RangeText } from "./AmountText.js";
+import { RangeText, WithAmounts } from "./AmountText.js";
 import { AxisBadge } from "./AxisBadge.js";
 import { Fold } from "./Fold.js";
 import {
@@ -155,6 +155,13 @@ export function RiskTable({
         万が一は、ひとつではありません。人生のリスクを項目別に、正直な精度表示つきで診ます。
       </p>
       <p className={s.caption}>{caption}</p>
+      {/*
+        **尺度がカードごとに違うことを、畳まずに言う**（2026-10-17・UX レビュー2回目・任意）。
+        「この表の読み方」の中にしか書いておらず、カードどうしで棒の長さを比べる誤読を招いていた。
+      */}
+      <p className={s.scaleNote}>
+        図の目盛りはカードごとに違います。棒の長さはカードどうしで比べず、カードの中で帯と縦線の位置を見てください。
+      </p>
 
       <ul className={s.list}>
         {rows.map((r) => (
@@ -193,7 +200,11 @@ export function RiskTable({
               レンジのすぐ下に出す。**畳まない** ── 判定が動きうるという事実を、
               開いてもらって初めて見える場所に置かない
             */}
-            {r.crossingNote ? <p className={s.crossing}>{r.crossingNote}</p> : null}
+            {r.crossingNote ? (
+              <p className={s.crossing}>
+                <WithAmounts text={r.crossingNote} />
+              </p>
+            ) : null}
 
             {/* (a) 図の視覚アンカー。判定が文章ではなく位置関係で読める */}
             {r.scale ? (
