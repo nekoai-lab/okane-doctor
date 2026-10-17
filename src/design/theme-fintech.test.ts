@@ -57,6 +57,11 @@ describe("theme-fintech.css", () => {
     ["--color-note-text", "--color-note-bg"],
     ["--color-note-warning-text", "--color-note-warning-bg"],
     ["--chart-axis-text", "--chart-surface"],
+    ["--mk-ink", "--mk-surface"],
+    ["--mk-muted-2", "--mk-surface-alt"],
+    ["--mk-amber-text", "--mk-amber-bg"],
+    ["--mk-green", "--mk-green-bg"],
+    ["--mk-amber-body", "--mk-amber-bg"],
   ])("%s は %s の上で 4.5:1 以上", (fg, bg) => {
     expect(contrast(fg, bg)).toBeGreaterThanOrEqual(4.5);
   });
