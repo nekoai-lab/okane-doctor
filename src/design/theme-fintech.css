@@ -120,6 +120,32 @@
   /* 奥行き：カードに薄い影を1段 */
   --shadow-card: 0 4px 18px rgb(16 42 80 / 5%);
 
+  /* ============================================================
+   * 既存の画面が直接読んでいる --mk-*（結果画面の旧モック移植）も Fintech A に寄せる。
+   * これが無いと、テーマの中でも折りたたみの見出しや補足が温かい紙色のまま残る。
+   * 赤系・灰系・グラフの中間色は、意味（危険・未算定・系列）を変えないためそのまま。
+   * ============================================================ */
+  --mk-bg: var(--fa-surface-subtle);
+  --mk-surface: var(--fa-white);
+  --mk-surface-alt: var(--fa-surface-subtle);
+  --mk-ink: var(--fa-ink);
+  --mk-ink-2: var(--fa-ink);
+  --mk-muted: var(--fa-ink-secondary);
+  --mk-muted-2: var(--fa-ink-secondary);
+  --mk-hairline: var(--fa-border);
+  --mk-hairline-2: var(--fa-border);
+  --mk-border-btn: #b5cae1;
+  --mk-chip-border: var(--fa-border);
+  --mk-dashed: var(--fa-border);
+  --mk-green: var(--fa-positive);
+  --mk-green-deep: var(--fa-positive);
+  --mk-green-bg: var(--fa-positive-bg);
+  --mk-amber: var(--fa-attention);
+  --mk-amber-deep: var(--fa-attention);
+  --mk-amber-text: var(--fa-attention);
+  --mk-amber-bg: var(--fa-attention-bg);
+  --mk-amber-body: #795011;
+
   background: var(--color-surface-subtle);
   color: var(--color-text);
 }
