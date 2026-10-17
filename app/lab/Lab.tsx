@@ -6,15 +6,15 @@ import { labCoverageDifference, labRisingIntervals } from "../../src/calc/labVie
 import { AppHeader, Button, VerdictBadge } from "../../src/design/fintech/index.js";
 import { VERDICT_BADGE } from "../../src/design/fintech/verdict.js";
 import { formatMan, formatRange } from "../../src/design/tokens.js";
-import { linearScale } from "../result/chartScale.js";
-import { Fold } from "../result/Fold.js";
-import { HERO_BADGE } from "../result/Hero.js";
 import {
   describeLabChanges,
   type LabChanges,
   type LabScenarioId,
   WORK_IDS,
 } from "../../src/lab/words.js";
+import { linearScale } from "../result/chartScale.js";
+import { Fold } from "../result/Fold.js";
+import { HERO_BADGE } from "../result/Hero.js";
 import s from "./page.module.css";
 import { Words } from "./Words.js";
 
@@ -279,6 +279,37 @@ export function Lab({
   const difference = point ? labCoverageDifference(data.coverage, point.low, point.high) : null;
   const rising = labRisingIntervals(scenario.points);
   const duration = `${Math.floor(data.maxBenefitMonths / 12)}年${data.maxBenefitMonths % 12}か月`;
+  /** スライダーの年齢の点。64歳を過ぎて推移が無いときは、いまの年齢の死亡保障を出す */
+  const shown = point ?? scenario.now;
+  const deathPremises = [
+    "本人が亡くなった場合の必要保障額です。生活費・教育費から遺族年金・就労収入・資産を差し引き、葬儀・予備費などの当社基準も含みます。資産は反映済みなので、貯蓄と再比較せず保障の過不足を示します。",
+    `遺族年金は、亡くなった方に支えられていた家族への年金です。${data.hasSpouse ? "配偶者は妻として計算し、夫の場合は受給条件により必要額が増えることがあります。" : ""}`,
+    ...(point
+      ? [
+          "年齢の推移は、現在の制度・収入・生活費・資産・ローン残高を固定し、家族の年齢だけを進めます。今後の貯蓄や返済が進めば必要額は下がりえます。成長に伴い変わり、必ず下がるとは限りません。対象はいまの年齢から64歳までです。",
+          "制度改正は予測していません。いまの保険の点線は、満期・更新を確認せず、いまの額を延ばしたものです。緑の塗りは必要額の上端を上回る部分です。",
+        ]
+      : []),
+    shown.crossing ?? "回答の幅を必要額に反映しています。",
+    ...(data.hasSpouse && !spouseIncomeIsZero
+      ? [
+          `配偶者の年収は、回答額・半分・ゼロで比べます（いまの選択：約${formatMan(scenario.now.annualIncome ?? 0)}）。区分で答えた年収はまんなかの値で表示し、必要額には回答の幅も反映します。死亡の場合だけに適用し、生活費は固定します。`,
+        ]
+      : []),
+    ...(data.hasSpouse
+      ? [
+          `末子独立後は、配偶者に最低でも年約${formatMan(data.postIndepMinIncome)}の手取り就労収入を推定します（当社基準）。ゼロでも推定は残り、働けない場合は必要額が増えます。`,
+        ]
+      : []),
+    ...scenario.now.assumptions,
+    `出典：${data.deathSource}`,
+  ];
+  const nextStep =
+    data.coverage === null
+      ? "いま加入している死亡保障の有無と金額を確認しましょう。"
+      : data.coverage > 0
+        ? "保険証券で保障の満期を確認しましょう。"
+        : "必要額の幅を家族で共有しましょう。";
   return (
     <>
       <AppHeader title="お金の町医者" />
@@ -289,54 +320,100 @@ export function Lab({
         <header>
           <p className={s.eyebrow}>もしもを確かめる</p>
           <h1>もしもラボ</h1>
-          <p>いまの前提で、時期や働き方による備えの違いを確かめます。</p>
+          <p>時期や働き方を変えて、備えの違いを確かめます。</p>
+          {/* 全体の読み方は冒頭に1行（2026-10-18 文言の整理。以前はページの最下部） */}
+          <p className={s.lead}>
+            軽く短いもしもは公的な支えと貯蓄で受け止め、保険は重く長いもしもで足りない分に備えるものです。
+          </p>
           <p className={s.note}>
-            概算・要精査 ／ 算定基準日 {date}
-            <br />
-            パラメータ版 {version}
+            <span className={s.legendItem}>概算・要精査</span> ／{" "}
+            <span className={s.legendItem}>算定基準日 {date}</span> ／{" "}
+            <span className={s.legendItem}>パラメータ版 {version}</span>
           </p>
         </header>
         {/* 言葉の入口は先頭。カードは小さく保つ（ヘッダーから最初の図までを1画面に収める・視覚 DoD (a)） */}
         {aiEnabled && <Words query={query} hasSpouse={data.hasSpouse} onApply={applyWords} />}
+        {/* 死亡保障は1枚にまとめる（2026-10-18 文言の整理）。いまの年齢の必要額・スライダーの左端・
+            就労の「回答どおり」は同じ計算（calculateLab の now と points[0]）なので、別カードにすると同じ金額が3回並んでいた */}
         <section className={s.card} id="timing">
-          <h2>{point ? `あなたが${point.age}歳で亡くなった場合` : "万一の時期と必要額"}</h2>
+          <h2>
+            {point
+              ? `あなたが${point.age}歳（${point.year}年）で亡くなった場合`
+              : "あなたがいま亡くなった場合"}
+          </h2>
           {applied?.deathAge === age && <AppliedNote changes={{ deathAge: age }} />}
+          {applied?.scenario === "death" && <AppliedNote changes={{ scenario: "death" }} />}
+          <div className={s.readout} aria-live="polite" id="scenario-death">
+            <span>資産を差し引いた後の必要保障額</span>
+            <strong className={s.amount}>
+              <AmountRange low={shown.low} high={shown.high} />
+            </strong>
+            {point && (
+              <span>
+                {point.children.length
+                  ? `お子さん：${point.children.map((a) => `${a}歳`).join("・")}`
+                  : "お子さんなし"}
+              </span>
+            )}
+            {difference && (
+              <p>
+                {difference.verdict === "pending" ? (
+                  "いまの保険が不明のため、差は未算定です。"
+                ) : data.coverage === 0 ? (
+                  // いまの保険が0円なら差は必要額と同じ。同じ金額を2回並べない
+                  "いまの保険がないため、必要額の幅がそのまま不足する可能性があります。"
+                ) : difference.verdict === "uncertain" ? (
+                  "いまの前提では、いまの保険は必要額の幅の中に収まる可能性があります。"
+                ) : (
+                  <>
+                    いまの前提では、
+                    <AmountRange low={difference.low!} high={difference.high!} />{" "}
+                    {difference.verdict === "shortage"
+                      ? "不足する可能性があります。"
+                      : "上回る可能性があります。"}
+                  </>
+                )}
+              </p>
+            )}
+            <Comparison point={shown} />
+          </div>
+          {data.hasSpouse && (
+            <p className={s.note}>
+              遺される配偶者を妻として計算しています。夫の場合は必要額が増えることがあります。
+            </p>
+          )}
+          {data.hasSpouse &&
+            (spouseIncomeIsZero ? (
+              <p className={s.note} id="work">
+                配偶者の収入が0円の回答なので、配偶者が働かない前提の試算です。
+              </p>
+            ) : (
+              <div id="work">
+                {applied?.spouseWork && applied.spouseWork === WORK_IDS[work] && (
+                  <AppliedNote changes={{ spouseWork: applied.spouseWork }} />
+                )}
+                <fieldset className={s.buttons}>
+                  <legend>配偶者の働き方を変える</legend>
+                  {["回答どおり", "半分", "ゼロ"].map((label, i) => (
+                    <button
+                      type="button"
+                      key={label}
+                      aria-pressed={work === i}
+                      onClick={() => setWork(i)}
+                    >
+                      {label}
+                      <span className={s.buttonIncome}>
+                        年収 約{formatMan(data.work[i].now.annualIncome ?? 0)}
+                      </span>
+                    </button>
+                  ))}
+                </fieldset>
+              </div>
+            ))}
           {point ? (
             <>
-              <div className={s.readout} aria-live="polite">
-                <span>
-                  本人の万一：{point.age}歳（{point.year}年）
-                </span>
-                <span>必要な死亡保障のめやす</span>
-                <strong className={s.amount}>
-                  {<AmountRange low={point.low} high={point.high} />}
-                </strong>
-                <span>
-                  {point.children.length
-                    ? `お子さん：${point.children.map((a) => `${a}歳`).join("・")}`
-                    : "お子さんなし"}
-                </span>
-                {difference && (
-                  <p>
-                    {difference.verdict === "pending" ? (
-                      "いまの保険が不明のため、差は未算定です。"
-                    ) : difference.verdict === "uncertain" ? (
-                      "いまの前提では、いまの保険は必要額の幅の中に収まる可能性があります。"
-                    ) : (
-                      <>
-                        いまの前提では、
-                        <AmountRange low={difference.low!} high={difference.high!} />{" "}
-                        {difference.verdict === "shortage"
-                          ? "不足する可能性があります。"
-                          : "上回る可能性があります。"}
-                      </>
-                    )}
-                  </p>
-                )}
-                <Comparison point={point} />
-              </div>
               <label className={s.sliderLabel} htmlFor="lab-age">
-                万一の年齢：{age}歳
+                亡くなる年齢を動かす：{age}歳
               </label>
               <input
                 className={s.slider}
@@ -354,18 +431,15 @@ export function Lab({
                 <span>いま（{data.minAge}歳）</span>
                 <span>64歳</span>
               </div>
-              <p className={s.note}>動かすと、その年齢での必要額に変わります。</p>
               <p className={s.chartPremise}>
-                いまの収入・生活費・貯蓄・ローン残高のまま、家族の年齢だけを進めた試算です。これからの貯蓄や返済は入れていないので、それが進めば必要額はこの線より下がりえます。
+                いまの収入・生活費・貯蓄・ローン残高のまま、家族の年齢だけを進めた試算です。
               </p>
               <p className={s.legend}>
                 {[
                   "帯：必要額の幅",
-                  "線：代表値",
-                  "点：選択した年齢",
-                  ...(data.coverage !== null && data.coverage > 0
-                    ? ["黒い点線：いまの保険（いまの額のまま延ばした線）"]
-                    : []),
+                  "線：まんなかの目安",
+                  "点：選んだ年齢",
+                  ...(data.coverage !== null && data.coverage > 0 ? ["黒い点線：いまの保険"] : []),
                 ].map((item, i) => (
                   <span key={item}>
                     {i > 0 && "／"}
@@ -378,13 +452,13 @@ export function Lab({
               {data.coverage === 0 && <p className={s.note}>いまの保険 なし</p>}
               {data.coverage !== null && data.coverage > 0 && (
                 <p className={s.note}>
-                  満期・更新は見ていません。満期が先に来る保険なら、その年齢からの保障はこの点線より少なくなります。
+                  点線はいまの保障額を延ばした線です。満期が先に来る保険なら、その年齢からの保障はこの点線より少なくなります。
                 </p>
               )}
               {rising.length > 0 && (
                 <p className={s.note}>
                   {rising.map((r) => `${r.from}〜${r.to}歳`).join("・")}
-                  では必要額が上がります。家族の年齢に伴い、公的な支えや残る支出も変わるためです。
+                  は必要額が上がります（家族の年齢で公的な支えや支出が変わるため）。
                 </p>
               )}
               <Fold label="年齢ごとの金額" count={`（${scenario.points.length}年分）`}>
@@ -410,112 +484,22 @@ export function Lab({
               </Fold>
             </>
           ) : (
-            <strong className={s.amount}>対象期間外</strong>
+            <p className={s.note}>年齢の推移は64歳までが対象のため、表示しません。</p>
           )}
-          <Fold label="時期の試算の前提" count="（5項目）">
+          <Fold label="死亡保障の計算の前提" count={`（${deathPremises.length}項目）`}>
             <ul>
-              <li>
-                本人が亡くなった場合の必要保障額です。成長に伴い変わり、必ず下がるとは限りません。
-              </li>
-              <li>
-                現在の制度・収入・生活費・資産・ローン残高を固定し、家族の年齢だけを進めます。今後の貯蓄や返済が進めば必要額は下がりえます。
-              </li>
-              <li>
-                制度改正は予測していません。現保障は満期・更新を確認していないため、いまの額を延ばした点線です。緑の塗りは必要額の上端を上回る部分です。
-              </li>
-              <li>対象はいまの年齢から64歳までです。死亡シナリオは現在の年齢で計算します。</li>
-              <li>
-                {point?.children.length
-                  ? `選択年齢のお子さん：${point.children.map((a) => `${a}歳`).join("・")}`
-                  : "選択年齢のお子さんなし"}
-                。{point?.crossing ?? "回答の幅を必要額の帯に反映しています。"}
-              </li>
+              {deathPremises.map((text) => (
+                <li key={text}>{text}</li>
+              ))}
             </ul>
           </Fold>
-          <p className={s.next}>
-            次の一歩：
-            {data.coverage === 0
-              ? "必要額の幅を家族で共有しましょう。"
-              : data.coverage === null
-                ? "いま加入している死亡保障の有無と金額を確認しましょう。"
-                : "保険証券で保障の満期を確認しましょう。"}
-          </p>
         </section>
-        {data.hasSpouse && (
-          <section className={s.card} id="work">
-            <h2>配偶者の就労シナリオ</h2>
-            {applied?.spouseWork && applied.spouseWork === WORK_IDS[work] && (
-              <AppliedNote changes={{ spouseWork: applied.spouseWork }} />
-            )}
-            {spouseIncomeIsZero ? (
-              <div className={s.readout}>
-                <p>配偶者の収入が0円の回答なので、働き方の切り替えはありません。</p>
-                <span>現在の年齢で必要な死亡保障</span>
-                <strong className={s.amount}>
-                  {<AmountRange low={scenario.now.low} high={scenario.now.high} />}
-                </strong>
-                <Comparison point={scenario.now} />
-              </div>
-            ) : (
-              <>
-                <fieldset className={s.buttons}>
-                  <legend>配偶者の就労収入</legend>
-                  {["回答どおり", "半分", "ゼロ"].map((label, i) => (
-                    <button
-                      type="button"
-                      key={label}
-                      aria-pressed={work === i}
-                      onClick={() => setWork(i)}
-                    >
-                      {label}
-                      <span className={s.buttonIncome}>
-                        年収 約{formatMan(data.work[i].now.annualIncome ?? 0)}
-                      </span>
-                    </button>
-                  ))}
-                </fieldset>
-                <div className={s.readout} aria-live="polite">
-                  <span>現在の年齢で必要な死亡保障</span>
-                  <strong className={s.amount}>
-                    {<AmountRange low={scenario.now.low} high={scenario.now.high} />}
-                  </strong>
-                  <Comparison point={scenario.now} />
-                </div>
-                <p>
-                  いまの前提では、配偶者の年収を約{formatMan(scenario.now.annualIncome ?? 0)}
-                  とすると、必要額は
-                  {<AmountRange low={scenario.now.low} high={scenario.now.high} />}
-                  、過不足の判定は「{HERO_BADGE[scenario.now.verdict]}」です。
-                </p>
-              </>
-            )}
-            <Fold label="就労の試算の前提" count="（3項目）">
-              <ul>
-                <li>
-                  試算する年収は約{formatMan(scenario.now.annualIncome ?? 0)}
-                  です。回答額・半分・ゼロを比較します。
-                </li>
-                <li>
-                  区分の年収は代表値で表示します。必要額には回答帯の幅も反映します。死亡の場合だけに適用し、生活費は固定します。
-                </li>
-                <li>
-                  末子独立後は最低でも年約{formatMan(data.postIndepMinIncome)}
-                  の手取り就労収入を推定します（当社基準）。ゼロでも推定は残り、働けない場合は必要額が増えます。
-                </li>
-              </ul>
-            </Fold>
-            <p className={s.next}>
-              次の一歩：
-              {spouseIncomeIsZero
-                ? "配偶者が働く場合の見込みを、家族で話しておきましょう。"
-                : "続けられそうな働き方を家族で確認しましょう。"}
-            </p>
-          </section>
-        )}
         <section className={s.card}>
           <h2>病気・けが・休職</h2>
           <p className={s.basis}>金額は、貯蓄を差し引く前の負担です。</p>
-          <p>それぞれ単独で起きる試算なので、金額は足し合わせません。</p>
+          <p className={s.note}>
+            1つずつ起きた場合の試算で、足し合わせません。死亡保障とは算定対象が異なるため、金額の大小を比べません。
+          </p>
           <div className={s.scenarios}>
             {data.sickness.map((item, i) => (
               <Fold
@@ -531,18 +515,12 @@ export function Lab({
                 id={`scenario-${item.id}`}
                 open={openScenario ? openScenario === item.id : i === 0}
               >
+                {/* 金額と判定は閉じた行に出ているので、開いた中では繰り返さない（2026-10-18 文言の整理） */}
                 {applied?.scenario === item.id && <AppliedNote changes={{ scenario: item.id }} />}
-                <div className={s.readout}>
-                  <span>貯蓄を差し引く前の負担</span>
-                  <strong className={s.amount}>
-                    {<AmountRange low={item.need.low} high={item.need.high} />}
-                  </strong>
-                  <SavingsBadge verdict={item.savingsVerdict} />
-                </div>
                 <p>
                   {item.id === "mental"
                     ? `休職が${duration}を超えると、生活資金がさらに必要です。`
-                    : `休職${item.months}か月の試算で、長引けば負担は増えます。`}
+                    : `休職${item.months}か月の試算です。長引けば負担は増えます。`}
                 </p>
                 <Fold
                   label="制度と計算の前提"
@@ -584,60 +562,13 @@ export function Lab({
               {applied?.scenario === "disability" && (
                 <AppliedNote changes={{ scenario: "disability" }} />
               )}
-              <div className={s.readout}>
-                <span>必要額</span>
-                <strong className={s.amount}>未算定</strong>
-                <SavingsBadge verdict="pending" />
-              </div>
-              <p>障害年金を含めた算定は未対応で、必要額は出せません。</p>
-              <Fold label="算定の対応状況" count="（1項目）">
-                <p>
-                  長期の収入減と本人の生活費が続くケースです。障害年金の受給条件を含めた算定に未対応です。
-                </p>
-              </Fold>
+              <p>
+                長期の収入減と本人の生活費が続くケースです。障害年金の受給条件を含めた算定に未対応のため、必要額は出せません。
+              </p>
             </Fold>
           </div>
         </section>
-        <section className={s.card} id="scenario-death">
-          <h2>死亡保障（現在の年齢）</h2>
-          {applied?.scenario === "death" && <AppliedNote changes={{ scenario: "death" }} />}
-          <div className={s.readout}>
-            <span>資産を差し引いた後の必要保障額</span>
-            <strong className={s.amount}>
-              {<AmountRange low={scenario.now.low} high={scenario.now.high} />}
-            </strong>
-            <Comparison point={scenario.now} />
-          </div>
-          <p className={s.note}>
-            病気・けが・休職の金額とは算定対象が異なるため、金額の大小を直接比較しません。
-          </p>
-          <p>
-            遺される配偶者を妻として計算し、
-            <br />
-            夫の場合は必要額が増えることがあります。
-          </p>
-          <Fold label="死亡算定の前提" count={`（${scenario.now.assumptions.length + 4}項目）`}>
-            <ul>
-              <li>
-                生活費・教育費から遺族年金・就労収入・資産を差し引きます。葬儀・予備費などの当社基準も含みます。資産は反映済みなので、貯蓄と再比較せず保障の過不足を示します。
-              </li>
-              <li>
-                遺族年金は、亡くなった方に支えられていた家族への年金です。配偶者は妻として計算し、夫の場合は受給条件により必要額が増えることがあります。
-              </li>
-              <li>{scenario.now.crossing ?? "回答の幅を必要額に反映しています。"}</li>
-              {scenario.now.assumptions.map((a) => (
-                <li key={a}>{a}</li>
-              ))}
-              <li>出典：{data.deathSource}</li>
-            </ul>
-          </Fold>
-          <p>
-            読み方：軽く短いもしもは公的な支えと貯蓄で受け止め、保険は重く長い領域で足りない分に備えるものです。
-          </p>
-          <p className={s.next}>次の一歩：結果画面で備えの全体を確認しましょう。</p>
-        </section>
-        {!aiEnabled && <p className={s.note}>言葉による条件の変更は準備中です。</p>}
-        {estimations.length > 0 ? (
+        {estimations.length > 0 && (
           <Fold label="入力の推定" count={`（${estimations.length}項目）`}>
             <ul>
               {estimations.map((e) => (
@@ -645,23 +576,20 @@ export function Lab({
               ))}
             </ul>
           </Fold>
-        ) : (
-          <p className={s.note}>推定で補った入力はありません。</p>
         )}
+        {/* 次の一歩はページに1つ（2026-10-18 文言の整理。以前はカードごとに計4つ） */}
         <footer className={s.card}>
+          {/* 減らせる箇所は、無いときも「見つかりませんでした」と言う（CLAUDE.md「出力に必ず含めること」） */}
           {scenario.now.verdict !== "reducible" ? (
             <p>
-              現在の死亡保障で減らせる箇所は、
-              <br />
-              この試算では見つかりませんでした。
-              {scenario.now.verdict === "pending" && "現保障が不明のため、確認できていません。"}
+              いまの死亡保障で減らせる箇所は、この試算では見つかりませんでした。
+              {scenario.now.verdict === "pending" &&
+                "いまの保険が不明のため、確かめられていません。"}
             </p>
           ) : (
             <p>いまの前提では、いまの死亡保障を減らせる可能性があります。</p>
           )}
-          <Fold label="保存の機能（準備中）" count="（1項目）">
-            <p>保存とロードマップは準備中です。</p>
-          </Fold>
+          <p className={s.next}>次の一歩：{nextStep}</p>
           <Button href={back} full>
             結果画面で全体を見る
           </Button>
