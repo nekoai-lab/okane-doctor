@@ -48,3 +48,11 @@
 ## 次の1手
 
 - request-qa（2b6b3d1 以降）→ ChatGPT の UX レビュー3回目（スクショ：共有フォルダ `okane-doctor/screenshots/2026-10-17_ux-fix2/`。DoD の変更案への回答ももらう）→ ux-pass → 取り込み PR をマージ → もしもラボ PR #2 をマージ → G-0 のセットアップ → 初回デプロイ
+
+## claude/fintech-tokens（PR #4・2026-10-17・Claude Code）
+
+- Modern Fintech A（2026-10-17 デザイン承認）のテーマ `src/design/theme-fintech.css` と共通部品 `src/design/fintech/`（判定バッジ・ボタン・カード・注記・開閉・ヘッダー・下部ナビ）。`data-theme="fintech"` を付けた要素の中だけが変わる opt-in。フォーカスリング（Yellow-300＋Black）は上書きしない。テーマの中では既存の `--mk-*` も Fintech A に寄せる
+- 横長イラスト6枚（家族・中立・シニア2・単身男女）を `public/illustrations/` に WebP で置いた。家族は子どもの服が参照と違うがオーナー承認済み
+- 開発中だけの部品見本 `/preview/fintech`（本番は 404）
+- 判断の記録は PR #3 の `design/handoff/moshimo-lab-v2/review/DESIGN_DECISIONS.md`。トップ LP は別に作り直すので、v2 を入れる画面はもしもラボ（PR #6）と診断結果だけ
+- 次の1手：request-qa（qa-pass）と ux-pass。そのあと PR #6（もしもラボの見た目）
