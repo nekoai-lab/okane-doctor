@@ -4,12 +4,12 @@
  * /result と同じ区分コードを URL から受け取り、入力が完全かどうかだけ確認する。
  * 金額の再計算はここではしない(保存の可否だけを判断する画面のため)。
  */
-import Link from "next/link";
-import { toCompleteSelections } from "../../src/wizard/complete.js";
+import { Button } from "../../src/design/fintech/index.js";
 import { SAVE_ENABLED } from "../../src/watch/availability.js";
+import { toCompleteSelections } from "../../src/wizard/complete.js";
 import { decodeSelections } from "../../src/wizard/url.js";
-import { SaveConsent } from "./SaveConsent.js";
 import s from "./page.module.css";
+import { SaveConsent } from "./SaveConsent.js";
 
 export default async function SavePage({
   searchParams,
@@ -27,9 +27,9 @@ export default async function SavePage({
     return (
       <main className={s.page}>
         <p>お知らせを受け取る機能は、いま準備中です。</p>
-        <Link className={s.link} href={`/result?${q.toString()}`}>
+        <Button href={`/result?${q.toString()}`} variant="secondary" full>
           結果に戻る
-        </Link>
+        </Button>
       </main>
     );
   }
@@ -39,9 +39,9 @@ export default async function SavePage({
     return (
       <main className={s.page}>
         <p>この結果を保存できませんでした。診断からやり直してください。</p>
-        <Link className={s.link} href="/wizard">
+        <Button href="/wizard" variant="secondary" full>
           診断をはじめからやり直す
-        </Link>
+        </Button>
       </main>
     );
   }

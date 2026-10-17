@@ -16,7 +16,8 @@
 }
 
 .progressText {
-  font-size: var(--font-size-std-s);
+  font-size: 14px;
+  font-weight: 700;
   color: var(--color-text-secondary);
   margin-bottom: var(--space-2);
 }
@@ -30,32 +31,46 @@
 
 .barFill {
   height: 100%;
-  background: var(--color-accent);
+  background: var(--color-primary);
   border-radius: var(--radius-pill);
   transition: width 0.2s ease;
 }
 
 .stepTitle {
-  font-size: var(--font-size-std-xl);
-  font-weight: var(--font-weight-bold);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   margin: 0 0 var(--space-5);
 }
 
+/* 問いごとに白いカード（Fintech A）。legend は枠線の上に乗らないよう float で中に入れる */
 .field {
-  border: 0;
-  padding: 0;
-  margin: 0 0 var(--space-6);
+  min-inline-size: 0;
+  margin: 0 0 var(--space-4);
+  padding: 18px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 }
 
 .legend {
-  font-size: var(--font-size-std-m);
-  font-weight: var(--font-weight-bold);
+  float: left;
+  width: 100%;
+  font-size: 18px;
+  line-height: 1.45;
+  font-weight: 800;
   padding: 0;
   margin-bottom: var(--space-3);
 }
 
+.legend + * {
+  clear: both;
+}
+
 .note {
-  font-size: var(--font-size-std-s);
+  font-size: 14px;
+  line-height: 1.7;
   color: var(--color-text-secondary);
   margin: 0 0 var(--space-3);
 }
@@ -65,13 +80,22 @@
   gap: var(--space-2);
 }
 
+/* 金額の選択肢（死亡保険金の10択）は2列。問いは変えず、縦の長さだけ半分にする */
+.choicesGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.choicesGrid .choice {
+  padding-inline: var(--space-3);
+}
+
 .choice {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   min-height: var(--target-min);
   padding: var(--space-3) var(--space-4);
-  border: 2px solid var(--color-border);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
   background: var(--color-surface);
   color: var(--color-text);
@@ -80,10 +104,19 @@
   cursor: pointer;
 }
 
-/* 選択は色だけに頼らない：ネイティブのラジオのドットでも伝わる */
+.choice input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
+/* 選択は色だけに頼らない：ネイティブのラジオのドットと太字でも伝わる */
 .choice:has(input:checked) {
-  border-color: var(--color-accent);
-  background: var(--color-surface-subtle);
+  border-color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+  background: var(--color-surface-strong);
   font-weight: var(--font-weight-bold);
 }
 
@@ -113,7 +146,7 @@
   max-width: 260px;
   min-height: var(--target-min);
   padding: var(--space-3);
-  border: 2px solid var(--color-border);
+  border: 1px solid var(--mk-border-btn, var(--color-border));
   border-radius: var(--radius-control);
   background: var(--color-surface);
   color: var(--color-text);
@@ -129,15 +162,15 @@
   margin-top: var(--space-7);
 }
 
-/* Airbnb の button-primary / button-secondary に合わせる。
-   48px 高・8px 角丸・ウェイト500。二次ボタンは白地に細い枠。 */
+/* Fintech A のボタン（src/design/fintech の Button と同じ形）。48px 高・太字。二次ボタンは白地に青い枠 */
 .primary,
 .secondary {
   min-height: 48px;
-  padding: 14px var(--space-5);
+  min-width: 112px;
+  padding: 12px var(--space-5);
   border-radius: var(--radius-control);
   font: inherit;
-  font-weight: var(--font-weight-medium);
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -151,9 +184,8 @@
   background: var(--color-primary-active);
 }
 
-/* Airbnb の button-primary-disabled は「淡い Rausch 地に白文字」だが、
-   それだとコントラストが 1.3:1 しかなく**ラベルが読めない**。
-   地はそのままに、文字を濃い Rausch にして 4.7:1 を確保する。
+/* 「淡い地に白文字」はコントラストが足りず**ラベルが読めない**。
+   地はそのままに、文字を濃い色にしてコントラストを確保する。
    まだ押せないことは、色の淡さとカーソルで十分に伝わる。 */
 .primary:disabled {
   background: var(--color-primary-disabled);
@@ -162,9 +194,9 @@
 }
 
 .secondary {
-  border: 1px solid var(--color-text);
+  border: 1px solid var(--mk-border-btn, var(--color-border));
   background: var(--color-surface);
-  color: var(--color-text);
+  color: var(--color-primary);
 }
 
 /* 1問目の「戻る」は押せない。**押せる見た目のまま置かない**（どこへ戻るのか迷わせる） */
@@ -175,7 +207,7 @@
 }
 
 .helper {
-  font-size: var(--font-size-std-s);
+  font-size: 14px;
   color: var(--color-text-secondary);
   margin-top: var(--space-2);
 }
@@ -184,6 +216,6 @@
    警告色は使わない ─ まだ何も間違っていない（これから選ぶだけ）ので、煽らない。 */
 .missing {
   margin: var(--space-3) 0 0;
-  font-size: var(--font-size-std-s);
+  font-size: 14px;
   color: var(--color-text-secondary);
 }

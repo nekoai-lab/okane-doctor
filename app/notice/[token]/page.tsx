@@ -5,8 +5,8 @@
  */
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { encodeSelections } from "../../../src/wizard/url.js";
 import { createFirestoreWatchStore } from "../../../src/watch/store.firestore.js";
+import { encodeSelections } from "../../../src/wizard/url.js";
 import { DeleteRecord } from "./DeleteRecord.js";
 import s from "./page.module.css";
 
@@ -20,7 +20,7 @@ export default async function NoticePage({ params }: { params: Promise<{ token: 
 
   return (
     <main className={s.page}>
-      <p className={s.eyebrow}>お金ドクター</p>
+      <p className={s.eyebrow}>お金の町医者</p>
       <h1 className={s.title}>お子さんの成長で、状況が変わっているかもしれません</h1>
       <p className={s.body}>前回の診断から時間が経っています。ここではまだ金額は出しません。</p>
       <Link className={s.primaryButton} href={`/result?${query}`}>
