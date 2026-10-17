@@ -211,3 +211,46 @@ export async function* streamGeminiText(o: GeminiStreamOptions): AsyncGenerator<
     reader.cancel().catch(() => {});
   }
 }
+
+export interface GeminiJsonOptions {
+  apiKey: string;
+  model: string;
+  system: string;
+  user: string;
+  /** 構造化出力のスキーマ。**列挙値で縛り、自由文を返せないようにする** */
+  schema: unknown;
+  signal?: AbortSignal;
+  fetchImpl?: typeof fetch;
+}
+
+/**
+ * 構造化出力（JSON）を1つもらう。もしもラボの「言葉で確かめる」の翻訳に使う（ADR-028）。
+ * 返すのは JSON.parse した値だけで、**中身の検査は呼び出し側**（`src/lab/words.ts`）が必ず行う。
+ */
+export async function generateGeminiJson(o: GeminiJsonOptions): Promise<unknown> {
+  const doFetch = o.fetchImpl ?? fetch;
+  const res = await doFetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${o.model}:generateContent`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-goog-api-key": o.apiKey },
+      signal: o.signal,
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: o.system }] },
+        contents: [{ role: "user", parts: [{ text: o.user }] }],
+        generationConfig: { responseMimeType: "application/json", responseSchema: o.schema },
+      }),
+    },
+  );
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200);
+    throw new Error(`Gemini API エラー: HTTP ${res.status} ${detail}`);
+  }
+  const json = (await res.json()) as GeminiStreamChunk;
+  const text = (json.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("");
+  if (text.trim() === "") {
+    const finish = json.candidates?.[0]?.finishReason ?? json.promptFeedback?.blockReason;
+    throw new Error(`本文が1文字も返らなかった（finishReason=${finish ?? "不明"}）`);
+  }
+  return JSON.parse(text);
+}

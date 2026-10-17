@@ -17,7 +17,8 @@
     "lint": "biome lint .",
     "check": "biome check .",
     "prepare": "git config core.hooksPath .githooks",
-    "bakeoff": "vitest run --config vitest.bakeoff.config.ts"
+    "bakeoff": "vitest run --config vitest.bakeoff.config.ts",
+    "eval:lab-words": "vitest run --config vitest.labwords.config.ts"
   },
   "dependencies": {
     "firebase-admin": "^14.4.0",

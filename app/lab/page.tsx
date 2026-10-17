@@ -49,6 +49,8 @@ export default async function LabPage({
       date={jstDate(asOf)}
       version={p.version}
       estimations={estimations.map((e) => `${e.label}：${e.note}`)}
+      query={q.toString()}
+      aiEnabled={Boolean(process.env.GEMINI_API_KEY)}
     />
   );
 }

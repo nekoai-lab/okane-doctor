@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { type LabChanges, type LabScenarioId, WORK_IDS } from "../../src/lab/words.js";
 import type { LabData, LabPoint } from "../../src/calc/lab.js";
 import { labCoverageDifference, labRisingIntervals } from "../../src/calc/labView.js";
 import { formatMan, formatRange } from "../../src/design/tokens.js";
@@ -9,6 +10,7 @@ import badge from "../result/hero.module.css";
 import { Fold } from "../result/Fold.js";
 import { linearScale } from "../result/chartScale.js";
 import s from "./page.module.css";
+import { Words } from "./Words.js";
 
 const ICON = { reducible: "↓", uncertain: "↔", shortage: "!", pending: "…" };
 const SCENARIO_TITLE: Record<string, string> = {
@@ -207,15 +209,40 @@ export function Lab({
   date,
   version,
   estimations,
+  query,
+  aiEnabled,
 }: {
   data: LabData;
   back: string;
   date: string;
   version: string;
   estimations: string[];
+  /** 結果画面と同じ回答のクエリ（言葉の翻訳に渡す。金額は載っていない） */
+  query: string;
+  /** 鍵が無いときは言葉の入力を出さず「準備中」のまま（AI を止めてもラボは成立する） */
+  aiEnabled: boolean;
 }) {
   const [work, setWork] = useState(0);
   const [age, setAge] = useState(data.minAge);
+  const [openScenario, setOpenScenario] = useState<LabScenarioId | null>(null);
+  /** 言葉で受け取った変更を、ふだんの操作と同じ state に当てる（計算はここでは起きない） */
+  const applyWords = (c: LabChanges) => {
+    if (c.deathAge !== undefined) setAge(c.deathAge);
+    if (c.spouseWork) setWork(WORK_IDS.indexOf(c.spouseWork));
+    if (c.scenario) setOpenScenario(c.scenario);
+    const target =
+      c.deathAge !== undefined
+        ? "timing"
+        : c.spouseWork
+          ? "work"
+          : c.scenario
+            ? `scenario-${c.scenario}`
+            : null;
+    if (target)
+      requestAnimationFrame(() =>
+        document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      );
+  };
   const scenario = data.work[work];
   const spouseIncomeIsZero = data.work[0].now.annualIncome === 0;
   const point = scenario.points.find((p) => p.age === age);
@@ -237,6 +264,8 @@ export function Lab({
           パラメータ版 {version}
         </p>
       </header>
+      {/* 言葉の入口は先頭。カードは小さく保つ（ヘッダーから最初の図までを1画面に収める・視覚 DoD (a)） */}
+      {aiEnabled && <Words query={query} onApply={applyWords} />}
       <section className={s.card} id="timing">
         <h2>{point ? `あなたが${point.age}歳で亡くなった場合` : "万一の時期と必要額"}</h2>
         <p>今後の貯蓄や返済が進めば、必要額は下がりえます。</p>
@@ -358,7 +387,7 @@ export function Lab({
         </p>
       </section>
       {data.hasSpouse && (
-        <section className={s.card}>
+        <section className={s.card} id="work">
           <h2>配偶者の就労シナリオ</h2>
           {spouseIncomeIsZero ? (
             <div className={s.readout}>
@@ -434,7 +463,8 @@ export function Lab({
               label={`${i + 1}. ${SCENARIO_TITLE[item.id]}`}
               count={<AmountRange low={item.need.low} high={item.need.high} />}
               countClassName={s.scenarioAmount}
-              open={i === 0}
+              id={`scenario-${item.id}`}
+              open={openScenario ? openScenario === item.id : i === 0}
             >
               <div className={s.readout}>
                 <span>貯蓄を差し引く前の負担</span>
@@ -475,7 +505,13 @@ export function Lab({
               </Fold>
             </Fold>
           ))}
-          <Fold label="6. 障害による長期の休職" count="未算定" countClassName={s.scenarioAmount}>
+          <Fold
+            label="6. 障害による長期の休職"
+            count="未算定"
+            countClassName={s.scenarioAmount}
+            id="scenario-disability"
+            open={openScenario === "disability"}
+          >
             <div className={s.readout}>
               <span>必要額</span>
               <strong className={s.amount}>未算定</strong>
@@ -492,6 +528,8 @@ export function Lab({
             label="7. 死亡（現在の年齢）"
             count={<AmountRange low={scenario.now.low} high={scenario.now.high} />}
             countClassName={s.scenarioAmount}
+            id="scenario-death"
+            open={openScenario === "death"}
           >
             <div className={s.readout}>
               <span>資産を差し引いた後の必要保障額</span>
@@ -527,7 +565,7 @@ export function Lab({
         </p>
         <p className={s.next}>次の一歩：結果画面で備えの全体を確認しましょう。</p>
       </section>
-      <p className={s.note}>言葉による条件の変更は準備中です。</p>
+      {!aiEnabled && <p className={s.note}>言葉による条件の変更は準備中です。</p>}
       {estimations.length > 0 ? (
         <Fold label="入力の推定" count={`（${estimations.length}項目）`}>
           <ul>

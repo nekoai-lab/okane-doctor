@@ -46,3 +46,17 @@
 .amountRange { white-space: normal; overflow-wrap: normal; word-break: normal; }
 .amountEnd { white-space: nowrap; }
 .page .verdictBadge { white-space: nowrap; }
+/* 言葉で確かめる（ADR-028）。送るボタンは利用者が動かすコントロールなので、スライダーと同じ墨 */
+.wordsCard { padding-block: 20px; }
+.wordsCard h2 { margin: 0 0 4px; }
+.wordsCard > .note { margin: 0 0 12px; }
+.wordsForm { display: grid; gap: 8px; }
+.wordsInput { width: 100%; box-sizing: border-box; min-height: 48px; padding: 10px 12px; font: inherit; font-size: 16px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; resize: vertical; }
+.wordsButton { min-height: 44px; padding: 10px 16px; font: inherit; font-weight: 600; color: var(--color-surface); background: var(--color-surface-inverse); border: 0; border-radius: 8px; cursor: pointer; }
+.wordsButton:disabled { opacity: 0.6; cursor: progress; }
+.wordsForm + div:not(:empty) { margin-top: 12px; }
+/* 言葉の結果は短く置く。図の無い区間を1画面に収めるため（視覚 DoD (a)）。結果そのものは移った先の図が見せる */
+.wordsReadout { margin: 0; font-size: 14px; line-height: 1.7; }
+.wordsReadout .note { margin: 6px 0 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.chips li { padding: 4px 12px; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-surface); font-size: 14px; font-weight: 600; white-space: nowrap; }
