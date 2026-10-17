@@ -68,6 +68,8 @@ async function LabContent({
       date={jstDate(asOf)}
       version={p.version}
       estimations={estimations.map((e) => `${e.label}：${e.note}`)}
+      query={q.toString()}
+      aiEnabled={Boolean(process.env.GEMINI_API_KEY)}
     />
   );
 }

@@ -68,3 +68,34 @@
 .rowBadge { display: block; margin-top: 4px; font-family: var(--font-body, inherit); font-size: 12px; font-weight: 400; }
 .page .rowBadge > span { white-space: nowrap; }
 .legendItem { white-space: nowrap; }
+
+.wordsCard h2 { margin: 0 0 4px; }
+/* 畳んだ1行のときにカードが厚くならないように（見出しの行は Fold が余白を持つ） */
+.wordsCard { padding-block: 4px; }
+.wordsCard > .note { margin: 0 0 12px; }
+.wordsForm { display: grid; gap: 8px; }
+.wordsInput { width: 100%; box-sizing: border-box; min-height: 48px; padding: 10px 12px; font: inherit; font-size: 16px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; resize: vertical; }
+.wordsButton { min-height: 44px; padding: 10px 16px; font: inherit; font-weight: 600; color: var(--color-surface); background: var(--color-surface-inverse); border: 0; border-radius: 8px; cursor: pointer; }
+.wordsButton:disabled { opacity: 0.6; cursor: progress; }
+.wordsForm + div:not(:empty) { margin-top: 12px; }
+/* 言葉の結果は短く置く。図の無い区間を1画面に収めるため（視覚 DoD (a)）。結果そのものは移った先の図が見せる */
+.wordsReadout { margin: 0; font-size: 14px; line-height: 1.7; }
+.wordsReadout .note { margin: 6px 0 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.chips li { padding: 4px 12px; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-surface); font-size: 14px; font-weight: 600; white-space: nowrap; }
+/* 言葉の適用で飛んだ先の見出しが、固定ヘッダー（高さ60px）の下に隠れないように */
+.card,
+.card [id] { scroll-margin-top: 72px; }
+/* 言葉で変えた条件を、当て先の図の上で名乗る。ブランドの赤は使わない（情報アクセントは ink） */
+.wordsApplied {
+  display: inline-block;
+  margin: 0 0 6px;
+  padding: 1px 8px;
+  line-height: 1.6;
+  border-left: 3px solid var(--color-text);
+  background: var(--color-surface-subtle);
+  font-size: 13px;
+  color: var(--color-text);
+}
+/* 失敗の文は畳んだカードの見出しの下に出す（入力は畳む） */
+.wordsError { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: var(--color-text); }
