@@ -3,8 +3,27 @@ import { loadParams, unverifiedKeys } from "../src/params/index.js";
 import "../src/design/tokens.css";
 import s from "./layout.module.css";
 
+/**
+ * 共有画像（`app/opengraph-image.png`）などを絶対 URL にするための基点。
+ *
+ * **公開リポジトリに本番 URL を書かない**ので、ビルドのときに `SITE_URL` で受け取る
+ * （Cloud Build のトリガーの置換変数 `_SITE_URL` → Dockerfile の ARG）。
+ * 未設定・不正な値なら基点なしにする。そのとき Next は localhost を当てるので、
+ * 共有したときに画像が出ないだけで、診断そのものは止めない。
+ */
+function siteUrl(): URL | undefined {
+  const raw = process.env.SITE_URL;
+  if (!raw) return undefined;
+  try {
+    return new URL(raw);
+  } catch {
+    return undefined;
+  }
+}
+
 export const metadata = {
-  title: "お金の健康診断",
+  metadataBase: siteUrl(),
+  title: "お金の町医者",
   description: "必要保障の過不足を、根拠つきで返す診断",
   // **検証ビルドの間は検索エンジンに載せない。**
   // 「次の一歩」「選ぶ基準」の文面は保険業法の正式レビュー（OI-01）前のサンプルで、

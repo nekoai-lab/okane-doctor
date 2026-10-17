@@ -154,5 +154,5 @@
 - 現状：オーナーから届いた 05B 承認アセット一式（個別 PNG・README）を `design/handoff/logo-05B/approved/` に置いた。README のとおり、原画から切り出し・縮小したラスターで、形は描き直していない
 - 使った所：ファビコン（`app/favicon.ico` は承認の 16px と 32px をそのまま格納、`app/icon.png` は 32px）、アプリアイコン（`app/apple-icon.png`。承認シンボルを 180px に縮小して白で余白）、OG 画像（`app/opengraph-image.png`。承認フルロゴを 1.76 倍して 1200×630 の白地の中央）、もしもラボのヘッダー（`AppHeader` の仮の「●」を承認シンボル `public/brand/okane-doctor-symbol.png` に）
 - LP のロゴは触っていない（オーナー指示。#11 の SVG のまま）
-- やり残し：OG 画像の URL は `metadataBase` が無いので本番の URL が決まるまで localhost になる。OG 画像は 258px の切り出しを拡大しているので少し甘い（高解像度の原画があれば差し替える）。`app/layout.tsx` のタブ名がまだ旧名「お金の健康診断」
+- やり残し：~~OG 画像の URL は `metadataBase` が無いので本番の URL が決まるまで localhost になる。~~ → chore/site-url で、ビルド時の `SITE_URL`（トリガーの置換変数 `_SITE_URL`）から `metadataBase` を作るようにした。初回デプロイのあと、トリガーに `_SITE_URL` を設定して再ビルドすれば本番 URL になる（公開リポジトリには URL を書かない）。タブ名も「お金の町医者」にした。OG 画像は 258px の切り出しを拡大しているので少し甘い（高解像度の原画があれば差し替える）。`app/layout.tsx` のタブ名がまだ旧名「お金の健康診断」
 - 次の1手：UX レビュー → request-qa → マージ（デプロイはまだしない）

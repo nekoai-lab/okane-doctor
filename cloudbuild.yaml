@@ -22,6 +22,9 @@ substitutions:
   _REGION: asia-northeast1
   # Artifact Registry のリポジトリは提出版と共有する（イメージ名がサービス名で分かれるので混ざらない）
   _REPO: okane-kenko
+  # 公開 URL（共有画像の絶対 URL の基点）。値はトリガーの置換変数に置き、このファイルには書かない。
+  # 空のままなら共有画像の URL が localhost になるだけで、デプロイは止まらない
+  _SITE_URL: ""
 
 steps:
   # 1. イメージを作る。$SHORT_SHA で「どのコミットが動いているか」を後から追えるようにする
@@ -29,6 +32,7 @@ steps:
     id: build
     args:
       - build
+      - --build-arg=SITE_URL=${_SITE_URL}
       - -t
       - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA
       - -t
