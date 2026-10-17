@@ -14,7 +14,7 @@ import type { WizardSelections } from "./types.js";
 import { dialFor } from "../calc/simulate.js";
 import { toCompleteSelections } from "./complete.js";
 import { LIVING_LEVELS } from "./dial.js";
-import { bandInputsFor, crossingDrivers, normalizeEnds } from "./uncertainty.js";
+import { bandInputs, crossingDrivers, normalizeEnds } from "./uncertainty.js";
 import { decodeSelections } from "./url.js";
 
 const P = loadParams("2026-08");
@@ -84,19 +84,38 @@ describe("連動：生活費を年収から推定した世帯", () => {
     expect(e.loose.monthlyLiving).toBeGreaterThan(e.strict.monthlyLiving);
   });
 
-  it("**単調と言い切れないので、年収を逆向きにした候補も混ぜる**", () => {
-    const e = normalizeEnds(P, ESTIMATE, AS_OF);
-    expect(e.extra).toHaveLength(2);
+  it("**単調と言い切れないので、年収の端を本人・配偶者で独立に組んだ候補も混ぜる**", () => {
+    const e = normalizeEnds(
+      P,
+      { ...ESTIMATE, spouseEmployment: "employee", spouseIncome: "lt400" },
+      AS_OF,
+    );
+    // 2026-10-17（QA）：2人の年収をそろって逆向きにするだけでは、「本人は上端・配偶者は下端」を取りこぼす
+    const mixedIncome = [e.loose, e.strict, ...e.extra].some(
+      (x) =>
+        x.self.income === 6_000_000 && x.spouse?.income === P.ownStandard.incomeBandFloor.value,
+    );
+    expect(mixedIncome).toBe(true);
     const r = envelope(P, [e.loose, e.strict, ...e.extra], AS_OF);
-    // 4候補すべてが包絡の内側にある
+    // 候補すべてが包絡の内側にある
     for (const end of r.ends) {
       expect(end.low).toBeGreaterThanOrEqual(r.low);
       expect(end.high).toBeLessThanOrEqual(r.high);
     }
   });
+});
 
-  it("区分で答えた世帯では、逆向きの候補は作らない（2回で足りる）", () => {
-    expect(normalizeEnds(P, BASE, AS_OF).extra).toHaveLength(0);
+describe("帯の角：入力ごとに端を独立に選んだ組み合わせを、すべて候補に入れる（2026-10-17・QA）", () => {
+  it("区分で答えた世帯でも角を入れる（必要額の枝が変わると、端の向きに単調ではない）", () => {
+    // BASE で帯があるのは本人の年収・生活費・資産の3つ（配偶者は収入なし・ローンなし）→ 角は8組
+    const e = normalizeEnds(P, BASE, AS_OF);
+    expect(e.extra).toHaveLength(8 - 2);
+  });
+
+  it("帯の無い入力では角が重なるので、同じ入力を2回回さない", () => {
+    const e = normalizeEnds(P, BASE, AS_OF);
+    const keys = [e.loose, e.strict, ...e.extra].map((x) => JSON.stringify(x));
+    expect(new Set(keys).size).toBe(keys.length);
   });
 });
 
@@ -345,17 +364,16 @@ describe("暮らし方の目盛りは、幅の両端にもそろって渡る（2
     ),
   );
   if (!sel) throw new Error("代表世帯の URL が完全な回答になっていない");
-  const ends = normalizeEnds(P, sel, AS_OF);
   const lows = LIVING_LEVELS.map((lv) => dialFor(P, lv));
 
   it("全候補に同じ目盛りが付く", () => {
     for (const d of lows) {
-      for (const input of bandInputsFor(ends, d)) expect(input.lifestyleDial).toBe(d);
+      for (const input of bandInputs(P, sel, AS_OF, d)) expect(input.lifestyleDial).toBe(d);
     }
   });
 
   it("目盛りを動かすと、カードの必要額（包絡）も動く", () => {
-    const highs = lows.map((d) => envelope(P, bandInputsFor(ends, d), AS_OF, "self").high);
+    const highs = lows.map((d) => envelope(P, bandInputs(P, sel, AS_OF, d), AS_OF, "self").high);
     expect(new Set(highs).size).toBeGreaterThan(1);
   });
 });

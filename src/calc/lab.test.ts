@@ -3,7 +3,7 @@ import { GOLDEN } from "../__tests__/households.js";
 import { loadParams } from "../params/index.js";
 import { toCompleteSelections } from "../wizard/complete.js";
 import { decodeSelections } from "../wizard/url.js";
-import { bandInputsFor, normalizeEnds } from "../wizard/uncertainty.js";
+import { bandInputs, normalizeEnds } from "../wizard/uncertainty.js";
 import { envelope } from "./envelope.js";
 import { diagnose } from "./index.js";
 import { calculateLab, labDeath, labInput } from "./lab.js";
@@ -24,7 +24,7 @@ describe("ラボ：既存算定と同じ必要額を表示する", () => {
     );
     expect(sel).not.toBeNull();
     const ends = normalizeEnds(p, sel!, date);
-    const bands = bandInputsFor(ends, dial);
+    const bands = bandInputs(p, sel!, date, dial);
     const answers = { ...ends.point.input, lifestyleDial: dial };
     const expected = envelope(p, bands, date);
     const data = calculateLab(p, answers, bands, date);

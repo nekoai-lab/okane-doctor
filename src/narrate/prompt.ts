@@ -108,10 +108,23 @@ export function buildUserContent(d: HouseholdDiagnosis): string {
       "{{selfRange}} は「葬儀・予備費」の目安です。収入・資産が支出を大きく上回るため、上乗せの保障は要りません。そう言い切ってください。",
     not_needed:
       "{{selfRange}} は「葬儀・予備費」の目安です。扶養するご家族がいないため、大きな死亡保障は要りません。",
+    mixed:
+      "{{selfRange}} は、答えた区分の幅をすべて含めた必要額の目安です。区分のどこにあたるかで、上乗せの保障が要る場合と要らない場合があります。そう分かるように書いてください。{{selfRange}} 全体を「葬儀・予備費」や「当座資金」と呼ばないでください。「上乗せの保障は要りません」と言い切らないでください。",
   };
 
+  /**
+   * **呼び名はレンジ全体の必要額の判定（ニーズ軸）で選ぶ**（2026-10-17・QA で blocking）。
+   * JSON の `self.verdict` は代表値1点の判定で、`self.range` は回答の幅で包絡したレンジ。
+   * 代表値の判定で選ぶと、不足分を含むレンジを「葬儀・予備費」と呼ばせてしまう
+   */
+  const rangeKey = d.self.rangeVerdict ?? d.self.verdict;
+  const pointNote =
+    d.self.rangeVerdict !== undefined && d.self.rangeVerdict !== d.self.verdict
+      ? "算定結果の self.verdict は、答えた区分の代表値1点で見た必要額の判定です。{{selfRange}} 全体の判定ではないので、self.verdict を根拠に {{selfRange}} を呼ばないでください。\n"
+      : "";
+
   return `${placeholderNote}
-${rangeMeaning[d.self.verdict] ?? rangeMeaning.sufficient}
+${pointNote}${rangeMeaning[rangeKey] ?? rangeMeaning.sufficient}
 ${periodNote}
 金額を押し上げている上位2項目：${topDrivers(d).join(" / ")}。この2つに必ず触れてください。
 

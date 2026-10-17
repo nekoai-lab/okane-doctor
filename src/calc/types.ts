@@ -59,6 +59,12 @@ export interface Housing {
   danshin?: boolean;
 }
 
+/**
+ * 包絡したレンジの呼び名に使う必要額の判定（ニーズ軸）。
+ * `mixed` は、答えた区分のどこにあたるかで上乗せの保障が要る場合と要らない場合があること（`envelope.ts` の `rangeVerdict`）
+ */
+export type RangeVerdict = Verdict | "mixed";
+
 export type Verdict =
   /** 不足している */
   | "shortage"
@@ -99,6 +105,12 @@ export interface DeathResult {
   /** 提示レンジ（円・100万円丸め） */
   range: { low: number; high: number };
   verdict: Verdict;
+  /**
+   * `range` をどう呼ぶかの必要額の判定（ニーズ軸）。結果画面が `range` を回答の幅で包絡して
+   * 書き戻したときだけ付く（`src/calc/figures.ts`）。無ければ `verdict` と同じ意味。
+   * **`verdict` は代表値1点の判定のまま**（内訳の呼び名に使う）なので、レンジの呼び名にはこちらを使う
+   */
+  rangeVerdict?: RangeVerdict;
   /** 現在の保障との比較 */
   gap: { kind: CoverageGapKind; amount: number };
   /** 欠損を既定値で補った記録（DR-03 / 結果画面に表示する） */

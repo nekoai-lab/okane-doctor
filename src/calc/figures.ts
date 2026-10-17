@@ -12,13 +12,15 @@
  * - **最終の必要額＝回答の幅を包絡したレンジ**（T-H。幅を渡せない経路だけ代表値レンジ）
  * - **過不足の判定（過不足軸・`Verdict3`）は最終の必要額から出す**。ヒーロー・診断表・STEP4・よみとき・次の一歩は全部これを読む
  * - **内訳（滝の棒・家計台帳・逓減カーブ）は代表値1点のまま**。最終の必要額とは別の量なので、画面ではそう名乗らせる
+ * - **最終の必要額の呼び名（葬儀・予備費／当座資金／足りない額）も、回答の幅の候補ぜんぶの必要額の判定（ニーズ軸）から出す**。
+ *   代表値の必要額の判定は内訳の呼び名にだけ使う（`needVerdict` と `point.verdict` を分ける・2026-10-17）
  *
  * この層は金額を新しく作らない。`diagnose` と `envelope` の出力を選び、`verdict3` / `householdSummary` に通すだけ。
  */
 import type { ParamSet } from "../params/index.js";
-import { type EnvelopeResult, envelope } from "./envelope.js";
+import { type EnvelopeResult, envelope, rangeVerdict } from "./envelope.js";
 import { type DiagnoseInput, diagnose } from "./index.js";
-import type { DeathResult, HouseholdDiagnosis, HouseholdHeadline } from "./types.js";
+import type { DeathResult, HouseholdDiagnosis, HouseholdHeadline, RangeVerdict } from "./types.js";
 import { type HouseholdSummary, type Verdict3, householdSummary, verdict3 } from "./verdict3.js";
 
 export type DeathCaseWho = "self" | "spouse";
@@ -29,6 +31,12 @@ export interface DeathFigures {
   point: DeathResult;
   /** 最終の必要額（円）。回答の幅を包絡したレンジ。幅を渡せないときは代表値のレンジ */
   need: { low: number; high: number };
+  /**
+   * `need` をどう呼ぶかの必要額の判定（ニーズ軸）。回答の幅の候補ぜんぶから出す（`rangeVerdict`）。
+   * **`point.verdict`（代表値の判定）で `need` を呼ばない**（2026-10-17・QA）。
+   * 代表値は葬儀・予備費だけでも、厳しめ端では不足していることがある。
+   */
+  needVerdict: RangeVerdict;
   /** いまの死亡保障（円）。分からなければ null */
   coverage: number | null;
   /** 過不足の判定（過不足軸）。`need` と `coverage` から出す */
@@ -105,7 +113,16 @@ function figuresFor(
   const band = bands && bands.length >= 2 ? envelope(p, bands, asOf, who) : null;
   const need = band ? { low: band.low, high: band.high } : { ...point.range };
   const verdict = verdict3(coverage, need.low, need.high);
-  return { who, point, need, coverage, verdict, gap: gapOf(verdict, coverage, need), band };
+  return {
+    who,
+    point,
+    need,
+    needVerdict: rangeVerdict(point.verdict, band),
+    coverage,
+    verdict,
+    gap: gapOf(verdict, coverage, need),
+    band,
+  };
 }
 
 /**
@@ -133,6 +150,8 @@ export function resultFigures(
   const writeBack = (f: DeathFigures): DeathResult => ({
     ...f.point,
     range: { ...f.need },
+    // `verdict` は代表値の必要額の判定のまま。`range` の呼び名はこちらを読ませる
+    rangeVerdict: f.needVerdict,
     gap: toLegacyGap(f),
   });
 

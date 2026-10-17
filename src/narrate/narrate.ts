@@ -101,7 +101,15 @@ const KANJI_NUMBER: RegExp[] = [
  * 文が矛盾して見えていた（2026-08-30 の実物レビューで発覚）。画面のラベルと同じ言い方にそろえる。
  */
 function rangeSentence(d: HouseholdDiagnosis): string {
-  switch (d.self.verdict) {
+  /**
+   * **レンジの呼び名は、レンジ全体の必要額の判定（ニーズ軸）で決める**（2026-10-17・QA で blocking）。
+   * `d.self.verdict` は代表値1点の判定で、結果画面は `range` を回答の幅で包絡して書き戻している。
+   * 代表値が `ample` でも厳しめ端が `shortage` なら、「上乗せの保障は要りません。葬儀・予備費の目安は
+   * 約200〜1,500万円」のように、不足分を含むレンジを要らないお金と呼んでしまう
+   */
+  switch (d.self.rangeVerdict ?? d.self.verdict) {
+    case "mixed":
+      return "答えた区分のどこにあたるかで、上乗せの保障が要る場合と要らない場合があります。答えた区分の幅をすべて含めた必要額の目安は {{selfRange}} です";
     case "shortage":
       return "遺されたご家族に必要な保障の目安は {{selfRange}} です";
     case "ample":

@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { calculateLab } from "../../src/calc/lab.js";
 import { outOfScope } from "../../src/calc/index.js";
-import { dialFor } from "../../src/calc/simulate.js";
 import { loadParams } from "../../src/params/index.js";
 import { jstDate } from "../../src/time/jstYear.js";
 import { toCompleteSelections } from "../../src/wizard/complete.js";
 import { decodeSelections } from "../../src/wizard/url.js";
 import { decodeLivingLevel } from "../../src/wizard/dial.js";
-import { bandInputsFor, normalizeEnds } from "../../src/wizard/uncertainty.js";
+import { resultInputs } from "../../src/wizard/resultInputs.js";
 import { Lab } from "./Lab.js";
 import s from "./page.module.css";
 
@@ -31,10 +30,8 @@ export default async function LabPage({
     );
   const p = loadParams();
   const asOf = new Date();
-  // /result と同じ復元・回答帯・暮らし方の目盛りを使う。
-  const ends = normalizeEnds(p, complete, asOf);
-  const dial = dialFor(p, decodeLivingLevel(q));
-  const input = { ...ends.point.input, lifestyleDial: dial };
+  // /result と同じ入口（resultInputs）で、代表値・回答の幅の候補・暮らし方の目盛りをそろえる。
+  const { input, bands, estimations } = resultInputs(p, complete, decodeLivingLevel(q), asOf);
   if (outOfScope(p, input))
     return (
       <main className={s.page}>
@@ -47,11 +44,11 @@ export default async function LabPage({
     );
   return (
     <Lab
-      data={calculateLab(p, input, bandInputsFor(ends, dial), asOf)}
+      data={calculateLab(p, input, bands, asOf)}
       back={back}
       date={jstDate(asOf)}
       version={p.version}
-      estimations={ends.point.estimations.map((e) => `${e.label}：${e.note}`)}
+      estimations={estimations.map((e) => `${e.label}：${e.note}`)}
     />
   );
 }

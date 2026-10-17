@@ -121,8 +121,9 @@ export function heroCoverageText(f: ResultFigures): string {
  */
 export function heroNeedQualifier(f: ResultFigures): string {
   const h = f.household.totalNeed;
+  // 代表値ではなく、最終の必要額（包絡したレンジ）の必要額の判定で見る（2026-10-17・QA）
   const floorOnly = people(f).every(
-    (x) => x.point.verdict === "ample" || x.point.verdict === "not_needed",
+    (x) => x.needVerdict === "ample" || x.needVerdict === "not_needed",
   );
   const kind = h.low !== h.high ? "幅" : floorOnly ? "葬儀・予備費の定額" : "";
   // 括弧を重ねない（「（幅）（2人分の合計）」ではなく「（幅・2人分の合計）」）

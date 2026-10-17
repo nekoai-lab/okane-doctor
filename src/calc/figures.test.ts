@@ -9,6 +9,10 @@ import { loadParams } from "../params/index.js";
 import { toCompleteSelections } from "../wizard/complete.js";
 import { resultInputs } from "../wizard/resultInputs.js";
 import { decodeSelections } from "../wizard/url.js";
+import { type LivingLevel, LIVING_LEVELS } from "../wizard/dial.js";
+import { type End, inputAtEnds } from "../wizard/uncertainty.js";
+import { fallbackNarration, narrate, narrateStub } from "../narrate/narrate.js";
+import { buildUserContent } from "../narrate/prompt.js";
 import { envelope } from "./envelope.js";
 import { resultFigures } from "./figures.js";
 import { diagnose } from "./index.js";
@@ -18,11 +22,11 @@ const P = loadParams("2026-08");
 const AS_OF = new Date("2026-10-17T12:00:00+09:00");
 const MAN = 10_000;
 
-function fromQuery(query: string) {
+function fromQuery(query: string, level: LivingLevel = "asis") {
   const complete = toCompleteSelections(decodeSelections(query));
   if (!complete) throw new Error("入力が足りない");
-  const ri = resultInputs(P, complete, "asis", AS_OF);
-  return { ri, f: resultFigures(P, ri.input, ri.bands, AS_OF) };
+  const ri = resultInputs(P, complete, level, AS_OF);
+  return { complete, ri, f: resultFigures(P, ri.input, ri.bands, AS_OF) };
 }
 
 /** コーディネーター指摘の世帯：代表値 400〜700万・回答の幅 200〜2,000万・本人の保障 1,000万 */
@@ -91,4 +95,180 @@ describe("幅を渡さない経路では代表値と同じ（既存の算定を�
       );
     });
   }
+});
+
+/**
+ * QA 9回目（2026-10-17）の blocking 2件。
+ *
+ * 軸名（CLAUDE.md）：`needVerdict` / `point.verdict` / `rangeVerdict` は**必要額の判定（ニーズ軸）**、
+ * `verdict` / `household.verdict` は**過不足の判定（過不足軸）**。
+ */
+/** QA #1：生活費を年収から推定する世帯。本人の保障 1,500万円 */
+const QA1 =
+  "v=1&sb=1986&emp=employee&sp=1&spb=1988&spe=employee&ch=2018-2021&edu=public&inc=lt600&sinc=lt400&as=lt100&liv=estimate&ho=rent&cvs=m1500&cvsp=m300";
+/** QA #2：代表値は ample（葬儀・予備費だけ）、厳しめ端は shortage。本人の保障 1,000万円 */
+const QA2 =
+  "v=1&sb=1988&emp=employee&sp=1&spb=1990&spe=employee&ch=2021-2024&edu=public&inc=lt600&sinc=lt400&as=lt1000&liv=lt30&ho=rent&cvs=m1000&cvsp=m300";
+/** CLAUDE.md の代表3世帯 */
+const REPRESENTATIVE = [
+  "v=1&sb=1989&emp=employee&sp=1&spb=1991&spe=employee&ch=2024&edu=public&inc=lt600&sinc=lt400&as=lt500&liv=lt30&ho=own_loan&loan=lt3000&dan=yes&cvs=m2000&cvsp=none",
+  SHORT,
+  "v=1&sb=1996&emp=employee&sp=0&ch=&inc=lt600&as=lt500&liv=lt25&ho=rent&cvs=m1000",
+];
+
+describe("QA #1：年収の端は本人・配偶者で独立に組む（同じ区分内の最悪の組を取りこぼさない）", () => {
+  it("回帰：本人は上端・配偶者は下端の組で不足するのに「減らせる」と出ていた", () => {
+    const { ri, f } = fromQuery(QA1);
+    /**
+     * QA が示した入力（同じ回答区分の中の1点）を、同じ式（§4.2.1 の生活費推定）で組んで回す。
+     * **実装の候補の作り方に頼らずに**、この点が最終の必要額の内側にあることを確かめる
+     */
+    const self = 5_999_999;
+    const spouse = 1_056_000;
+    const monthlyLiving = Math.round(
+      ((self + spouse) *
+        P.ownStandard.netIncomeRatio.value *
+        P.ownStandard.livingCostEstimateRatio.value) /
+        12,
+    );
+    const sp = ri.input.spouse;
+    if (!sp) throw new Error("配偶者が無い");
+    const qa = diagnose(
+      P,
+      {
+        ...ri.input,
+        self: { ...ri.input.self, income: self },
+        spouse: { ...sp, income: spouse },
+        assets: 500_000,
+        monthlyLiving,
+      },
+      AS_OF,
+    ).self;
+    // 前提の確認（被験体であること）：この1点だけで保障 1,500万円を超える
+    expect(qa.verdict).toBe("shortage");
+    expect(qa.range.high).toBeGreaterThan(15_000_000);
+    // 最終の必要額は、この1点を内側に含む
+    expect(f.self.need.low).toBeLessThanOrEqual(qa.range.low);
+    expect(f.self.need.high).toBeGreaterThanOrEqual(qa.range.high);
+    // 過不足の判定（過不足軸）：減らせるとは言わない
+    expect(f.self.verdict).not.toBe("reducible");
+    expect(f.self.verdict).toBe("uncertain");
+    expect(f.household.verdict).not.toBe("reducible");
+  });
+
+  /**
+   * **包絡は、帯の角（入力ごとに端を独立に選んだ全組み合わせ）の最小・最大を内側に含む。**
+   * 角は検査側で `inputAtEnds` から独立に作る。暮らし方の目盛りも全部の角に付ける。
+   *
+   * 9回目の直しでは「角の最小〜最大と**一致する**」を固定していたが、それは角しか見ていない実装の写しだった。
+   * 必要額は区分の内側で単調ではなく、角より外へ出る点が内側にある（11回目の QA）。
+   * 角より広がった分が本物の点であることは `interior.test.ts` の細かい格子が独立に確かめる
+   */
+  const both: End[] = ["loose", "strict"];
+  const corners = (q: string, level: LivingLevel) => {
+    const { complete, ri, f } = fromQuery(q, level);
+    const out: Array<{ who: "self" | "spouse"; low: number; high: number; f: typeof f }> = [];
+    for (const who of ["self", "spouse"] as const) {
+      if (who === "spouse" && !f.spouse) continue;
+      let low = Number.POSITIVE_INFINITY;
+      let high = Number.NEGATIVE_INFINITY;
+      for (const selfIncome of both)
+        for (const spouseIncome of both)
+          for (const living of both)
+            for (const assets of both)
+              for (const loan of both) {
+                const input = {
+                  ...inputAtEnds(P, complete, AS_OF, {
+                    selfIncome,
+                    spouseIncome,
+                    living,
+                    assets,
+                    loan,
+                  }),
+                  lifestyleDial: ri.dial,
+                };
+                const d = diagnose(P, input, AS_OF);
+                const r = who === "self" ? d.self : d.spouse;
+                if (!r) throw new Error("配偶者のケースが無い");
+                low = Math.min(low, r.range.low);
+                high = Math.max(high, r.range.high);
+              }
+      out.push({ who, low, high, f });
+    }
+    return out;
+  };
+  for (const [name, q] of [
+    ["QA #1", QA1],
+    ["QA #2", QA2],
+    ["組み替えの余地", REPRESENTATIVE[0]],
+    ["不足", REPRESENTATIVE[1]],
+    ["単身", REPRESENTATIVE[2]],
+    ["幅の広い世帯", WIDE],
+  ] as const) {
+    for (const level of LIVING_LEVELS) {
+      it(`${name}（目盛り ${level}）：最終の必要額は帯の角の最小〜最大を含む`, () => {
+        for (const c of corners(q, level)) {
+          const fx = c.who === "self" ? c.f.self : c.f.spouse;
+          if (!fx) throw new Error("死亡ケースが無い");
+          expect(fx.need.low).toBeLessThanOrEqual(c.low);
+          expect(fx.need.high).toBeGreaterThanOrEqual(c.high);
+        }
+      });
+    }
+  }
+});
+
+describe("QA #2：包絡したレンジは、代表値の必要額の判定（ニーズ軸）で呼ばない", () => {
+  it("前提の確認：代表値は ample・厳しめ端は shortage", () => {
+    const { f } = fromQuery(QA2);
+    expect(f.self.point.verdict).toBe("ample");
+    expect(f.self.band?.verdictStrict).toBe("shortage");
+    expect(f.self.need.high).toBeGreaterThan(f.self.point.range.high);
+  });
+
+  it("レンジの呼び名に使う必要額の判定は mixed、内訳（代表値）の判定は ample のまま", () => {
+    const { f } = fromQuery(QA2);
+    expect(f.self.needVerdict).toBe("mixed");
+    expect(f.diagnosis.self.rangeVerdict).toBe("mixed");
+    expect(f.diagnosis.self.verdict).toBe("ample");
+  });
+
+  for (const [name, q] of [
+    ["QA #2", QA2],
+    ["QA #1", QA1],
+    ["組み替えの余地", REPRESENTATIVE[0]],
+  ] as const) {
+    it(`${name}：退避文・スタブ・AI への指示が、幅全体を葬儀・予備費と呼ばず、上乗せ不要と断定しない`, () => {
+      const { f } = fromQuery(q);
+      expect(f.self.needVerdict).toBe("mixed");
+      for (const text of [
+        fallbackNarration(f.diagnosis).text,
+        narrateStub(f.diagnosis),
+        narrate(f.diagnosis).text,
+      ]) {
+        expect(text).not.toContain("葬儀・予備費");
+        expect(text).not.toContain("当座資金");
+        expect(text).not.toContain("上乗せの保障は要りません");
+        expect(text).toContain("上乗せの保障が要る場合と要らない場合があります");
+      }
+      // 幅の金額はエンジンから（AI には書かせない）
+      expect(narrateStub(f.diagnosis)).toContain("{{selfRange}}");
+      const prompt = buildUserContent(f.diagnosis);
+      expect(prompt).toContain("「上乗せの保障は要りません」と言い切らないでください");
+      expect(prompt).toContain("self.verdict を根拠に {{selfRange}} を呼ばないでください");
+      expect(prompt).not.toContain("そう言い切ってください");
+    });
+  }
+
+  it("端がそろって上乗せ不要なら、これまでどおり葬儀・予備費と呼ぶ（単身世帯）", () => {
+    const { f } = fromQuery(REPRESENTATIVE[2]);
+    expect(f.self.needVerdict).toBe("not_needed");
+    expect(fallbackNarration(f.diagnosis).text).toContain("葬儀・予備費");
+  });
+
+  it("幅を渡さない経路では、代表値の必要額の判定のまま", () => {
+    const g = GOLDEN[0];
+    const f = resultFigures(P, g.input, null, AS_OF);
+    expect(f.self.needVerdict).toBe(diagnose(P, g.input, AS_OF).self.verdict);
+  });
 });
