@@ -1,0 +1,1859 @@
+/*
+  トップページ（LP・2026-10-17 最終承認版）。視覚の正本は承認画像（PC 1280px・スマホ 390px）。
+  色はセマンティックトークンだけを読む（Modern Fintech A の値は theme-fintech.css が入れる）。
+  レイアウトの切り替えは 900px の1か所。それ未満はスマホの縦積み。
+*/
+
+.page {
+  --top-max: 1200px;
+  --top-gutter: 16px;
+  --top-radius-xl: 28px;
+  --top-blue-soft: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+  --top-blue-tint: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
+  --top-shadow: 0 10px 30px rgb(16 42 80 / 8%);
+  --top-shadow-strong: 0 18px 40px rgb(16 42 80 / 16%);
+
+  font-family: var(--top-font-sans), var(--font-family);
+  color: var(--color-text);
+  background: var(--color-surface);
+  overflow-x: clip;
+  line-height: 1.7;
+  -webkit-text-size-adjust: 100%;
+}
+
+:global(body):has(.page) {
+  /* 承認画像は端まで絵を敷く。ブラウザ既定の body の余白を、この画面でだけ消す */
+  margin: 0;
+}
+
+.page h1,
+.page h2,
+.page h3,
+.page p,
+.page ul,
+.page ol,
+.page figure {
+  margin: 0;
+}
+.page ul,
+.page ol {
+  padding: 0;
+  list-style: none;
+}
+.page img {
+  display: block;
+  max-width: 100%;
+}
+.page a {
+  color: inherit;
+}
+
+.blue {
+  color: var(--color-primary);
+}
+.nowrap {
+  white-space: nowrap;
+}
+.mobileOnly {
+  display: inline;
+}
+
+.skip {
+  position: absolute;
+  left: 8px;
+  top: -60px;
+  z-index: 100;
+  padding: 8px 12px;
+  background: var(--color-surface);
+  border-radius: 8px;
+}
+.skip:focus {
+  top: 8px;
+}
+
+/*
+  スマホの承認画像は「診断の流れ」を計算の仕組みより先に置く（PC は後ろ）。
+  並べ替えるのは中に操作できる要素の無い節だけなので、キーボードの移動順は変わらない。
+*/
+.main {
+  display: flex;
+  flex-direction: column;
+}
+.main > * {
+  order: 10;
+}
+.main > .hero {
+  order: 1;
+}
+.main > .features {
+  order: 2;
+}
+.main > .breather {
+  order: 3;
+}
+.main > .flow {
+  order: 4;
+}
+
+/* ---------- ロゴ ---------- */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.logoMark {
+  flex: none;
+}
+.logoText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.logoName {
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+.logoAccent {
+  color: var(--color-primary);
+  font-size: 1.12em;
+}
+.logoTag {
+  font-size: 9.5px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- ヘッダー ---------- */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+}
+.headerInner {
+  max-width: var(--top-max);
+  margin: 0 auto;
+  padding: 10px var(--top-gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.brandLink {
+  text-decoration: none;
+  border-radius: 8px;
+  min-width: 0;
+}
+.nav {
+  display: none;
+}
+.headerMobile {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.headerCta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-text-on-inverse) !important;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.menu {
+  position: relative;
+}
+.menu summary {
+  list-style: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--color-primary);
+}
+.menu summary:focus-visible,
+.faqList summary:focus-visible {
+  /* summary は tokens.css の共通リングの対象外なので、同じ2重リングをここで当てる */
+  outline: 2px solid var(--color-focus-inner);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--color-focus-outer);
+}
+.menu summary::-webkit-details-marker {
+  display: none;
+}
+.menuBars,
+.menuBars::before,
+.menuBars::after {
+  display: block;
+  width: 22px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: currentColor;
+  content: "";
+  position: relative;
+}
+.menuBars::before {
+  position: absolute;
+  top: -7px;
+}
+.menuBars::after {
+  position: absolute;
+  top: 7px;
+}
+.menuPanel {
+  position: absolute;
+  right: 0;
+  top: 52px;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  box-shadow: var(--top-shadow-strong);
+}
+.menuPanel a {
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.menuPanel a:hover {
+  background: var(--top-blue-soft);
+}
+
+/* ---------- ボタン（承認画像どおりのピル型。高さ 56px） ---------- */
+.btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 12px 28px;
+  border-radius: 999px;
+  font-size: 17px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 2px solid var(--color-primary);
+  transition: background-color 0.15s;
+}
+.btnPrimary {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-primary) 88%, var(--color-surface)),
+    var(--color-primary)
+  );
+  color: var(--color-text-on-inverse) !important;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+.btnPrimary:hover {
+  background: var(--color-primary-active);
+  border-color: var(--color-primary-active);
+}
+.btnSecondary {
+  background: var(--color-surface);
+  color: var(--color-primary) !important;
+}
+.btnSecondary:hover {
+  background: var(--top-blue-soft);
+}
+.btnWhite {
+  background: var(--color-surface);
+  color: var(--color-primary) !important;
+  border-color: var(--color-surface);
+}
+.btnWhite:hover {
+  background: var(--top-blue-soft);
+}
+
+/* ---------- 見出し ---------- */
+.sectionHead {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sectionHead h2 {
+  font-size: 26px;
+  line-height: 1.4;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+.sectionHeadCenter {
+  align-items: center;
+  text-align: center;
+}
+.rule {
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-primary);
+}
+.lead {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+}
+
+/*
+  節の上端の曲線（承認画像の「曲線の境界」）。節の地と同じ色の楕円を、上の節に少しかぶせる。
+  isolation で節ごとの重なりを閉じ、楕円は節の地の上・中身の下に描く。
+*/
+.curve {
+  position: relative;
+  isolation: isolate;
+}
+.curve::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -20%;
+  right: -20%;
+  top: -26px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--curve-bg, var(--color-surface));
+  pointer-events: none;
+}
+.leaf {
+  position: absolute;
+  z-index: 0;
+  width: 26px;
+  pointer-events: none;
+}
+
+/* ---------- カード ---------- */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  box-shadow: var(--top-shadow);
+  padding: 20px;
+}
+.cardHead {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.cardHead h3 {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.4;
+}
+.cardHead p {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+.iconCircle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--top-blue-tint);
+  color: var(--color-primary);
+}
+
+/* ==========================================================
+   ① ファーストビュー（スマホ：文字 → 家族の絵 → ボタン）
+   横長の絵をそのまま背景にすると、390px では家族の誰かが切れる。
+   そこで絵は家族4人が入る位置で切り、上端を透かして文字の後ろの空の色につなぐ
+   （承認画像の「空と川辺が文字の後ろから人物まで続く」構成をこの形で作る）。
+   ========================================================== */
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-primary) 16%, var(--color-surface)) 0%,
+    color-mix(in srgb, var(--color-primary) 7%, var(--color-surface)) 55%,
+    var(--top-blue-soft) 100%
+  );
+}
+.heroSprig {
+  position: absolute;
+  z-index: 1;
+  top: 6px;
+  right: -14px;
+  width: 76px;
+  transform: rotate(10deg);
+  pointer-events: none;
+}
+.heroPicture {
+  order: 2;
+  display: block;
+  position: relative;
+  /* 絵の上半分（空）を見出しの説明文の後ろまで伸ばす */
+  margin-top: -72px;
+}
+.heroImg {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 0.92;
+  object-fit: cover;
+  /* 家族は絵の右 47〜95% にいる。この位置で切ると4人とも頭から足まで入る */
+  object-position: 92% 40%;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 34%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 34%);
+}
+.heroPicture::after {
+  /* 絵の下端をボタンの地になじませる */
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 72px;
+  background: linear-gradient(0deg, var(--top-blue-soft), transparent);
+}
+.heroHand {
+  display: none;
+}
+.heroInner {
+  display: contents;
+}
+.heroCopy {
+  order: 1;
+  position: relative;
+  z-index: 1;
+  padding: 24px var(--top-gutter) 8px;
+}
+.heroTitle {
+  font-size: clamp(32px, 9.2vw, 40px);
+  line-height: 1.3;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  color: var(--color-text);
+}
+.heroLead {
+  margin-top: 14px !important;
+  font-size: 15px;
+  line-height: 1.85;
+  color: var(--color-text);
+  /* 空の絵に重なる部分も読めるよう、文字の周りだけ地の色でふちどる */
+  text-shadow:
+    0 0 2px var(--color-surface),
+    0 0 8px var(--color-surface),
+    0 0 14px var(--color-surface);
+}
+.heroActions {
+  order: 3;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 12px;
+  margin-top: -44px;
+  padding: 0 var(--top-gutter) 32px;
+}
+.heroActions .btn {
+  width: 100%;
+}
+
+/* ==========================================================
+   ② 診断結果でわかること
+   ========================================================== */
+.features {
+  padding: 48px var(--top-gutter) 40px;
+  /* 診断結果の見本の後ろに、淡い空の色を敷く */
+  background: linear-gradient(
+    180deg,
+    var(--color-surface) 0%,
+    var(--top-blue-soft) 30%,
+    var(--top-blue-soft) 75%,
+    var(--color-surface) 100%
+  );
+}
+.leafFeaturesA {
+  top: 18px;
+  left: -6px;
+  transform: rotate(-35deg);
+}
+.leafFeaturesB {
+  top: 52%;
+  right: -8px;
+  transform: rotate(30deg);
+}
+.featuresGrid {
+  max-width: var(--top-max);
+  margin: 0 auto;
+  display: grid;
+  gap: 28px;
+}
+.featuresIntro {
+  display: contents;
+}
+.featuresIntro > .sectionHead {
+  order: 1;
+  align-items: center;
+  text-align: center;
+}
+.breakdown {
+  order: 3;
+}
+.phoneWrap {
+  order: 2;
+}
+.featuresSide {
+  /* スマホの承認画像には無い。いまの保障はスマホの見本に出ているので、重ねて出さない */
+  display: none;
+  order: 4;
+  gap: 20px;
+}
+.breakdownList {
+  margin-top: 16px !important;
+  display: grid;
+  gap: 8px;
+}
+.breakdownList li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.rowIcon {
+  color: var(--color-primary);
+  display: grid;
+}
+.rowLabel small {
+  display: block;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+.rowAmount {
+  white-space: nowrap;
+  font-size: 13px;
+}
+.rowAmount strong {
+  font-size: 18px;
+  font-weight: 900;
+  margin: 0 2px;
+}
+
+/* スマホの画面の見本 */
+.phone {
+  position: relative;
+  max-width: 360px;
+  margin: 0 auto;
+  padding: 14px 12px 18px;
+  border-radius: 44px;
+  border: 10px solid var(--color-surface-inverse);
+  background: var(--color-surface);
+  box-shadow: var(--top-shadow-strong);
+}
+.phoneNotch {
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 34%;
+  height: 22px;
+  border-radius: 0 0 14px 14px;
+  background: var(--color-surface-inverse);
+}
+.phoneTop {
+  display: flex;
+  justify-content: space-between;
+  padding: 18px 6px 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+.phoneTop .logoTag {
+  display: none;
+}
+.phoneTop .logoName {
+  font-size: 15px;
+}
+.phoneBody {
+  display: grid;
+  gap: 10px;
+  padding: 12px 4px 0;
+}
+.phoneTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.phoneTitle {
+  font-size: 20px;
+  font-weight: 900;
+}
+.phoneDate {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+.phoneLeadText {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+.phoneCard {
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+}
+.phoneLabel {
+  font-size: 13px;
+  font-weight: 700;
+}
+.phoneAmountMain {
+  margin-top: 2px !important;
+  color: var(--color-primary);
+  font-size: clamp(28px, 8.4vw, 34px);
+}
+.phoneAmountSub {
+  margin-top: 2px !important;
+  text-align: right;
+  font-size: 26px;
+}
+.bigAmount {
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+.bigAmount small {
+  font-size: 0.48em;
+  font-weight: 700;
+  margin: 0 0.15em;
+}
+.phoneHint {
+  margin-top: 8px !important;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--color-note-bg);
+  color: var(--color-note-text);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.phoneHint > span {
+  flex: none;
+  display: grid;
+}
+.phoneVerdict {
+  padding: 12px 14px;
+  border-radius: 14px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+.tone_attention {
+  background: var(--color-verdict-shortage-bg);
+  color: var(--color-verdict-shortage-text);
+}
+.tone_positive {
+  background: var(--color-verdict-reducible-bg);
+  color: var(--color-verdict-reducible-text);
+}
+.tone_neutral {
+  background: var(--color-verdict-neutral-bg);
+  color: var(--color-verdict-neutral);
+}
+.phoneVerdict .phoneLabel {
+  color: var(--color-text);
+}
+.verdictMain {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.verdictIcon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--color-surface);
+  font-size: 18px;
+  font-weight: 900;
+}
+.tone_attention .verdictIcon {
+  background: var(--color-verdict-shortage-text);
+}
+.tone_positive .verdictIcon {
+  background: var(--color-verdict-reducible-text);
+}
+.tone_neutral .verdictIcon {
+  background: var(--color-verdict-neutral);
+}
+.verdictLabel {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.3;
+}
+.verdictNote {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+.exampleCaption {
+  max-width: 420px;
+  margin: 16px auto 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-text);
+  text-align: center;
+}
+.captionLine {
+  display: block;
+}
+.exampleTag {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--color-surface-strong);
+  color: var(--color-text);
+  font-weight: 700;
+}
+.inlineLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-left: 6px;
+  color: var(--color-link) !important;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.sideAmount {
+  margin-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--top-blue-soft);
+  font-size: 14px;
+  font-weight: 700;
+}
+.sideAmount .bigAmount {
+  font-size: 28px;
+}
+.checkList {
+  margin-top: 14px !important;
+  display: grid;
+  gap: 8px;
+}
+.checkList li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.checkIcon {
+  display: grid;
+  color: var(--color-primary);
+}
+
+/* スマホだけの息つぎの絵 */
+.breather {
+  position: relative;
+}
+.breather img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 0.75;
+  object-fit: cover;
+  object-position: 30% 50%;
+}
+.breatherHand,
+.heroHand,
+.closingHand {
+  font-family: var(--top-font-hand), var(--font-family);
+  font-weight: 600;
+  color: var(--color-primary);
+  line-height: 1.6;
+}
+.breatherHand {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  transform: rotate(-8deg);
+  font-size: 18px;
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  border-radius: 12px;
+}
+
+/* ==========================================================
+   ③ 計算の仕組み
+   ========================================================== */
+.mechanism {
+  padding: 40px 10px;
+  background: var(--color-surface);
+}
+.mechanismInner {
+  position: relative;
+  overflow: hidden;
+  max-width: var(--top-max);
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+  padding: 36px 8px 64px;
+  border-radius: var(--top-radius-xl);
+  background: linear-gradient(
+    180deg,
+    var(--top-blue-tint),
+    var(--top-blue-soft) 60%,
+    var(--color-surface)
+  );
+}
+.mechanismInner > :not(svg) {
+  position: relative;
+  z-index: 1;
+}
+.mechanismSkyline {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 56px;
+}
+.mechanismSprig {
+  position: absolute;
+  top: -8px;
+  left: -10px;
+  width: 70px;
+  transform: rotate(-90deg);
+}
+.mechanismText {
+  display: grid;
+  gap: 14px;
+  text-align: center;
+  justify-items: center;
+}
+.mechanismText .sectionHead {
+  align-items: center;
+}
+.mechanismClaim {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.6;
+}
+.equation {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: stretch;
+  gap: 6px;
+}
+.eqCol {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  box-shadow: var(--top-shadow);
+}
+.eqHead {
+  padding: 8px 4px;
+  font-size: 12.5px;
+  font-weight: 900;
+  text-align: center;
+  background: var(--color-surface-strong);
+  line-height: 1.4;
+}
+.eqCol ul {
+  display: grid;
+  gap: 4px;
+  padding: 8px 4px 10px;
+}
+.eqCol li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 2px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.eqIcon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--top-blue-soft);
+}
+.eqIcon svg {
+  width: 54px;
+  height: 54px;
+}
+.eqOp {
+  align-self: center;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--color-text);
+}
+.eqResult {
+  border: 2px solid var(--color-primary);
+}
+.eqResult .eqHead {
+  background: var(--color-primary);
+  color: var(--color-text-on-inverse);
+}
+.eqShield {
+  display: grid;
+  place-items: center;
+  padding: 18px 4px 6px;
+  color: var(--color-primary);
+}
+.eqShield svg {
+  width: 88px;
+  height: 88px;
+}
+.eqResultText {
+  padding: 4px 6px 14px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.eqNote {
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+/* ==========================================================
+   ④ もしもラボ
+   ========================================================== */
+.lab {
+  --curve-bg: var(--top-blue-soft);
+  padding: 48px var(--top-gutter) 64px;
+  background: var(--top-blue-soft);
+}
+.labSprig {
+  position: absolute;
+  z-index: 0;
+  right: -10px;
+  bottom: 0;
+  width: 60px;
+  transform: scaleY(-1) rotate(20deg);
+  pointer-events: none;
+}
+.labScenarios {
+  display: grid;
+  gap: 12px;
+}
+.labScenariosTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 900;
+}
+.labScenariosTitle::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+.labInner {
+  max-width: var(--top-max);
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+}
+.labIntro {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  text-align: center;
+}
+.labTitle {
+  font-size: 26px;
+  line-height: 1.4;
+  font-weight: 900;
+}
+.labBtn {
+  font-size: 15px;
+  min-height: 52px;
+  padding: 10px 22px;
+}
+.labCards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.labCard {
+  /* 説明のカード。押せる見た目（影・矢印）を持たせず、操作はラボのボタンだけにする */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px;
+  border-radius: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  text-align: center;
+}
+.labIcon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--top-blue-soft);
+  color: var(--color-primary);
+}
+.labCard h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.5;
+}
+.labCard p {
+  display: none;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* ==========================================================
+   ⑤ ライフステージ（3つ均等。タブ型の見出しとカード本体を一体にする）
+   ========================================================== */
+.stages {
+  padding: 48px var(--top-gutter);
+  background: linear-gradient(180deg, var(--color-surface), var(--top-blue-soft));
+}
+.stagesInner {
+  max-width: var(--top-max);
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+}
+.stagesInner > .sectionHead {
+  align-items: center;
+  text-align: center;
+}
+.stageCards {
+  display: grid;
+  gap: 16px;
+}
+.stageCard {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 50%;
+  grid-template-rows: auto 1fr auto;
+  min-height: 190px;
+  border-radius: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--top-shadow);
+  overflow: hidden;
+  text-decoration: none;
+}
+.stageTab {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+  padding: 6px 28px 6px 16px;
+  background: var(--color-primary);
+  color: var(--color-text-on-inverse);
+  font-weight: 900;
+  font-size: 15px;
+  border-radius: 0 0 18px 0;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+}
+.stageCard img {
+  /* 人物の上半身を切り出した絵（public/top/stage-*.webp）。顔が上端で切れないよう上寄せ */
+  grid-column: 2;
+  grid-row: 1 / 4;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 15%;
+}
+.stageText {
+  grid-column: 1;
+  grid-row: 2;
+  padding: 12px 8px 6px 16px;
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+.stageGo {
+  grid-column: 1;
+  grid-row: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 14px 16px;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+.stageChevron {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--top-blue-soft);
+}
+
+/* ==========================================================
+   ⑥ 診断の流れ
+   ========================================================== */
+.flow {
+  padding: 48px var(--top-gutter);
+  background: var(--color-surface);
+}
+.flowInner {
+  max-width: var(--top-max);
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+}
+.flowInner > .sectionHead {
+  align-items: center;
+  text-align: center;
+}
+.steps {
+  display: grid;
+  gap: 28px;
+}
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 14px;
+  padding: 18px;
+  border-radius: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--top-shadow);
+}
+.step + .step::before {
+  /* つなぎの下向き山形 */
+  content: "";
+  position: absolute;
+  top: -21px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-right: 3px solid var(--color-primary);
+  border-bottom: 3px solid var(--color-primary);
+  transform: translateX(-50%) rotate(45deg);
+}
+.stepNum {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-text-on-inverse);
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+.stepNum small {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+.stepBody h3 {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.4;
+}
+.stepBody p {
+  margin-top: 4px !important;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+.stepArt {
+  /* 各カードの主役。入力画面 → 計算 → 結果確認 の絵 */
+  grid-column: 1 / -1;
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 0 6px;
+  border-radius: 14px;
+  background: var(--top-blue-soft);
+}
+.stepArt svg {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+}
+
+/* ==========================================================
+   ⑦ この診断が守っていること
+   ========================================================== */
+.trust {
+  padding: 48px var(--top-gutter);
+  background: linear-gradient(180deg, var(--top-blue-soft), var(--color-surface));
+}
+.trustInner {
+  max-width: var(--top-max);
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+}
+.trustInner > .sectionHead {
+  align-items: center;
+  text-align: center;
+}
+.trustCards {
+  display: grid;
+  gap: 14px;
+}
+.trustCard {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--top-shadow);
+}
+.trustIcon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--top-blue-soft);
+  color: var(--color-primary);
+}
+.trustCard h3 {
+  font-size: 17px;
+  font-weight: 900;
+}
+.trustCard p {
+  margin-top: 2px !important;
+  font-size: 13.5px;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+/* ==========================================================
+   ⑧ よくある質問
+   ========================================================== */
+.faq {
+  padding: 48px var(--top-gutter);
+  background: var(--color-surface);
+}
+.faqInner {
+  max-width: 820px;
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+}
+.faqList {
+  display: grid;
+  gap: 10px;
+}
+.faqList details {
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+}
+.faqList summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 16px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: 14px;
+}
+.faqList summary::-webkit-details-marker {
+  display: none;
+}
+.faqList summary::after {
+  content: "";
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-right: 2.5px solid var(--color-primary);
+  border-bottom: 2.5px solid var(--color-primary);
+  transform: rotate(45deg);
+  margin-top: -4px;
+}
+.faqList details[open] summary::after {
+  transform: rotate(-135deg);
+  margin-top: 4px;
+}
+.faqList details p {
+  padding: 0 16px 16px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+}
+
+/* ==========================================================
+   ⑨ 最後の入口
+   ========================================================== */
+.closing {
+  padding: 16px var(--top-gutter) 48px;
+  background: var(--color-surface);
+}
+.closingBand {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  max-width: 980px;
+  margin: 0 auto;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 28px 20px 72px;
+  border-radius: var(--top-radius-xl);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    color-mix(in srgb, var(--color-primary) 70%, var(--color-surface-inverse))
+  );
+  color: var(--color-text-on-inverse);
+  text-align: center;
+}
+.closingSkyline {
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 52px;
+}
+.leafClosingA {
+  z-index: -1;
+  top: 10px;
+  left: 14px;
+  width: 30px;
+  transform: rotate(-30deg);
+}
+.leafClosingB {
+  z-index: -1;
+  top: 28px;
+  right: 16px;
+  width: 24px;
+  transform: rotate(35deg);
+}
+.closingHand {
+  color: var(--color-text-on-inverse);
+  font-size: 17px;
+  transform: rotate(-5deg);
+}
+.closingTitle {
+  font-size: 21px;
+  font-weight: 900;
+  line-height: 1.5;
+}
+.closingAccent {
+  font-size: 1.2em;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
+}
+.closingBand .btn {
+  width: 100%;
+  max-width: 360px;
+}
+.closingNote {
+  font-size: 13px;
+  opacity: 0.95;
+}
+
+.footer {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 28px var(--top-gutter) 40px;
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* ==========================================================
+   PC（900px 以上）：承認画像 APPROVED_DESKTOP の組み方
+   ========================================================== */
+@media (min-width: 900px) {
+  .page {
+    --top-gutter: 40px;
+  }
+  .main {
+    display: block;
+  }
+  .mobileOnly {
+    display: none;
+  }
+  .nav {
+    display: flex;
+    gap: 32px;
+    margin-left: auto;
+    margin-right: 8px;
+  }
+  .nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .nav a:hover {
+    color: var(--color-primary);
+  }
+  .headerMobile {
+    display: none;
+  }
+  .logoName {
+    font-size: 22px;
+  }
+
+  /* ① 絵を右に大きく敷き、左に文字の地を作る */
+  .hero {
+    display: block;
+    min-height: 640px;
+    background: var(--color-surface);
+    overflow: hidden;
+  }
+  .heroPicture {
+    position: absolute;
+    inset: 0;
+  }
+  .heroPicture {
+    margin-top: 0;
+  }
+  .heroImg {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    height: 820px;
+    width: auto;
+    max-width: none;
+    aspect-ratio: auto;
+    object-fit: initial;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .heroSprig {
+    top: auto;
+    bottom: 120px;
+    right: auto;
+    left: -14px;
+    width: 96px;
+    transform: rotate(-20deg);
+  }
+  .heroPicture::after {
+    inset: 0;
+    height: auto;
+    background:
+      linear-gradient(
+        90deg,
+        var(--color-surface) 0%,
+        color-mix(in srgb, var(--color-surface) 88%, transparent) 28%,
+        transparent 50%
+      ),
+      linear-gradient(0deg, var(--color-surface) 0%, transparent 12%);
+  }
+  .heroHand {
+    display: block;
+    position: absolute;
+    z-index: 1;
+    left: calc(50% - 50px);
+    top: 34px;
+    font-size: 19px;
+    transform: rotate(-14deg);
+  }
+  .heroInner {
+    display: block;
+    position: relative;
+    z-index: 1;
+    max-width: var(--top-max);
+    margin: 0 auto;
+    padding: 72px var(--top-gutter) 210px;
+  }
+  .heroCopy {
+    padding: 0;
+    max-width: 520px;
+  }
+  .heroTitle {
+    font-size: 60px;
+    line-height: 1.22;
+  }
+  .heroLead {
+    margin-top: 22px !important;
+    font-size: 16px;
+    max-width: 30em;
+  }
+  .heroActions {
+    margin-top: 28px;
+    padding: 0;
+    max-width: 380px;
+  }
+
+  /* ② 左：見出し＋内訳／中央：スマホ（絵に重ねる）／右：カード2枚 */
+  .features {
+    padding: 0 var(--top-gutter) 64px;
+    position: relative;
+    z-index: 2;
+  }
+  .featuresGrid {
+    grid-template-columns: minmax(0, 1fr) 300px minmax(0, 0.92fr);
+    align-items: start;
+    gap: 32px;
+  }
+  .featuresIntro {
+    display: grid;
+    gap: 24px;
+    padding-top: 48px;
+  }
+  .featuresIntro > .sectionHead {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .sectionHead h2 {
+    font-size: 32px;
+  }
+  .featuresGrid .phoneWrap {
+    /* 承認画像どおり、スマホの見本を絵の下端（家族の足もと）に重ねる */
+    margin-top: -300px;
+  }
+  .phone {
+    max-width: 300px;
+  }
+  .phoneAmountMain {
+    font-size: 28px;
+  }
+  .featuresSide {
+    display: grid;
+    padding-top: 24px;
+  }
+
+  .breather {
+    display: none;
+  }
+
+  /* ③ 左に主張、右に3列の式 */
+  .mechanism {
+    padding: 56px var(--top-gutter);
+  }
+  .mechanismSkyline {
+    height: 72px;
+  }
+  .mechanismInner {
+    grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.9fr);
+    align-items: center;
+    gap: 40px;
+    padding: 48px 40px 88px;
+  }
+  .mechanismSprig {
+    width: 96px;
+  }
+  .mechanismText {
+    text-align: left;
+    justify-items: start;
+  }
+  .mechanismText .sectionHead {
+    align-items: flex-start;
+  }
+  .mechanismClaim {
+    font-size: 24px;
+  }
+  .equation {
+    gap: 12px;
+  }
+  .eqHead {
+    font-size: 16px;
+    padding: 12px 6px;
+  }
+  .eqCol ul {
+    padding: 12px;
+    gap: 8px;
+  }
+  .eqCol li {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 8px;
+    font-size: 15px;
+    text-align: left;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+  }
+  .eqIcon {
+    width: 68px;
+    height: 68px;
+    flex: none;
+  }
+  .eqIcon svg {
+    width: 58px;
+    height: 58px;
+  }
+  .eqShield svg {
+    width: 150px;
+    height: 150px;
+  }
+  .eqShield {
+    padding: 36px 8px 16px;
+  }
+  .eqResultText {
+    font-size: 15px;
+  }
+  .eqOp {
+    font-size: 30px;
+  }
+
+  /* ④ 左に紹介、右に3枚 */
+  .lab {
+    padding: 64px var(--top-gutter);
+  }
+  .labInner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.9fr);
+    align-items: center;
+    gap: 40px;
+  }
+  .labIntro {
+    justify-items: start;
+    text-align: left;
+  }
+  .labTitle {
+    font-size: 30px;
+  }
+  .labCards {
+    gap: 16px;
+  }
+  .labCard {
+    align-items: flex-start;
+    text-align: left;
+    padding: 20px;
+  }
+  .labIcon {
+    width: 100%;
+    height: 110px;
+    border-radius: 14px;
+  }
+  .labIcon svg {
+    width: 56px;
+    height: 56px;
+  }
+  .labCard h4 {
+    font-size: 16px;
+  }
+  .labCard p {
+    display: block;
+  }
+
+  /* ⑤ 左に見出し、右に3枚の横並び */
+  .stages {
+    padding: 64px var(--top-gutter);
+  }
+  .stagesInner {
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 2.2fr);
+    align-items: center;
+    gap: 32px;
+  }
+  .stagesInner > .sectionHead {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .stagesInner .sectionHead h2 {
+    font-size: 26px;
+  }
+  .stageCards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .stageCard {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 190px 1fr auto;
+    min-height: 0;
+  }
+  .stageTab {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .stageCard img {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .stageText {
+    grid-row: 3;
+    padding: 14px 16px 8px;
+  }
+  .stageGo {
+    grid-row: 4;
+    padding: 0 16px 16px;
+  }
+
+  /* ⑥ 左に見出し、右に3ステップの横並び */
+  .flow {
+    padding: 64px var(--top-gutter);
+  }
+  .flowInner {
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 2.2fr);
+    align-items: center;
+    gap: 32px;
+  }
+  .flowInner > .sectionHead {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .steps {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .step + .step::before {
+    top: 50%;
+    left: -17px;
+    transform: translateY(-50%) rotate(-45deg);
+  }
+  .step {
+    grid-template-columns: auto 1fr;
+  }
+  .stepBody h3 {
+    font-size: 16px;
+  }
+  .stepBody p {
+    font-size: 13px;
+  }
+
+  /* ⑦ 左に見出し、右に3枚 */
+  .trust {
+    padding: 56px var(--top-gutter);
+  }
+  .trustInner {
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 2.2fr);
+    align-items: center;
+    gap: 32px;
+  }
+  .trustInner > .sectionHead {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .trustInner .sectionHead h2 {
+    font-size: 24px;
+  }
+  .trustCards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .trustCard {
+    align-items: flex-start;
+  }
+  .trustIcon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .faq {
+    padding: 56px var(--top-gutter);
+  }
+
+  /* ⑨ 横長の帯 */
+  .closingBand {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    text-align: left;
+    gap: 24px;
+    padding: 28px 56px 64px;
+  }
+  .closingNote {
+    grid-column: 1 / -1;
+    text-align: center;
+  }
+  .closingBand .btn {
+    width: auto;
+  }
+}
+
+/* 〜419px：ヘッダーの右に「診断をはじめる」を置くので、ロゴの添え書きを省く */
+@media (max-width: 419px) {
+  .header .logoTag {
+    display: none;
+  }
+  .header .logoName {
+    font-size: 17px;
+  }
+}
+
+/* 細い画面（〜359px）：式の3列を縦に積む（文字を 12px より小さくしないため） */
+@media (max-width: 359px) {
+  /* ロゴと並べる幅が無い。診断の入口はすぐ下のファーストビューにある */
+  .headerCta {
+    display: none;
+  }
+  .phone {
+    border-width: 8px;
+    padding: 12px 8px 14px;
+  }
+  .phoneAmountMain {
+    font-size: 25px;
+  }
+  .equation {
+    grid-template-columns: 1fr;
+  }
+  .eqOp {
+    justify-self: center;
+  }
+  .eqCol ul {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .labCards {
+    grid-template-columns: 1fr;
+  }
+  .labCard {
+    flex-direction: row;
+    text-align: left;
+  }
+  .labIcon {
+    width: 56px;
+    height: 56px;
+    flex: none;
+  }
+  .stageCard {
+    grid-template-columns: 1fr 44%;
+  }
+}
