@@ -1,7 +1,7 @@
 # ARCHITECTURE — お金の町医者（okane-doctor）
 
 コンセプトと全体像は [README.md](README.md)。ここは構成の詳細です。
-データモデルは [`docs/データモデル図.md`](docs/データモデル図.md)。[`docs/アーキテクチャ図.html`](docs/アーキテクチャ図.html) は提出版（2026-09-21）時点の図で、Slack 通知と定期実行がつながっているなど、いまの okane-doctor とは違う箇所があります。
+データモデルは [`docs/データモデル図.md`](docs/データモデル図.md)。[`docs/アーキテクチャ図.html`](docs/アーキテクチャ図.html) は前身の okane-kenko（2026-09-21）時点の図で、Slack 通知と定期実行がつながっているなど、いまの okane-doctor とは違う箇所があります。
 
 ## 設計の原則
 
@@ -111,14 +111,14 @@ sequenceDiagram
 | Gemini API | 言語化と、ラボの言葉の翻訳 |
 
 - 実行アカウントは okane-doctor 専用です
-- 同じ GCP プロジェクトに、審査中の提出版（サービス `okane-kenko`・既定の Firestore）があります。`cloudbuild.yaml` のサービス名の既定値・実行アカウント・データベース名を okane-doctor に固定し、**提出版には触らない**ようにしています
+- 同じ GCP プロジェクトに、前身の okane-kenko（サービス `okane-kenko`・既定の Firestore）が動いています。`cloudbuild.yaml` のサービス名の既定値・実行アカウント・データベース名を okane-doctor に固定し、**okane-kenko には触らない**ようにしています
 - 公開 URL はリポジトリに書かず、トリガーの置換変数で渡します
 
 ### つないでいないもの
 
 | もの | 理由 |
 |---|---|
-| Slack への気づき通知・保存（お知らせ） | 提出版と同じ通知が2回飛ぶのを避けるため。保存は、本人が記録を消せる道ができるまで止めている（`src/watch/availability.ts`） |
+| Slack への気づき通知・保存（お知らせ） | okane-kenko と同じ通知が2回飛ぶのを避けるため。保存は、本人が記録を消せる道ができるまで止めている（`src/watch/availability.ts`） |
 | 定期実行（Cloud Scheduler） | 定期実行の合言葉を渡していないので、`/api/paramwatch/run`・`/api/watch/run` は 401 を返す |
 
 ## 環境変数

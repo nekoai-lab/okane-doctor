@@ -58,6 +58,6 @@
   margin-top: 12px;
 }
 
-.link {
-  color: var(--color-link);
+.page > p {
+  margin-bottom: 16px;
 }
