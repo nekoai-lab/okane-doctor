@@ -121,12 +121,17 @@
   階層③：差し引き。**3段組で、金額は折り返さない。**
   1つの文字列で流すと 390px で述語の1文字だけが次行に落ちる（2026-09-21 に実際に落ちた）。
 */
+/*
+  入りきらないときは述語（足りません／残ります）を**まるごと**次の行へ送る。1文字だけが落ちることはない
+  （述語は1つのフレックス項目で、金額は nowrap）。以前は nowrap で、320px で「足りません」が横に
+  1.7px はみ出していた（2026-10-18・PR #5 の UX 再レビュー）
+*/
 .ledgerNet {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: 0 6px;
   margin: 2px 0 0;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .netPrefix {

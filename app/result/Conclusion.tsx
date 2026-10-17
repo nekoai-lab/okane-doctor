@@ -106,6 +106,22 @@ function PeopleLine({ rows, fmt }: { rows: PersonRow[]; fmt: (yen: number) => st
   );
 }
 
+/**
+ * 見出しの括弧書き（「（当社の見立て）」）を途中で折らない。入らなければ括弧ごと次の行へ送る
+ * （390px で「見立／て」と折れていた・PR #5 の UX 再レビュー）
+ */
+function TitleText({ text }: { text: string }) {
+  const i = text.indexOf("（");
+  if (i <= 0) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, i)}
+      <wbr />
+      <span className={s.nowrap}>{text.slice(i)}</span>
+    </>
+  );
+}
+
 function PremiseFigure({ p, fmt }: { p: KeyPremise; fmt: (yen: number) => string }) {
   if (p.kind === "work") {
     const share = p.incomeTotal > 0 ? Math.min(1, p.work / p.incomeTotal) : 0;
@@ -312,7 +328,7 @@ export function Conclusion({
         <section className={s.card} aria-labelledby="key-premise-title" id="key-premise">
           <p className={s.eyebrow}>この結論を決めている前提</p>
           <h2 className={s.h2} id="key-premise-title">
-            {premise.title}
+            <TitleText text={premise.title} />
           </h2>
           {/*
             文を図より先に置く（2026-10-18・PR #5 の UX レビュー）。不足の世帯では図の後ろに置いた文の結び

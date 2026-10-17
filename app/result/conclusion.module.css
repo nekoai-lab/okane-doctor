@@ -349,3 +349,54 @@
   height: 100%;
   background: var(--mk-amber);
 }
+
+/*
+  幅 360px 以下（320px など）。最初の2画面に「この結論を決めている前提」の文の結びまで入れる
+  （2026-10-18・PR #5 の UX 再レビュー）。390px の見た目は変えない。
+  - 人ごとの行：見出しの横にバッジが入らず縦に積まれるので、軸名とバッジを横並びにして1行に収める
+  - 見出しと本文を一段小さくし、行数を減らす
+*/
+@media (max-width: 360px) {
+  .card {
+    padding: var(--space-3);
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+  .people {
+    gap: var(--space-2);
+  }
+  .person {
+    padding-top: var(--space-2);
+  }
+  .head {
+    font-size: 20px;
+  }
+  .h2 {
+    font-size: 18px;
+  }
+  .step {
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .personHead > span:last-child {
+    flex-direction: row;
+    align-items: center;
+  }
+  .mainValue {
+    font-size: 26px;
+  }
+  .head,
+  .h2 {
+    line-height: 1.4;
+  }
+  .note {
+    line-height: 1.65;
+  }
+  .small {
+    line-height: 1.55;
+  }
+}
+
+.nowrap {
+  white-space: nowrap;
+}
