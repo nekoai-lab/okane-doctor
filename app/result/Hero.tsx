@@ -15,7 +15,7 @@ export type HeroVerdict = "reducible" | "uncertain" | "shortage" | "rebalanceabl
  */
 export const HERO_BADGE: Record<HeroVerdict, string> = {
   reducible: "減らせる可能性",
-  uncertain: "圏内・要精査",
+  uncertain: "幅の中・要確認",
   shortage: "不足の可能性",
   rebalanceable: "組み替えの余地",
   pending: "判定は保留",

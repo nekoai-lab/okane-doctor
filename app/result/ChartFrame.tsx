@@ -5,8 +5,9 @@
  * FPの実務資料が例外なく持っているのは、目盛り・グリッド・凡例・単位の4つ。
  *
  * 設計上の決めごと：
- * - SVG を viewBox で伸縮させる。幅393px（LINE内ブラウザ）と720px（読み物幅）の
- *   どちらでも文字が読める大きさになるよう、viewBox の座標系を480×240にしてある
+ * - SVG を viewBox で伸縮させる。座標系は**390px で描く幅（約320px）に合わせて** 320×220 にしてある。
+ *   480×240 だった頃は 390px で目盛りの字が約8px まで縮んでいた（2026-10-18・AUDIT 2-1）。
+ *   読み物幅では `.chartSvg` の最大幅（400px）で止める
  * - **色は必ずトークン経由**（`--chart-*`）。プリミティブを直接書かない
  * - 図には `role="img"` と要約の `aria-label` を付ける。**細かい値は必ず本文か表に併記**し、
  *   図が読めなくても情報が落ちないようにする
@@ -21,12 +22,13 @@ import s from "./page.module.css";
 
 /** 図の座標系。すべてのグラフで共通にして、並べたとき目盛りの位置がそろうようにする */
 export const PLOT = {
-  w: 480,
-  h: 240,
-  // 左は目盛りラベルの幅。「▲2,000」まで見切れずに入る幅にしてある
-  left: 52,
+  w: 320,
+  h: 220,
+  // 左は目盛りラベルの幅。「10,000」まで見切れずに入る幅にしてある
+  left: 50,
   right: 10,
-  top: 12,
+  // 上は目盛りの単位（万円）を置く分
+  top: 24,
   bottom: 28,
 } as const;
 
@@ -113,7 +115,7 @@ export function ChartFrame({
               />
               <text
                 fill="var(--chart-axis-text)"
-                fontSize="11"
+                fontSize="12.5"
                 textAnchor="end"
                 x={plotLeft - 6}
                 y={y + 4}
@@ -123,6 +125,17 @@ export function ChartFrame({
             </g>
           );
         })}
+
+        {/* 目盛りの単位。見出しにもあるが、図だけを見たときに桁が分かるよう軸の上にも1回置く（AUDIT 2-1） */}
+        <text
+          fill="var(--chart-axis-text)"
+          fontSize="12.5"
+          textAnchor="end"
+          x={plotLeft - 6}
+          y={14}
+        >
+          万円
+        </text>
 
         {/* 系列（棒・線・面） */}
         {children}
@@ -140,7 +153,7 @@ export function ChartFrame({
           i % labelEvery === 0 || i === n - 1 ? (
             <text
               fill="var(--chart-axis-text)"
-              fontSize="11"
+              fontSize="12.5"
               key={y}
               textAnchor="middle"
               x={xAt(i, n)}

@@ -9,7 +9,7 @@ import type { Verdict3 } from "../../src/calc/verdict3.js";
 
 export const DEATH_LABEL: Record<Verdict3, string> = {
   reducible: "減らせる可能性",
-  uncertain: "圏内・要精査",
+  uncertain: "幅の中・要確認",
   shortage: "不足の可能性",
   pending: "判定は保留",
 };

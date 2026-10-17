@@ -15,8 +15,8 @@
  *   水平線で描く。実際には定期が切れると階段状に下がる。ここは入力を増やす判断が要る
  */
 import type { CoveragePoint } from "../../src/calc/projection.js";
-import { RangeText } from "./AmountText.js";
 import { formatMan } from "../../src/design/tokens.js";
+import { RangeText } from "./AmountText.js";
 import { ChartFrame, plotBottom, plotTop, xAt, yAt } from "./ChartFrame.js";
 import { linearScale } from "./chartScale.js";
 import s from "./page.module.css";
@@ -49,7 +49,7 @@ export function CoverageCurve({
     return (
       <div className={s.reduce}>
         <strong>
-          答えた区分の代表値で見ると、この先ずっと収入と資産で支出をまかなえる見込みです。
+          答えた区分のまんなかの目安で見ると、この先ずっと収入と資産で支出をまかなえる見込みです。
         </strong>{" "}
         保障の必要額（幅）が <RangeText text={needRangeText} />{" "}
         なのは、万一の直後に要るお金（葬儀・予備費など）と、答えた区分の上下端での計算を含めているためです。
@@ -83,11 +83,14 @@ export function CoverageCurve({
       <ChartFrame
         labelEvery={every}
         legend={[
-          { label: "そこから先に足りなくなる額（代表値）", color: "var(--chart-expense-3)" },
+          {
+            label: "そこから先に足りなくなる額（まんなかの目安）",
+            color: "var(--chart-expense-3)",
+          },
           ...(coverage !== null
             ? [
                 {
-                  label: `いまの保障 約${formatMan(coverage)}`,
+                  label: coverage === 0 ? "いまの保障 0円" : `いまの保障 約${formatMan(coverage)}`,
                   color: "var(--color-accent)",
                   line: true,
                 },
@@ -100,7 +103,7 @@ export function CoverageCurve({
             ? `必要な保障は年々下がり、${crossing.year}年ごろにいまの保障で足りるようになる見込み。単位は万円。`
             : `必要な保障は年々下がる見込み。単位は万円。`
         }
-        title="その年に万一があったとき、そこから先に足りなくなる額（答えた区分の代表値で計算・万円）"
+        title="年ごとの必要額と、いまの保障（その年に万一があった場合・万円）"
         years={years}
       >
         <path d={area} fill="var(--chart-expense-3)" fillOpacity="0.85" />
@@ -130,10 +133,10 @@ export function CoverageCurve({
             />
             <text
               fill="var(--color-success-text)"
-              fontSize="11"
+              fontSize="12.5"
               textAnchor={crossingIndex > n * 0.7 ? "end" : "start"}
               x={xAt(crossingIndex, n) + (crossingIndex > n * 0.7 ? -4 : 4)}
-              y={plotTop + 11}
+              y={plotTop + 13}
             >
               ここで足りるようになります
             </text>
@@ -148,7 +151,8 @@ export function CoverageCurve({
             <RangeText text={fmt(points[0].need)} />
           </strong>
           {points[0].survivorAge !== null ? `（配偶者${points[0].survivorAge}歳の時点）` : ""}
-          。代表値1点で引いた差額で、保障の必要額（幅）は <RangeText text={needRangeText} /> です
+          。答えた区分のまんなかの目安で引いた差額で、保障の必要額（幅）は{" "}
+          <RangeText text={needRangeText} /> です
         </li>
         {/* 「下がる」と決め打ちしない。年によっては必要額が上がることもあり得るので、
             実際の値を比べてから書く（事実と違う言い方をしない） */}
@@ -181,18 +185,20 @@ export function CoverageCurve({
         {coverage !== null && crossing ? (
           crossingIndex === 0 ? (
             <li>
-              <strong>代表値で見ると、いまの保障はすでにこの線を上回っています</strong>
+              <strong>まんなかの目安で見ると、いまの保障はすでにこの線を上回っています</strong>
               （過不足の判定は、保障の必要額（幅）で出しています）
             </li>
           ) : (
             <li>
-              代表値で見ると、いまの保障で足りるようになるのは{" "}
+              まんなかの目安で見ると、いまの保障で足りるようになるのは{" "}
               <strong>{crossing.year}年ごろ</strong>から（いまの前提では）
             </li>
           )
         ) : null}
         {coverage !== null && !crossing ? (
-          <li>いまの前提では、代表値で見たこの線が、期間を通じていまの保障を上回っています</li>
+          <li>
+            いまの前提では、まんなかの目安で見たこの線が、期間を通じていまの保障を上回っています
+          </li>
         ) : null}
       </ul>
 

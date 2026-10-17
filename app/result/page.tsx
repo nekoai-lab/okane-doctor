@@ -20,7 +20,7 @@ import { survivorIncomeSensitivity } from "../../src/calc/sensitivity.js";
 import { decisionPoints } from "../../src/calc/decisionPoints.js";
 import { reform2028 } from "../../src/calc/reform2028.js";
 import { verdict3 } from "../../src/calc/verdict3.js";
-import { RangeText, WithAmounts } from "./AmountText.js";
+import { RangeText } from "./AmountText.js";
 import { Fold } from "./Fold.js";
 import { ownStandardEstimates, workDeductionSource } from "./estimates.js";
 import { sensitivityText } from "./sensitivityText.js";
@@ -36,7 +36,7 @@ import {
   noReducibleSentence,
   personRows,
 } from "./conclusionModel.js";
-import { bandWidenedNote, gapSentence, partialNote } from "./figureText.js";
+import { bandWidenedNote, partialNote } from "./figureText.js";
 import { HERO_BADGE, HERO_ICON, HERO_TONE } from "./Hero.js";
 import { LivingDial } from "./LivingDial.js";
 import { RiskTable, type RiskRow } from "./RiskTable.js";
@@ -63,21 +63,6 @@ import {
 import { decodeSelections } from "../../src/wizard/url.js";
 import { SAVE_ENABLED } from "../../src/watch/availability.js";
 import s from "./page.module.css";
-
-/**
- * 金額の呼び名は verdict で変える。**同じ数字ではないから。**
- * shortage＝足りない額／sufficient＝万一直後の当座資金／ample・not_needed＝葬儀・予備費。
- * ここを「必要な保障額」で統一すると、収入が支出を上回っているのに額が出る理由が
- * 読者に分からず、グラフと結論が矛盾して見える（2026-08-30 の実物レビューで発覚）。
- */
-const AMOUNT_LABEL: Record<string, string> = {
-  // 答えた区分のどこにあたるかで、上乗せが要る場合と要らない場合がある（`rangeVerdict`・2026-10-17）
-  mixed: "答えた区分の幅で見た必要額の目安",
-  shortage: "足りない保障額の目安",
-  sufficient: "万一の直後に要る当座資金の目安",
-  ample: "葬儀・予備費の目安",
-  not_needed: "葬儀・予備費の目安",
-};
 
 /**
  * 滝グラフの最終行に添える1文。
@@ -107,16 +92,6 @@ const RESULT_NOTE: Record<string, string> = {
     "公的な年金と資産が総額を上回るため、生活費のための上乗せは0円です。それでも葬儀・予備費を残しているのは、余剰があってもこの分だけは別に備えるという当社基準で、時期の根拠は置いていません。",
   not_needed:
     "扶養するご家族がいないため、上乗せの保障は要りません。残るのは葬儀・予備費だけです。",
-};
-
-const AMOUNT_NOTE: Record<string, string> = {
-  mixed:
-    "※ 答えた区分のどこにあたるかで、上乗せの保障が要る場合と要らない場合があります。この額は、その両方を含めた幅です。",
-  shortage: "※ 見込みの支出から、受け取れる収入・資産を差し引いた不足分です。",
-  sufficient:
-    "※ 収入・資産で支出はまかなえる見込みです。これは不足額ではなく、手続きや当面の暮らしのために手元に置いておく目安（葬儀・予備費と生活費1〜2年分）です。",
-  ample: "※ 収入・資産が支出を大きく上回る見込みです。上乗せの保障は要りません。",
-  not_needed: "※ 扶養するご家族がいないため、大きな死亡保障は要りません。",
 };
 
 const SHORTFALL_TONE: Record<string, "ok" | "check" | "short" | "none"> = {
@@ -151,6 +126,11 @@ function shortfallBody(v: string, hasRange: boolean, hasEstimates: boolean): str
 
 function money(yen: number): string {
   return formatMan(yen);
+}
+
+/** 「約◯万円」。**0円には「約」を付けない**（「約0万円」は桁の誤りに見える・AUDIT 1-8） */
+function approx(yen: number): string {
+  return yen === 0 ? "0円" : `約${money(yen)}`;
 }
 
 /** 就業形態の呼び名。**回答をそのまま読み返す**ので、算定側の語ではなく設問の語に揃える */
@@ -293,7 +273,6 @@ function CaseCard({
   estimations,
   terms,
   editHref,
-  gapText,
   bandNote,
   roundUnit,
 }: {
@@ -322,8 +301,6 @@ function CaseCard({
   terms: string[];
   /** 入力に戻るリンク */
   editHref: string;
-  /** いまの保障との差の1文（`gapSentence`）。最終の必要額から作る */
-  gapText: string;
   /** 滝の最終行が代表値より広い幅のとき、その旨の1文（`bandWidenedNote`）。無ければ null */
   bandNote: string | null;
   /** 内訳の中間値を丸める単位（円）。params の `roundUnit` */
@@ -389,24 +366,10 @@ function CaseCard({
         terms={terms}
       />
 
-      {/* **数字の意味は verdict で入れ替わる。** 不足のときは「足りない額」だが、
-          収入が支出を上回るときは「万一直後の当座資金（葬儀費＋生活費1〜2年分）」を出している
-          （death.ts の sufficient 分岐）。同じ名前で呼ぶと、グラフと結論が矛盾して見える。
-          **呼び名はレンジ全体の必要額の判定（`rangeVerdict`）で選ぶ。** `r.range` は回答の幅で包絡した額なので、
-          代表値の判定（`r.verdict`）で呼ぶと、不足分を含む幅を「葬儀・予備費」と呼んでしまう（2026-10-17・QA） */}
-      {/* 呼び名と金額を分ける。金額は文に埋めず、独立した大きな数字にする（DoD (b)・2026-10-17） */}
-      <p className={s.amountLabel}>{AMOUNT_LABEL[rangeKey] ?? AMOUNT_LABEL.sufficient}</p>
-      <p className={s.amount}>
-        <RangeText text={formatRange(r.range.low, r.range.high)} />
-      </p>
-      <p className={s.basis}>{AMOUNT_NOTE[rangeKey] ?? AMOUNT_NOTE.sufficient}</p>
-
-      {/* 現在の保障との比較 */}
-      {/* 現在の保障との比較。**最終の必要額との差**を幅で言う（`figures.ts`・2026-10-17） */}
-      <p className={s.meta}>
-        <WithAmounts text={gapText} />
-      </p>
-
+      {/*
+        必要額の大きな数字はここに置かない（2026-10-18・AUDIT 1-2）。同じ幅が冒頭の結論・下の内訳の最終行・
+        数直線に出ており、ここで4回目になっていた。呼び名と意味は内訳の最終行（`RESULT_QUALIFIER`・`RESULT_NOTE`）が持つ。
+      */}
       {/* 子の年齢での時間軸（見落としの可視化） */}
       {r.years.total > 0 && (
         <div className={s.timeline}>
@@ -431,36 +394,6 @@ function CaseCard({
           </div>
         </div>
       )}
-
-      {/*
-        STEP2（照合表 #6a〜#6e）。**移植元は result.html の左カラム＋段差チャート。**
-        ここで旧 `Cashflow` の2図（1年ごとの収入と支出／万一のあとの残高）を撤去した。
-        見た目は違うが「いつ・いくら」という**同じ情報**を出しており、2つ残すと
-        どちらが正かを読み手に判断させることになる（CLAUDE.md「置換であって共存ではない」）。
-      */}
-      <Step2
-        danshinCovered={danshinCovered}
-        from={{
-          pension: childCount > 0 ? `子${childCount}人` : null,
-          kosei: koseiFrom,
-          work: workFrom,
-          housing: danshinCovered ? "団信あり" : null,
-          living: "毎月の生活費",
-          education: "お子さんの進路",
-        }}
-        livingBand={livingBand}
-        pj={pj}
-        reform2028Reason={reform2028Reason}
-        survivorLabel={survivorLabel}
-      />
-
-      {/* 必要保障額の推移。点（今日いくら）ではなく線（いつまでいくら）で見せる */}
-      <CoverageCurve
-        coverage={coverage}
-        fmt={(yen) => formatManApprox(yen, roundUnit)}
-        needRangeText={formatRange(r.range.low, r.range.high)}
-        points={coverageCurve(pj, r.income.assets)}
-      />
 
       {/*
         STEP3 滝グラフ（照合表 #7）。**移植元は result.html の #wfRows。**
@@ -517,17 +450,57 @@ function CaseCard({
       />
 
       {/*
+        図の2枚目：年ごとの必要額の推移と、いまの保障の線（FP の定番の2枚・2026-10-18 オーナー決定）。
+        点（今日いくら）ではなく線（いつまでいくら）で見せる
+      */}
+      <CoverageCurve
+        coverage={coverage}
+        fmt={(yen) => formatManApprox(yen, roundUnit)}
+        needRangeText={formatRange(r.range.low, r.range.high)}
+        points={coverageCurve(pj, r.income.assets)}
+      />
+
+      {/*
         STEP4（照合表 #8a〜#8c）。数直線＋判定カード＋判断ポイント。
         旧 `verdictLine`（1行の判定）を撤去し、**位置関係で判定を示す形**に置換した。
         判断ポイントは `decisionPoints`（src/calc）が世帯ごとに導出する ── 手書きの固定文ではない。
       */}
       <NumberLine
         coverage={coverage}
-        fmt={(yen) => `約${money(yen)}`}
+        fmt={approx}
         need={{ low: r.range.low, high: r.range.high }}
         points={decisionPoints(r, pj, { loan, danshinCovered })}
         verdict={shortfallVerdict}
       />
+
+      {/*
+        毎月の家計表と収入の階段グラフは**畳む**（2026-10-18 オーナー決定・AUDIT 2-2）。
+        内訳（滝）と推移の2枚と同じことを別の形で説明しており、4枚並ぶと読み手はどれを見ればよいか迷う。
+        開けば同じ情報がすべてある。
+      */}
+      <Fold count="（表1つ・図1つ）" label="毎月の家計と、公的年金が変わる時期">
+        {/*
+          STEP2（照合表 #6a〜#6e）。**移植元は result.html の左カラム＋段差チャート。**
+          ここで旧 `Cashflow` の2図（1年ごとの収入と支出／万一のあとの残高）を撤去した。
+          見た目は違うが「いつ・いくら」という**同じ情報**を出しており、2つ残すと
+          どちらが正かを読み手に判断させることになる（CLAUDE.md「置換であって共存ではない」）。
+        */}
+        <Step2
+          danshinCovered={danshinCovered}
+          from={{
+            pension: childCount > 0 ? `子${childCount}人` : null,
+            kosei: koseiFrom,
+            work: workFrom,
+            housing: danshinCovered ? "団信あり" : null,
+            living: "毎月の生活費",
+            education: "お子さんの進路",
+          }}
+          livingBand={livingBand}
+          pj={pj}
+          reform2028Reason={reform2028Reason}
+          survivorLabel={survivorLabel}
+        />
+      </Fold>
 
       {/* 因数分解の2表は**畳む**（第3層）。結論と根拠の図までで足りる人が大半で、
           常時展開しておくと画面が「縦の羅列」に戻る。開けば同じ情報がすべてある */}
@@ -740,7 +713,7 @@ export default async function ResultPage({
   const TONE = { reducible: "ok", uncertain: "check", shortage: "short" } as const;
   const SAVINGS_LABEL = {
     reducible: "大丈夫のめやす",
-    uncertain: "圏内・要精査",
+    uncertain: "貯蓄と同じくらい",
     shortage: "備え不足の可能性",
     pending: "判定できません",
   } as const;
@@ -779,7 +752,7 @@ export default async function ResultPage({
     const v = verdict3(cov, low, high);
     const range = formatRange(low, high);
     const hold = cov ?? null;
-    const covText = hold === null ? "未入力" : `約${money(hold)}`;
+    const covText = hold === null ? "未入力" : approx(hold);
     /**
      * **必要額が葬儀費用だけになる世帯は、その理由を先に言う。**
      * `ample`（公的年金と資産で生活費がまかなえる）と `not_needed`（扶養家族がいない）は
@@ -922,7 +895,7 @@ export default async function ResultPage({
         needLabel: "必要額",
         needText: range,
         holdLabel: "いまの貯蓄",
-        holdText: `約${money(hold)}`,
+        holdText: approx(hold),
       },
       scale: sim.amounts
         ? {
@@ -1148,7 +1121,7 @@ export default async function ResultPage({
         rows={riskRows}
         // 貯蓄で受ける行（制度式で概算）があるときだけ、その共通の受け皿の額を注記に立てる
         sharedSavingsText={
-          riskRows.some((r) => r.precisionTone === "statutory") ? `約${money(input.assets)}` : null
+          riskRows.some((r) => r.precisionTone === "statutory") ? approx(input.assets) : null
         }
       />
 
@@ -1185,7 +1158,6 @@ export default async function ResultPage({
             reform2028Reason={result.reform2028.reason}
             survivorLabel="配偶者"
             title="あなたが亡くなった場合"
-            gapText={gapSentence(figures.self)}
             bandNote={bandWidenedNote(figures.self)}
             roundUnit={roundUnit}
             workFrom={input.spouse && input.spouse.income > 0 ? "配偶者の年収" : null}
@@ -1232,7 +1204,6 @@ export default async function ResultPage({
                 loan={input.housing.loan ?? null}
                 survivorLabel="あなた"
                 title="配偶者が亡くなった場合"
-                gapText={figures.spouse ? gapSentence(figures.spouse) : ""}
                 bandNote={figures.spouse ? bandWidenedNote(figures.spouse) : null}
                 roundUnit={roundUnit}
                 workFrom={input.self.income > 0 ? "あなたの年収" : null}
@@ -1402,9 +1373,6 @@ export default async function ResultPage({
             <span className={s.tailStatValue}>{result.paramVersion}</span>
           </p>
         </div>
-        <p className={s.footNote}>
-          次の一歩・選ぶ基準の文面は、保険業法の正式な弁護士レビュー（OI-01）後に確定します（現在はサンプル）。
-        </p>
         <Link className={s.link} href={`/wizard?${q.toString()}`}>
           入力をやり直す
         </Link>

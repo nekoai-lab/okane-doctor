@@ -227,6 +227,7 @@
 .chart {
   display: block;
   width: 100%;
+  max-width: 420px;
   height: auto;
 }
 
@@ -240,12 +241,12 @@
 }
 
 .axisText {
-  font-size: 10px;
+  font-size: 12.5px;
   fill: var(--mk-muted);
 }
 
 .axisSub {
-  font-size: 9.5px;
+  font-size: 12px;
   fill: var(--mk-muted);
 }
 
@@ -254,7 +255,7 @@
 }
 
 .worstLabel {
-  font-size: 10.5px;
+  font-size: 12.5px;
   font-weight: 700;
   fill: var(--mk-red-deep);
 }
@@ -293,7 +294,7 @@
 }
 
 .stepNum {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   fill: #f7f5f0;
 }
@@ -313,7 +314,7 @@
 }
 
 .depletedLabel {
-  font-size: 9.5px;
+  font-size: 12px;
   font-weight: 700;
   fill: var(--mk-ink);
 }
@@ -329,7 +330,7 @@
 }
 
 .braceText {
-  font-size: 10.5px;
+  font-size: 12.5px;
   font-weight: 700;
   fill: var(--mk-muted-2);
 }

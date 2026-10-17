@@ -17,6 +17,7 @@
  */
 import Link from "next/link";
 import { WithAmounts } from "./AmountText.js";
+import { Fold } from "./Fold.js";
 import s from "./step1.module.css";
 
 /**
@@ -94,7 +95,7 @@ export function Step1({ chips, estimations, terms, editHref }: Step1Props) {
             あなたが答えたこと
           </h2>
           <p className={s.sub}>
-            10問の回答が計算の出発点です。答えなかった項目は「推定」として色を分けて残します。
+            10問の回答が計算の出発点です。答えた内容は下で開いて確かめられます。
           </p>
         </div>
       </div>
@@ -114,36 +115,42 @@ export function Step1({ chips, estimations, terms, editHref }: Step1Props) {
       </p>
 
       {/*
-        **3組に割って小見出しを付ける。** 小見出しは台帳のセクション見出しと同じトークン。
-        推定に回った項目はこの列から抜けるので、**組ごと空になることがある** ── そのときは出さない。
+        答えたチップは**畳む**（2026-10-18・AUDIT 1-6）。結果の途中に10枚を並べると流れが切れる。
+        推定で補った項目は畳まずに下に出す（答えていないものだけは開かずに見える）。
       */}
-      {GROUP_ORDER.map((g) => {
-        const items = answered.filter((c) => c.group === g);
-        if (items.length === 0) return null;
-        return (
-          <div className={s.group} key={g}>
-            <p className={s.groupHead}>{GROUP_LABEL[g]}</p>
-            <ul className={s.chips}>
-              {items.map((c) => (
-                <li className={`${s.chip} ${c.wide ? s.chipWide : ""}`} key={c.key}>
-                  <span className={s.chipKey}>{c.key}</span>
-                  <span className={s.chipValue}>
-                    <WithAmounts text={c.value} />
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        );
-      })}
+      <Fold count={`（${answered.length}問）`} label="答えた内容を見る">
+        {/*
+          **3組に割って小見出しを付ける。** 小見出しは台帳のセクション見出しと同じトークン。
+          推定に回った項目はこの列から抜けるので、**組ごと空になることがある** ── そのときは出さない。
+        */}
+        {GROUP_ORDER.map((g) => {
+          const items = answered.filter((c) => c.group === g);
+          if (items.length === 0) return null;
+          return (
+            <div className={s.group} key={g}>
+              <p className={s.groupHead}>{GROUP_LABEL[g]}</p>
+              <ul className={s.chips}>
+                {items.map((c) => (
+                  <li className={`${s.chip} ${c.wide ? s.chipWide : ""}`} key={c.key}>
+                    <span className={s.chipKey}>{c.key}</span>
+                    <span className={s.chipValue}>
+                      <WithAmounts text={c.value} />
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
 
-      {terms.length > 0 && (
-        <ul className={s.terms}>
-          {terms.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
-      )}
+        {terms.length > 0 && (
+          <ul className={s.terms}>
+            {terms.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        )}
+      </Fold>
 
       {/* **0件を沈黙で済ませない**（「減らせる箇所」と同じ扱い）。
           推定が無いことは良い知らせなので、無いと書く */}

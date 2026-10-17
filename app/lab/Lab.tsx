@@ -28,7 +28,7 @@ const SCENARIO_TITLE: Record<string, string> = {
 /** 貯蓄の判定の言葉。アイコンは VerdictBadge が VERDICT_BADGE から付ける（✓ ↔ ! …） */
 const SAVINGS_LABEL = {
   reducible: "大丈夫のめやす",
-  uncertain: "圏内・要精査",
+  uncertain: "貯蓄と同じくらい",
   shortage: "備え不足の可能性",
   pending: "未算定",
 };
