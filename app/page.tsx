@@ -414,7 +414,9 @@ export default function Home() {
                 <p className={s.eqHead}>必要なお金</p>
                 <ul>
                   <li>
-                    <span className={s.eqIcon}>{Spot.house()}</span>毎月の生活費
+                    <span className={s.eqIcon}>{Spot.house()}</span>毎月の
+                    <wbr />
+                    生活費
                   </li>
                   <li>
                     <span className={s.eqIcon}>{Spot.cap()}</span>教育費
@@ -422,7 +424,9 @@ export default function Home() {
                   <li>
                     <span className={s.eqIcon}>{Spot.suitcase()}</span>その他の
                     <br />
-                    まとまった費用
+                    まとまった
+                    <wbr />
+                    費用
                   </li>
                 </ul>
               </div>
@@ -433,13 +437,17 @@ export default function Home() {
                 <p className={s.eqHead}>今ある支え</p>
                 <ul>
                   <li>
-                    <span className={s.eqIcon}>{Spot.bank()}</span>遺族年金
+                    <span className={s.eqIcon}>{Spot.bank()}</span>遺族
+                    <wbr />
+                    年金
                   </li>
                   <li>
                     <span className={s.eqIcon}>{Spot.piggy()}</span>貯蓄
                   </li>
                   <li>
-                    <span className={s.eqIcon}>{Spot.briefcase()}</span>家族の収入
+                    <span className={s.eqIcon}>{Spot.briefcase()}</span>家族の
+                    <wbr />
+                    収入
                   </li>
                 </ul>
               </div>
@@ -447,9 +455,21 @@ export default function Home() {
                 ＝
               </span>
               <div className={`${s.eqCol} ${s.eqResult}`}>
-                <p className={s.eqHead}>保険で備えたい額</p>
+                <p className={s.eqHead}>
+                  保険で
+                  <wbr />
+                  備えたい額
+                </p>
                 <div className={s.eqShield}>{Spot.shieldYen()}</div>
-                <p className={s.eqResultText}>必要なお金から、今ある支えを差し引いた金額の目安</p>
+                <p className={s.eqResultText}>
+                  必要なお金から
+                  <wbr />
+                  今ある支えを
+                  <wbr />
+                  差し引いた
+                  <wbr />
+                  金額の目安
+                </p>
               </div>
               <figcaption className={s.eqNote}>
                 ※ 金額は計算エンジンが算定します。遺族年金は日本年金機構などの公表値で計算します。

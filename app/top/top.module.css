@@ -405,7 +405,7 @@
   display: block;
   position: relative;
   /* 絵の上半分（空）を見出しの説明文の後ろまで伸ばす */
-  margin-top: -72px;
+  margin-top: -56px;
 }
 .heroImg {
   width: 100%;
@@ -414,8 +414,8 @@
   object-fit: cover;
   /* 家族は絵の右 47〜95% にいる。この位置で切ると4人とも頭から足まで入る */
   object-position: 92% 40%;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 34%);
-  mask-image: linear-gradient(180deg, transparent 0%, #000 34%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 16%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 16%);
 }
 .heroPicture::after {
   /* 絵の下端をボタンの地になじませる */
@@ -866,6 +866,8 @@
   line-height: 1.6;
 }
 .equation {
+  /* 語の途中で折り返さない。折り返してよい位置は <wbr> で示す */
+  word-break: keep-all;
   display: grid;
   grid-template-columns: 1fr auto 1fr auto 1fr;
   align-items: stretch;
