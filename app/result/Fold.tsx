@@ -21,6 +21,7 @@ export function Fold({
   countClassName,
   children,
   open,
+  id,
 }: {
   /** 見出し語。折り返してよい */
   label: string;
@@ -31,9 +32,11 @@ export function Fold({
   children: ReactNode;
   /** 既定で開いておくか（参照材は閉じるのが既定） */
   open?: boolean;
+  /** ページ内リンクの行き先（ラボの「言葉で確かめる」がシナリオへ移るときに使う） */
+  id?: string;
 }) {
   return (
-    <details className={s.fold} open={open}>
+    <details className={s.fold} open={open} id={id}>
       <summary className={s.summary}>
         <span aria-hidden="true" className={s.chevron} />
         <span className={s.label}>

@@ -9,7 +9,14 @@ import { formatMan, formatRange } from "../../src/design/tokens.js";
 import { linearScale } from "../result/chartScale.js";
 import { Fold } from "../result/Fold.js";
 import { HERO_BADGE } from "../result/Hero.js";
+import {
+  describeLabChanges,
+  type LabChanges,
+  type LabScenarioId,
+  WORK_IDS,
+} from "../../src/lab/words.js";
 import s from "./page.module.css";
+import { Words } from "./Words.js";
 
 const SCENARIO_TITLE: Record<string, string> = {
   hospital: "短期入院・手術",
@@ -65,6 +72,13 @@ function SavingsBadge({
     <span className={small ? s.rowBadge : s.verdictBadge}>
       <VerdictBadge {...VERDICT_BADGE[verdict]} label={SAVINGS_LABEL[verdict]} axis="貯蓄の判定" />
     </span>
+  );
+}
+
+/** 言葉で変えた条件を、効いている図のすぐ上で名乗る（文はコードの表。2026-10-17 UX レビュー） */
+function AppliedNote({ changes }: { changes: LabChanges }) {
+  return (
+    <p className={s.wordsApplied}>言葉で変えた条件：{describeLabChanges(changes).join("・")}</p>
   );
 }
 
@@ -141,7 +155,10 @@ function Curve({
             y2={y(coverage)}
             stroke="var(--color-text)"
             strokeWidth="3"
+            strokeDasharray="8 5"
           />
+          {/* 点線＝いまの額を延ばした仮定。確かなのは左端（いま）だけなので、そこにだけ点を打つ（2026-10-17 UX） */}
+          {coverage > 0 && <circle cx={left} cy={y(coverage)} r="5" fill="var(--color-text)" />}
           {coverage > 0 && (
             <text
               x={(left + right) / 2}
@@ -158,7 +175,8 @@ function Curve({
       {coverage !== null && points.some((p) => coverage > p.high) && (
         <text
           x={mobile ? 130 : 400}
-          y={mobile ? 14 : 108}
+          // 図の上の余白に置く。中ほどに置くと「いまの保険」のラベルと重なる（1280px・2026-10-18 UX レビュー2回目）
+          y={14}
           textAnchor="middle"
           fontSize={font}
           fill="var(--color-success-text)"
@@ -199,10 +217,10 @@ function Curve({
             i === points.length - 1 ||
             (!mobile && p.age % 5 === 0 && i > 1 && i < points.length - 2),
         )
-        .map((p) => (
+        .map((p, i) => (
           <g key={p.age} textAnchor="middle" fill="var(--color-text-muted)">
             <text x={x(p.age)} y={bottom + 18} fontSize={font}>
-              {p.age}歳
+              {i === 0 ? `いま（${p.age}歳）` : `${p.age}歳`}
             </text>
             <text x={x(p.age)} y={bottom + 34} fontSize={font}>
               {p.year}年
@@ -219,15 +237,42 @@ export function Lab({
   date,
   version,
   estimations,
+  query,
+  aiEnabled,
 }: {
   data: LabData;
   back: string;
   date: string;
   version: string;
   estimations: string[];
+  /** 結果画面と同じ回答のクエリ（言葉の翻訳に渡す。金額は載っていない） */
+  query: string;
+  /** 鍵が無いときは言葉の入力を出さず「準備中」のまま（AI を止めてもラボは成立する） */
+  aiEnabled: boolean;
 }) {
   const [work, setWork] = useState(0);
   const [age, setAge] = useState(data.minAge);
+  const [openScenario, setOpenScenario] = useState<LabScenarioId | null>(null);
+  const [applied, setApplied] = useState<LabChanges | null>(null);
+  /** 言葉で受け取った変更を、ふだんの操作と同じ state に当てる（計算はここでは起きない） */
+  const applyWords = (c: LabChanges) => {
+    setApplied(c);
+    if (c.deathAge !== undefined) setAge(c.deathAge);
+    if (c.spouseWork) setWork(WORK_IDS.indexOf(c.spouseWork));
+    if (c.scenario) setOpenScenario(c.scenario);
+    const target =
+      c.deathAge !== undefined
+        ? "timing"
+        : c.spouseWork
+          ? "work"
+          : c.scenario
+            ? `scenario-${c.scenario}`
+            : null;
+    if (target)
+      requestAnimationFrame(() =>
+        document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      );
+  };
   const scenario = data.work[work];
   const spouseIncomeIsZero = data.work[0].now.annualIncome === 0;
   const point = scenario.points.find((p) => p.age === age);
@@ -251,9 +296,11 @@ export function Lab({
             パラメータ版 {version}
           </p>
         </header>
+        {/* 言葉の入口は先頭。カードは小さく保つ（ヘッダーから最初の図までを1画面に収める・視覚 DoD (a)） */}
+        {aiEnabled && <Words query={query} hasSpouse={data.hasSpouse} onApply={applyWords} />}
         <section className={s.card} id="timing">
           <h2>{point ? `あなたが${point.age}歳で亡くなった場合` : "万一の時期と必要額"}</h2>
-          <p>今後の貯蓄や返済が進めば、必要額は下がりえます。</p>
+          {applied?.deathAge === age && <AppliedNote changes={{ deathAge: age }} />}
           {point ? (
             <>
               <div className={s.readout} aria-live="polite">
@@ -304,19 +351,21 @@ export function Lab({
                 onChange={(e) => setAge(Number(e.target.value))}
               />
               <div className={s.sliderEnds}>
-                <span>{data.minAge}歳</span>
+                <span>いま（{data.minAge}歳）</span>
                 <span>64歳</span>
               </div>
               <p className={s.note}>動かすと、その年齢での必要額に変わります。</p>
               <p className={s.chartPremise}>
-                現在の収入・生活費・資産・ローン残高などを固定し、家族の年齢だけを変えた試算です。
+                いまの収入・生活費・貯蓄・ローン残高のまま、家族の年齢だけを進めた試算です。これからの貯蓄や返済は入れていないので、それが進めば必要額はこの線より下がりえます。
               </p>
               <p className={s.legend}>
                 {[
                   "帯：必要額の幅",
                   "線：代表値",
                   "点：選択した年齢",
-                  ...(data.coverage !== null && data.coverage > 0 ? ["黒い横線：いまの保険"] : []),
+                  ...(data.coverage !== null && data.coverage > 0
+                    ? ["黒い点線：いまの保険（いまの額のまま延ばした線）"]
+                    : []),
                 ].map((item, i) => (
                   <span key={item}>
                     {i > 0 && "／"}
@@ -329,7 +378,7 @@ export function Lab({
               {data.coverage === 0 && <p className={s.note}>いまの保険 なし</p>}
               {data.coverage !== null && data.coverage > 0 && (
                 <p className={s.note}>
-                  現在の保障額を一定として表示しています。満期・更新は反映していません。
+                  満期・更新は見ていません。満期が先に来る保険なら、その年齢からの保障はこの点線より少なくなります。
                 </p>
               )}
               {rising.length > 0 && (
@@ -372,9 +421,9 @@ export function Lab({
                 現在の制度・収入・生活費・資産・ローン残高を固定し、家族の年齢だけを進めます。今後の貯蓄や返済が進めば必要額は下がりえます。
               </li>
               <li>
-                制度改正は予測していません。現保障は満期・更新を確認していないため水平線です。緑の塗りは必要額の上端を上回る部分です。
+                制度改正は予測していません。現保障は満期・更新を確認していないため、いまの額を延ばした点線です。緑の塗りは必要額の上端を上回る部分です。
               </li>
-              <li>対象は現在年齢以上の40〜64歳です。死亡シナリオは現在の年齢で計算します。</li>
+              <li>対象はいまの年齢から64歳までです。死亡シナリオは現在の年齢で計算します。</li>
               <li>
                 {point?.children.length
                   ? `選択年齢のお子さん：${point.children.map((a) => `${a}歳`).join("・")}`
@@ -393,8 +442,11 @@ export function Lab({
           </p>
         </section>
         {data.hasSpouse && (
-          <section className={s.card}>
+          <section className={s.card} id="work">
             <h2>配偶者の就労シナリオ</h2>
+            {applied?.spouseWork && applied.spouseWork === WORK_IDS[work] && (
+              <AppliedNote changes={{ spouseWork: applied.spouseWork }} />
+            )}
             {spouseIncomeIsZero ? (
               <div className={s.readout}>
                 <p>配偶者の収入が0円の回答なので、働き方の切り替えはありません。</p>
@@ -476,8 +528,10 @@ export function Lab({
                   </>
                 }
                 countClassName={s.scenarioAmount}
-                open={i === 0}
+                id={`scenario-${item.id}`}
+                open={openScenario ? openScenario === item.id : i === 0}
               >
+                {applied?.scenario === item.id && <AppliedNote changes={{ scenario: item.id }} />}
                 <div className={s.readout}>
                   <span>貯蓄を差し引く前の負担</span>
                   <strong className={s.amount}>
@@ -520,7 +574,16 @@ export function Lab({
                 </Fold>
               </Fold>
             ))}
-            <Fold label="6. 障害による長期の休職" count="未算定" countClassName={s.scenarioAmount}>
+            <Fold
+              label="6. 障害による長期の休職"
+              count="未算定"
+              countClassName={s.scenarioAmount}
+              id="scenario-disability"
+              open={openScenario === "disability"}
+            >
+              {applied?.scenario === "disability" && (
+                <AppliedNote changes={{ scenario: "disability" }} />
+              )}
               <div className={s.readout}>
                 <span>必要額</span>
                 <strong className={s.amount}>未算定</strong>
@@ -535,8 +598,9 @@ export function Lab({
             </Fold>
           </div>
         </section>
-        <section className={s.card}>
+        <section className={s.card} id="scenario-death">
           <h2>死亡保障（現在の年齢）</h2>
+          {applied?.scenario === "death" && <AppliedNote changes={{ scenario: "death" }} />}
           <div className={s.readout}>
             <span>資産を差し引いた後の必要保障額</span>
             <strong className={s.amount}>
@@ -572,7 +636,7 @@ export function Lab({
           </p>
           <p className={s.next}>次の一歩：結果画面で備えの全体を確認しましょう。</p>
         </section>
-        <p className={s.note}>言葉による条件の変更は準備中です。</p>
+        {!aiEnabled && <p className={s.note}>言葉による条件の変更は準備中です。</p>}
         {estimations.length > 0 ? (
           <Fold label="入力の推定" count={`（${estimations.length}項目）`}>
             <ul>
