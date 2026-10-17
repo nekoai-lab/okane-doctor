@@ -1,7 +1,7 @@
 /**
  * 05B「やわらかカーブ」ロゴ。
  *
- * マークは `public/brand/okane-doctor-mark.svg`（2026-10-17 受領の 05B マスター。家と顔の色だけ原画の紺にそろえた）。
+ * マークは `public/brand/okane-doctor-mark.svg`（05B の原画をなめらかな曲線でなぞり直したもの。比較は design/handoff/logo-05B/overlay_redrawn.png）。
  * ブランドの色をそのまま持つ画像なので、UI のトークンには通さず <img> で出す。
  * 文字（お金の町医者・添え書き）は本文と同じ書体で組み、読み上げは文字側が持つ。
  */
