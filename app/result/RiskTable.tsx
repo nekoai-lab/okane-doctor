@@ -137,9 +137,24 @@ export function RiskTable({
   rows,
   caption,
   sharedSavingsText = null,
+  countUnit = null,
+  unsupportedCount = 0,
+  lead = null,
 }: {
   rows: RiskRow[];
   caption: string;
+  /**
+   * 並べた行の数に添える語（「つのリスク」）。数は `rows.length`。
+   * 旧「この診断で分かること」の箱から移した（範囲の説明はページ末尾の折りたたみへ・2026-10-17）
+   */
+  countUnit?: string | null;
+  /**
+   * 計算未対応で空欄の行の数。**文に埋めず、数字として立てる**（2026-10-17・PR #1 の UX レビュー2回目の直しを
+   * この置き場所に当てた）。「6つのリスクを並べました（うち1つは未算定）」の1文では数が文の中にあった
+   */
+  unsupportedCount?: number;
+  /** 表の前に置く世帯ごとの案内（単身世帯の §6-10）。無ければ機能の1文 */
+  lead?: string | null;
   /**
    * 病気・けが・失業の行が**共通の**受け皿にしている貯蓄（整形済み・各カードの「いまの貯蓄」と同じ文字列）。
    * 計算した貯蓄の行が無ければ null
@@ -151,9 +166,27 @@ export function RiskTable({
       <h2 className={s.heading} id="risk-table-heading">
         あなたのお金の健康診断表
       </h2>
-      <p className={s.lead}>
-        万が一は、ひとつではありません。人生のリスクを項目別に、正直な精度表示つきで診ます。
-      </p>
+      {/* 自称語（正直・安心など）を使わない。機能を書く（UIラベル規約・2026-10-17 §指摘） */}
+      {countUnit && (
+        <p
+          className={s.count}
+          data-risk-shown={rows.length}
+          data-risk-unsupported={unsupportedCount}
+        >
+          <span className={s.countStat}>
+            <span className={s.countNum}>{rows.length}</span>
+            <span className={s.countUnit}>{countUnit}</span>
+          </span>
+          {unsupportedCount > 0 && (
+            <span className={s.countStat}>
+              <span className={s.countUnit}>うち未算定</span>
+              <span className={s.countSubNum}>{unsupportedCount}</span>
+              <span className={s.countUnit}>つ</span>
+            </span>
+          )}
+        </p>
+      )}
+      <p className={s.lead}>{lead ?? "死亡・病気・失業を、同じ表で並べて見ています。"}</p>
       <p className={s.caption}>{caption}</p>
       {/*
         **尺度がカードごとに違うことを、畳まずに言う**（2026-10-17・UX レビュー2回目・任意）。
@@ -230,14 +263,14 @@ export function RiskTable({
 
             <div className={s.cardFoot}>
               <span className={`${s.precision} ${s[r.precisionTone]}`}>{r.precisionLabel}</span>
-              {"href" in r.link ? (
-                <Link className={s.link} href={r.link.href}>
-                  {r.link.label}
-                </Link>
-              ) : (
-                // **未実装のリンク先を沈黙させない。** 押せないなら、その理由まで書く
-                <span className={s.pending}>{r.link.pending}</span>
-              )}
+              {
+                "href" in r.link ? (
+                  <Link className={s.link} href={r.link.href}>
+                    {r.link.label}
+                  </Link>
+                ) : null
+                /* 準備中の導線は出さない（押せない機能を見せない・2026-10-17 UX レビュー §指摘） */
+              }
             </div>
           </li>
         ))}
@@ -277,30 +310,30 @@ export function RiskTable({
       */}
       <div className={s.legendFold}>
         <Fold count="（3点）" label="この表の読み方">
-        <dl className={s.legend}>
-          <dt>過不足の判定</dt>
-          <dd>
-            <span className={`${s.badge} ${s.ok}`}>大丈夫のめやす</span>
-            <span className={`${s.badge} ${s.check}`}>圏内・要精査</span>
-            <span className={`${s.badge} ${s.short}`}>備え不足の可能性</span>
-            <span className={`${s.badge} ${s.none}`}>未診断</span>
-          </dd>
-          <dt>図の読み方</dt>
-          <dd className={s.legendText}>
-            <span className={s.swatchBand} />
-            帯が必要額の幅（幅が無いときは
-            <span className={s.swatchTick} />
-            の目盛り）、
-            <span className={s.swatchHold} />
-            縦線がいまの受け皿（保障・貯蓄）です。<strong>カードごとに目盛りが違います</strong>
-            ──左端は0円、右端は必要額と受け皿の大きいほうです。
-          </dd>
-          <dt>精度</dt>
-          <dd className={s.legendText}>
-            「計算済み」はあなたの回答からの試算、「制度式で概算」は公的制度の計算式どおりの概算、
-            「計算未対応」は正直な空欄です。
-          </dd>
-        </dl>
+          <dl className={s.legend}>
+            <dt>過不足の判定</dt>
+            <dd>
+              <span className={`${s.badge} ${s.ok}`}>大丈夫のめやす</span>
+              <span className={`${s.badge} ${s.check}`}>圏内・要精査</span>
+              <span className={`${s.badge} ${s.short}`}>備え不足の可能性</span>
+              <span className={`${s.badge} ${s.none}`}>未診断</span>
+            </dd>
+            <dt>図の読み方</dt>
+            <dd className={s.legendText}>
+              <span className={s.swatchBand} />
+              帯が必要額の幅（幅が無いときは
+              <span className={s.swatchTick} />
+              の目盛り）、
+              <span className={s.swatchHold} />
+              縦線がいまの受け皿（保障・貯蓄）です。<strong>カードごとに目盛りが違います</strong>
+              ──左端は0円、右端は必要額と受け皿の大きいほうです。
+            </dd>
+            <dt>精度</dt>
+            <dd className={s.legendText}>
+              「計算済み」はあなたの回答からの試算、「制度式で概算」は公的制度の計算式どおりの概算、
+              「計算未対応」は正直な空欄です。
+            </dd>
+          </dl>
         </Fold>
       </div>
     </section>

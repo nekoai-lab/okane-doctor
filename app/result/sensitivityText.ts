@@ -18,16 +18,64 @@ import { DEATH_LABEL } from "./verdictLabels.js";
 const sameRange = (a: { low: number; high: number }, b: { low: number; high: number }) =>
   a.low === b.low && a.high === b.high;
 
+/**
+ * 感度文が**誰の収入を動かし、誰の判定を言っているか**（2026-10-18・PR #5 の UX レビュー「直さないと誤る」）。
+ *
+ * 結果画面の冒頭は人ごとの行が2つ並ぶので、「年収が半分になると『圏内・要精査』」だけでは
+ * どちらの行の判定が動くのか、誰の年収なのかが読めない。カードの中（`sensitivityText`）は
+ * 前半の文が人を名指しているので空のまま使う。
+ */
+export interface SensitivitySubject {
+  /** 動かす年収の持ち主（例：「配偶者の」）。空なら付けない */
+  earner: string;
+  /** どの行の過不足の判定か（例：「あなたに万一のときの」）。空なら付けない */
+  verdictOf: string;
+}
+
+const NO_SUBJECT: SensitivitySubject = { earner: "", verdictOf: "" };
+
 /** 判定が動かないときの後半。**実際の判定から**理由を言う */
-function unchangedTail(sv: SurvivorIncomeSensitivity): string {
+function unchangedTail(sv: SurvivorIncomeSensitivity, sub: SensitivitySubject): string {
+  const axis = `${sub.verdictOf}過不足の判定`;
   switch (sv.verdictNow) {
     case "reducible":
-      return `いまの保障がそれでも上回るため、過不足の判定は「${DEATH_LABEL.reducible}」のままです。`;
+      return `いまの保障がそれでも上回るため、${axis}は「${DEATH_LABEL.reducible}」のままです。`;
     case "pending":
-      return "いまの保障が分からないため、過不足の判定は出していません。";
+      return `いまの保障が分からないため、${axis}は出していません。`;
     default:
-      return `過不足の判定は「${DEATH_LABEL[sv.verdictNow]}」のままです。`;
+      return `${axis}は「${DEATH_LABEL[sv.verdictNow]}」のままです。`;
   }
+}
+
+/**
+ * 前提が外れたら必要額と過不足の判定がどう動くか（感度文の後半）。
+ * 結果画面の冒頭「この結論を決めている前提」は、前半（就労収入の内訳）を図に任せ、ここだけを使う。
+ */
+export function sensitivityMove(
+  sv: SurvivorIncomeSensitivity,
+  sub: SensitivitySubject = NO_SUBJECT,
+): string {
+  const bare = (yen: number) => formatMan(yen).replace("万円", "");
+  /**
+   * **半額の軸を裸にしない。** 動かしているのは回答された年収（額面）なので、そう書く。
+   */
+  const halfGross = `${sub.earner}年収が半分（${bare(sv.annualGross / 2)}万円）`;
+  const axis = `${sub.verdictOf}過不足の判定`;
+  if (sv.branch === "no_verdict_change") {
+    // 必要額が動かないなら「増えます」と言わない
+    const move = sameRange(sv.needNow, sv.needAtZero)
+      ? `${sub.earner}収入がなくなっても、必要額は${formatRange(sv.needNow.low, sv.needNow.high)}のままです。`
+      : `${sub.earner}収入がなくなると、必要額は${formatRange(sv.needNow.low, sv.needNow.high)}から${formatRange(sv.needAtZero.low, sv.needAtZero.high)}に増えます。`;
+    return `${move}${unchangedTail(sv, sub)}`;
+  }
+  if (sv.branch === "zero_only") {
+    return `${halfGross}になっても${axis}は変わりませんが、働けない場合は「${DEATH_LABEL[sv.verdictAtZero]}」に変わります。`;
+  }
+  // 半分でも0でも同じ判定なら1回で言う（「圏内・要精査」、働けない場合は「圏内・要精査」と同じ語を重ねない）
+  if (sv.verdictAtHalf === sv.verdictAtZero) {
+    return `${halfGross}になるか働けない場合、${axis}は「${DEATH_LABEL[sv.verdictAtHalf]}」に変わります。`;
+  }
+  return `${halfGross}になると、${axis}は「${DEATH_LABEL[sv.verdictAtHalf]}」、働けない場合は「${DEATH_LABEL[sv.verdictAtZero]}」に変わります。`;
 }
 
 export function sensitivityText(sv: SurvivorIncomeSensitivity, who: "self" | "spouse"): string {
@@ -43,20 +91,5 @@ export function sensitivityText(sv: SurvivorIncomeSensitivity, who: "self" | "sp
       ? `手取り 年${bare(sv.annualNet)}万円×${sv.yearsTotal}年`
       : `手取り 年${bare(sv.annualNet)}万円×${sv.yearsDependent}年＋年${bare(sv.netAfter)}万円×${sv.yearsAlone}年`;
   const lead = `この判定を支えているのは、${label}の就労収入 ${total}（${breakdown}）です。`;
-  /**
-   * **半額の軸を裸にしない。** 動かしているのは回答された年収（額面）なので、そう書く。
-   */
-  const halfGross = `年収が半分（${bare(sv.annualGross / 2)}万円）`;
-
-  if (sv.branch === "no_verdict_change") {
-    // 必要額が動かないなら「増えます」と言わない
-    const move = sameRange(sv.needNow, sv.needAtZero)
-      ? `収入がなくなっても、必要額は${formatRange(sv.needNow.low, sv.needNow.high)}のままです。`
-      : `収入がなくなると、必要額は${formatRange(sv.needNow.low, sv.needNow.high)}から${formatRange(sv.needAtZero.low, sv.needAtZero.high)}に増えます。`;
-    return `${lead}${move}${unchangedTail(sv)}`;
-  }
-  if (sv.branch === "zero_only") {
-    return `${lead}${halfGross}になっても過不足の判定は変わりませんが、働けない場合は「${DEATH_LABEL[sv.verdictAtZero]}」に変わります。`;
-  }
-  return `${lead}${halfGross}になると「${DEATH_LABEL[sv.verdictAtHalf]}」、働けない場合は「${DEATH_LABEL[sv.verdictAtZero]}」に変わります。`;
+  return `${lead}${sensitivityMove(sv)}`;
 }

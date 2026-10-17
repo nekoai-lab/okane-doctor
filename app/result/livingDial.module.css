@@ -49,6 +49,24 @@
 .btnName {
   font-size: 14px;
   font-weight: 700;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+/* 選択中の印。墨の地に白抜きの小さな札（ブランドの赤は使わない） */
+.current {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #f7f5f0;
+  color: var(--mk-ink);
+  white-space: nowrap;
 }
 
 /* 生活費の増減。**サブラベルが既に言っている数**を、あるべき声量で出す（DoD (a)(b)） */

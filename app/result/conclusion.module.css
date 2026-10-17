@@ -1,0 +1,402 @@
+/*
+  結果画面の最初の2画面（結論・次の一歩・決定的な前提1点）。
+
+  面と字は旧ヒーロー（hero.module.css・移植元 docs/design-mock/result.html 冒頭の .card）と同じ
+  `--mk-*` を使う。**トークンは変えない**（Modern Fintech A への刷新はオーナー承認待ち）。
+  判定の色は CLAUDE.md の割り当て：減らせる＝Success（緑）、不足＝Warning（オレンジ）、
+  圏内＝amber、保留＝灰。**ブランドの赤は使わない。**
+*/
+.card {
+  background: var(--mk-surface);
+  border: 1px solid var(--mk-hairline);
+  border-radius: 16px;
+  color: var(--mk-ink);
+  padding: var(--space-4);
+  margin: 0 0 var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.topline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--mk-muted);
+  margin: 0;
+}
+
+.caption {
+  font-size: 12px;
+  color: var(--mk-muted-2);
+  background: var(--mk-surface-alt);
+  border-radius: 999px;
+  padding: 4px 12px;
+  line-height: 1.6;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.icon {
+  font-weight: 700;
+}
+
+.ok {
+  background: var(--mk-green-bg);
+  border: 1.5px solid var(--mk-green);
+  color: var(--mk-green-deep);
+}
+.check {
+  background: var(--mk-amber-bg);
+  border: 1.5px solid var(--mk-amber);
+  color: var(--mk-amber-deep);
+}
+/* 不足は Warning（オレンジ）。エラーの赤・ブランドの赤と混ぜない（CLAUDE.md） */
+.short {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-verdict-shortage);
+  color: var(--color-verdict-shortage-text);
+}
+.none {
+  background: var(--mk-grey-bg);
+  border: 1.5px solid var(--mk-grey-border);
+  color: var(--mk-muted);
+}
+
+.head {
+  font-family: var(--mk-font-display);
+  font-size: 22px;
+  line-height: 1.5;
+  font-weight: 700;
+  margin: 0;
+}
+
+.h2 {
+  font-family: var(--mk-font-display);
+  font-size: 20px;
+  line-height: 1.5;
+  font-weight: 700;
+  margin: 0;
+}
+
+.note {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--mk-ink-2);
+  margin: 0;
+}
+
+.people {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.person {
+  border-top: 1px solid var(--mk-hairline-2);
+  padding-top: var(--space-3);
+}
+
+/*
+  320px では「あなたに万一の／とき」と見出しが折れていた（PR #5 の UX レビュー）。
+  見出しは折らず、入らなければバッジのほうを次の行へ送る
+*/
+.personHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.personTitle {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.mainLabel {
+  font-size: 12px;
+  color: var(--mk-muted);
+  margin: var(--space-2) 0 0;
+}
+
+/* (b) 主金額。明朝の大きな独立した数字。色は判定の色（必要額は墨のまま） */
+.mainValue {
+  font-family: var(--mk-font-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 2px 0 0;
+}
+.v_ok {
+  color: var(--color-verdict-reducible-text);
+}
+.v_short {
+  color: var(--color-verdict-shortage-text);
+}
+
+.subs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.sub {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.subLabel {
+  font-size: 12px;
+  color: var(--mk-muted);
+}
+
+.subValue {
+  font-family: var(--mk-font-display);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.lineWrap {
+  margin-top: var(--space-1);
+}
+
+.line {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.lineName {
+  font-size: 12px;
+  fill: var(--mk-muted-2);
+}
+
+.axis {
+  stroke: var(--mk-grey-border);
+  stroke-width: 2;
+}
+
+.band {
+  fill: var(--mk-amber);
+}
+
+.needTick {
+  stroke: var(--mk-amber);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.hold {
+  stroke: var(--mk-ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.lineTicks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--mk-muted);
+  padding: 0 2%;
+  white-space: nowrap;
+}
+
+.lineKey {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  font-size: 12px;
+  color: var(--mk-muted);
+  margin: var(--space-1) 0 0;
+}
+
+.keyBand {
+  display: inline-block;
+  width: 16px;
+  height: 8px;
+  background: var(--mk-amber);
+}
+
+.keyHold {
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  margin-left: var(--space-2);
+  background: var(--mk-ink);
+}
+
+.mode {
+  font-size: 12px;
+  color: var(--mk-muted);
+  margin: 0;
+}
+
+.step {
+  font-size: 16px;
+  line-height: 1.8;
+  margin: 0;
+}
+
+/* ラベルと年を1行に並べる（縦に積むと、不足の世帯で前提の文の結びが2画面の外に押し出された） */
+.review {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-3);
+}
+
+.reviewValue {
+  font-family: var(--mk-font-display);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.small {
+  font-size: 12px;
+  color: var(--mk-muted);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.premiseFig {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.premiseStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2) var(--space-4);
+}
+
+.premiseStat {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.premiseValue {
+  font-family: var(--mk-font-display);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.shareBar {
+  height: 14px;
+  border-radius: 7px;
+  background: var(--mk-hairline-2);
+  overflow: hidden;
+}
+
+.shareBar span {
+  display: block;
+  height: 100%;
+  background: var(--mk-amber);
+}
+
+.pairRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pairBar {
+  display: block;
+  height: 12px;
+  border-radius: 6px;
+  background: var(--mk-hairline-2);
+  overflow: hidden;
+}
+
+.pairHold {
+  display: block;
+  height: 100%;
+  background: var(--mk-ink);
+}
+
+.pairNeed {
+  display: block;
+  height: 100%;
+  background: var(--mk-amber);
+}
+
+/*
+  幅 360px 以下（320px など）。最初の2画面に「この結論を決めている前提」の文の結びまで入れる
+  （2026-10-18・PR #5 の UX 再レビュー）。390px の見た目は変えない。
+  - 人ごとの行：見出しの横にバッジが入らず縦に積まれるので、軸名とバッジを横並びにして1行に収める
+  - 見出しと本文を一段小さくし、行数を減らす
+*/
+@media (max-width: 360px) {
+  .card {
+    padding: var(--space-3);
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+  .people {
+    gap: var(--space-2);
+  }
+  .person {
+    padding-top: var(--space-2);
+  }
+  .head {
+    font-size: 20px;
+  }
+  .h2 {
+    font-size: 18px;
+  }
+  .step {
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .personHead > span:last-child {
+    flex-direction: row;
+    align-items: center;
+  }
+  .mainValue {
+    font-size: 26px;
+  }
+  .head,
+  .h2 {
+    line-height: 1.4;
+  }
+  .note {
+    line-height: 1.65;
+  }
+  .small {
+    line-height: 1.55;
+  }
+}
+
+.nowrap {
+  white-space: nowrap;
+}

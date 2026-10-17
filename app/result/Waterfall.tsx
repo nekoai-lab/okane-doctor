@@ -94,9 +94,15 @@ export function Waterfall({
 
       <ol className={s.rows}>
         <li className={s.row}>
-          <div className={s.head}>
-            <p className={s.label}>{totalLabel}</p>
-            <p className={s.amount}>{fmt(total)}</p>
+          {/*
+            **総額のラベルは折らない**（2026-10-17・PR #1 の見落とし）。横並びのままだと、幅のある金額に
+            押されて 390px で「総／額」と1字だけ折れていた。ラベルは1語として保ち、入らなければ金額のほうを次の行へ送る
+          */}
+          <div className={`${s.head} ${s.headTotal}`}>
+            <p className={`${s.label} ${s.labelTotal}`}>{totalLabel}</p>
+            <p className={s.amount}>
+              <RangeText text={fmt(total)} />
+            </p>
           </div>
           <p className={s.from}>
             {/* 回答でも出典でもない導出の説明。キャプションと同じ薄さにそろえる */}

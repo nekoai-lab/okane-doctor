@@ -70,6 +70,16 @@
   margin: 0;
 }
 
+/* 総額の行：ラベルは1語（折らない）。入らなければ金額を次の行へ送る */
+.headTotal {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
+
+.labelTotal {
+  white-space: nowrap;
+}
+
 .labelResult {
   color: var(--mk-amber-text);
 }

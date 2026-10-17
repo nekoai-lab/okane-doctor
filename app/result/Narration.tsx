@@ -23,8 +23,6 @@
 import { useEffect, useState } from "react";
 import type { PlaceholderValues } from "../../src/narrate/stream.js";
 import { renderStreamed } from "../../src/narrate/stream.js";
-import { RangeText } from "./AmountText.js";
-import { AxisBadge } from "./AxisBadge.js";
 import { Fold } from "./Fold.js";
 import s from "./page.module.css";
 
@@ -45,27 +43,11 @@ export function Narration({
   values,
   initialText,
   aiEnabled,
-  summary,
 }: {
   query: string;
   values: PlaceholderValues;
   initialText: string;
   aiEnabled: boolean;
-  /**
-   * 既定露出のサマリー（2026-09-21・視覚の DoD (a)）。
-   *
-   * **よみときは算定結果の数字を差し込んでいる**（G-1）のだから、
-   * その数字を明朝で見せれば、この区間には本来アンカーがある。
-   * 冒頭1文の散文だけを出していたのは、**持っている数字を使っていなかった**だけ。
-   */
-  summary: {
-    verdict: string;
-    tone: string;
-    needText: string;
-    coverageText: string;
-    /** 金額が2人分を足したものなら「2人分の合計」（ヒーローと同じ呼び名）。無ければ省略 */
-    totalLabel?: string | null;
-  };
 }) {
   const [template, setTemplate] = useState("");
   const [text, setText] = useState(initialText);
@@ -151,29 +133,6 @@ export function Narration({
         が書いています。数字と判定は計算エンジンのもの（このページの内訳と同じ値を差し込んでいます）で、AI
         は変えられません。
       </p>
-
-      {/*
-        **既定露出は、判定バッジ＋必要額といまの保障の1行サマリー。**
-        散文の冒頭1文だけを出していたときは、この区間に視覚アンカーが1つも無かった。
-        数字はすべて算定結果から来ており、ここで作っていない。
-      */}
-      <div className={s.narrationSummary}>
-        <AxisBadge badgeClassName={`${s.narrationBadge} ${s[summary.tone] ?? ""}`}>
-          {summary.verdict}
-        </AxisBadge>
-        <span className={s.narrationStat}>
-          <span className={s.narrationStatLabel}>
-            必要額{summary.totalLabel ? `（${summary.totalLabel}）` : ""}
-          </span>
-          <span className={s.narrationStatValue}>
-            <RangeText text={summary.needText} />
-          </span>
-        </span>
-        <span className={s.narrationStat}>
-          <span className={s.narrationStatLabel}>いまの保障</span>
-          <span className={s.narrationStatValue}>{summary.coverageText}</span>
-        </span>
-      </div>
 
       <div
         aria-busy={mode === "streaming" || mode === "waiting"}
