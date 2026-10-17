@@ -6,8 +6,7 @@
 
 保険は売りません。**必要ないなら「入らなくていい」と言えること**を、このアプリの芯にしています。
 
-> 第5回 Agentic AI Hackathon with Google Cloud の提出版 [nekoai-lab/okane-kenko](https://github.com/nekoai-lab/okane-kenko)（`e35a072`）の後継です。
-> 提出版は審査が終わるまでそのまま残しています。
+> 前身の [nekoai-lab/okane-kenko](https://github.com/nekoai-lab/okane-kenko)（`e35a072`）から作り直したものです。
 
 ---
 
