@@ -70,6 +70,8 @@
 .legendItem { white-space: nowrap; }
 
 .wordsCard h2 { margin: 0 0 4px; }
+/* 畳んだ1行のときにカードが厚くならないように（見出しの行は Fold が余白を持つ） */
+.wordsCard { padding-block: 4px; }
 .wordsCard > .note { margin: 0 0 12px; }
 .wordsForm { display: grid; gap: 8px; }
 .wordsInput { width: 100%; box-sizing: border-box; min-height: 48px; padding: 10px 12px; font: inherit; font-size: 16px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; resize: vertical; }

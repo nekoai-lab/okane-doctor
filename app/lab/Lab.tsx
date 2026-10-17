@@ -175,7 +175,8 @@ function Curve({
       {coverage !== null && points.some((p) => coverage > p.high) && (
         <text
           x={mobile ? 130 : 400}
-          y={mobile ? 14 : 108}
+          // 図の上の余白に置く。中ほどに置くと「いまの保険」のラベルと重なる（1280px・2026-10-18 UX レビュー2回目）
+          y={14}
           textAnchor="middle"
           fontSize={font}
           fill="var(--color-success-text)"
