@@ -88,6 +88,14 @@
 - Codex の UX レビュー5回目（2026-10-17・139d1d2、PR #6 と合わせて）で ux-pass。記録は PR #6 の `design/UX_REVIEW.md`
 - 次の1手：QA のあとに部品見本のコード（金額の折り返し）を直したので request-qa をやり直す → マージ → PR #6
 
+## feat/lab-fintech（PR #6・2026-10-17・Claude Code）
+
+- もしもラボ（`/lab`）だけを Modern Fintech A の見た目にした（`app/lab/page.tsx` で `data-theme="fintech"`）。判定バッジは `VerdictBadge`、末尾の操作は `Button`、上部に `AppHeader`、グラフの帯と線は Fintech A のグラフ色、金額は Noto Sans JP の太字・ブルー。計算・判定・文言・URL は変えていない
+- 確認：PR #2 と同じ代表3世帯 × 390/320/1280 で横はみ出しなし・12px 未満の文字なし・44px 未満の操作なし（Playwright）。スクショ `design/screenshots/lab-fintech-*.png`
+- Codex の UX レビュー（4回目・直す必要あり）を受けて直した：病気・けが・休職と死亡保障を別カードにし、金額の基準（貯蓄を差し引く前／資産を差し引いた後）を常に見せる。グラフの前に固定した前提、上に凡例、下に保障線の注記。閉じた行に貯蓄の判定バッジ。記録は `design/UX_REVIEW.md` の4回目。計算・判定・URL は変えていない
+- Codex の UX レビュー5回目（139d1d2）で ux-pass。必須なし、任意1件（部品見本の撮り方）は PR #4 で撮り直した
+- 次の1手：PR #4 のマージ後に request-qa
+
 ## claude/lp-final-rlhc3h（トップ LP・2026-10-17・Claude Code）
 
 - 現状：オーナー最終承認のデザイン画像（PC・スマホ、`okane_doctor_lp_final_handoff.zip` の references/APPROVED_*.png）を正本に、トップ `/` を作り直した。PR #4 の上に積んでいる（テーマ・判定バッジ・イラストを共用）。旧 LP（`app/lp.css`・`public/lp/family-hero.jpg`）は撤去
