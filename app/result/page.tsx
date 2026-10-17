@@ -27,6 +27,7 @@ import { sensitivityText } from "./sensitivityText.js";
 import { DEATH_LABEL } from "./verdictLabels.js";
 import { hasActionableGap } from "./nextStep.js";
 import { Conclusion } from "./Conclusion.js";
+import { reviewReasonSentence } from "./conclusionModel.js";
 import {
   conclusionHeadline,
   conclusionReason,
@@ -36,7 +37,7 @@ import {
   personRows,
 } from "./conclusionModel.js";
 import { bandWidenedNote, gapSentence, partialNote } from "./figureText.js";
-import { HERO_BADGE, HERO_TONE } from "./Hero.js";
+import { HERO_BADGE, HERO_ICON, HERO_TONE } from "./Hero.js";
 import { LivingDial } from "./LivingDial.js";
 import { RiskTable, type RiskRow } from "./RiskTable.js";
 import { Step1, type AnswerChip } from "./Step1.js";
@@ -1009,17 +1010,20 @@ export default async function ResultPage({
    * **段差チャートの段差①と同じ材料**（`projectDeath` の年次）から取る。
    * 画面で年を作らない ── 図と導線で別の年を出すと、どちらが正か分からなくなる。
    */
-  const watchYear = (() => {
+  const watch = (() => {
     const rows = selfProjection.rows;
     for (let i = 1; i < rows.length; i++) {
       const prev = rows[i - 1];
       const now = rows[i];
       const pen = (r: typeof now) =>
         r.income.pensionBasic + r.income.pensionKosei + r.income.chukoreiKafu;
-      if (Math.abs(pen(now) - pen(prev)) >= 1000 * 12) return now.year;
+      // 理由は同じ行の `events`（エンジンが金額の変化から書いた語）をそのまま使う。画面で理由を作らない
+      if (Math.abs(pen(now) - pen(prev)) >= 1000 * 12)
+        return { year: now.year, events: now.events };
     }
     return null;
   })();
+  const watchYear = watch?.year ?? null;
 
   /**
    * 使った前提と出典（照合表 #9）。**ラベルとURLは `params` から取る。**
@@ -1117,6 +1121,7 @@ export default async function ResultPage({
         headline={conclusionHeadline(figures)}
         householdBadge={HERO_BADGE[hh.verdict]}
         householdTone={HERO_TONE[hh.verdict]}
+        householdIcon={HERO_ICON[hh.verdict]}
         modeText={LIVING_LEVEL_LABEL[livingLevel].name}
         nextStep={nextStepSentence(
           figures,
@@ -1129,6 +1134,7 @@ export default async function ResultPage({
         premiseFmt={(yen) => formatManApprox(yen, roundUnit)}
         reason={conclusionReason(figures)}
         reviewYear={watchYear}
+        reviewReason={watch ? reviewReasonSentence(watch.events) : null}
         bookmarkHint={!SAVE_ENABLED}
         rows={rows}
       />

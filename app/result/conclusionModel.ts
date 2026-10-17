@@ -249,7 +249,9 @@ export function keyPremise(
       title: "扶養しているご家族がいないこと",
       coverage: x.coverage,
       need: x.need,
-      needLabel: withLoan ? "必要額（葬儀などの費用と住宅ローンの残り）" : "必要額（葬儀などの費用）",
+      needLabel: withLoan
+        ? "必要額（葬儀などの費用と住宅ローンの残り）"
+        : "必要額（葬儀などの費用）",
       text: withLoan
         ? "見込んでいるのは、葬儀などの費用と、団信で返されない住宅ローンの残りです。扶養するご家族ができたら、遺族の生活費が加わるので答え直してください。"
         : "見込んでいるのは葬儀などの費用だけです。扶養するご家族ができたら、遺族の生活費が加わるので答え直してください。",
@@ -258,13 +260,14 @@ export function keyPremise(
   const work = x.point.income.survivorWork;
   if (work <= 0) return null;
   const lead = estimated
-    ? "配偶者がいずれ働く前提で、この就労収入を見込んでいます（当社の見立て）。"
+    ? "配偶者がいずれ働く前提で、この就労収入を見込んでいます。" // 「当社の見立て」は見出しが名乗る
     : "配偶者が働き続ける前提で、この就労収入を見込んでいます。";
+  // 冒頭は人ごとの行が2つ並ぶので、誰の年収で・どの行の判定が動くかを文の中で名指す（PR #5 の UX レビュー）
   const move = sv
-    ? sensitivityMove(sv)
+    ? sensitivityMove(sv, { earner: "配偶者の", verdictOf: "あなたに万一のときの" })
     : x.needVerdict === "shortage"
-      ? "働かない場合は、その分だけ不足が増えます。"
-      : "働かない場合は、必要額が増えることがあります。";
+      ? "配偶者が働かない場合は、その分だけ、あなたに万一のときの不足が増えます。"
+      : "配偶者が働かない場合は、あなたに万一のときの必要額が増えることがあります。";
   return {
     kind: "work",
     title: estimated ? "配偶者の就労収入（当社の見立て）" : "配偶者の就労収入",
@@ -273,4 +276,17 @@ export function keyPremise(
     estimated,
     text: `${lead}${move}`,
   };
+}
+
+/**
+ * 次の見直しのめやすの年に添える理由（2026-10-18・PR #5 の UX レビュー「見直しの年の理由がない」）。
+ *
+ * 年だけを出すと、なぜその年なのかが読めない。**理由はエンジンが年次表に書いた出来事**（`projectDeath` の
+ * `events`。段差チャートの注記と同じ語）から取り、画面で言い換えない。出来事が無ければ一般的な言い方にとどめる。
+ */
+export function reviewReasonSentence(events: string[]): string {
+  // 起点と算定の終端の注記は「出来事」ではないので理由に使わない
+  const what = events.filter((e) => e !== "診断の起点" && !e.startsWith("算定はここまで"));
+  const head = what.length > 0 ? `${what.join("・")}年なので、` : "遺族年金の額が変わる年なので、";
+  return `${head}あなたに万一のときの必要額が変わります。`;
 }

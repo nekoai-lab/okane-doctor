@@ -303,22 +303,22 @@ export function Step2({
       */}
       <Fold count={`（${TERMS.length}語＋2028年改正の注記）`} label="ことばの説明">
         <div className={s.terms}>
-        {TERMS.map((t) => (
-          <details className={s.term} key={t.term}>
-            <summary>{t.term}</summary>
-            <p className={s.termNote}>{t.note}</p>
-          </details>
-        ))}
-        {/*
+          {TERMS.map((t) => (
+            <details className={s.term} key={t.term}>
+              <summary>{t.term}</summary>
+              <p className={s.termNote}>{t.note}</p>
+            </details>
+          ))}
+          {/*
           2028年改正の注記。**語彙は `reform2028.ts` の1か所から取る**
           （失業カードの前提と同じ言い方にする。場所によって違う言い方だと別の話に見える）。
           モックは「施行後の制度にもとづいて計算します」と書いているが、
           **この実装はまだ反映していない**ので、そう書く。
         */}
-        <p className={s.reform}>
-          ※{reform2028Reason}
-          {REFORM_2028_NOT_APPLIED_TAIL}
-        </p>
+          <p className={s.reform}>
+            ※{reform2028Reason}
+            {REFORM_2028_NOT_APPLIED_TAIL}
+          </p>
         </div>
       </Fold>
 

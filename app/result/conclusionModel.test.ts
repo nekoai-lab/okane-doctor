@@ -17,6 +17,7 @@ import {
   nextStepSentence,
   noReducibleSentence,
   personRows,
+  reviewReasonSentence,
 } from "./conclusionModel.js";
 import { ownStandardEstimates } from "./estimates.js";
 import { DEATH_LABEL } from "./verdictLabels.js";
@@ -175,6 +176,9 @@ describe("この結論を決めている前提（1点）", () => {
     if (p?.kind !== "work" || !sv) throw new Error("前提が無い");
     expect(p.work).toBe(f.self.point.income.survivorWork);
     expect(p.text).toContain(`「${DEATH_LABEL[sv.verdictAtZero]}」`);
+    // 誰の年収で、どの行の判定が動くかを文の中で名指す（PR #5 の UX レビュー「直さないと誤る」）
+    expect(p.text).toContain("配偶者の年収");
+    expect(p.text).toContain("あなたに万一のときの過不足の判定");
   });
 
   it("不足：配偶者の就労は当社基準の見立てと名乗る", () => {
@@ -212,5 +216,17 @@ describe("この結論を決めている前提（1点）", () => {
     expect(p.needLabel).toContain("住宅ローン");
     expect(p.text).toContain("住宅ローン");
     expect(p.text).not.toContain("葬儀などの費用だけ");
+  });
+});
+
+describe("次の見直しのめやすの理由", () => {
+  it("エンジンの年次表の出来事をそのまま理由にする", () => {
+    expect(reviewReasonSentence(["遺族基礎年金が終わる"])).toBe(
+      "遺族基礎年金が終わる年なので、あなたに万一のときの必要額が変わります。",
+    );
+  });
+  it("起点と算定の終端の注記は理由に使わない", () => {
+    const t = reviewReasonSentence(["診断の起点", "算定はここまで（配偶者65歳）"]);
+    expect(t).toBe("遺族年金の額が変わる年なので、あなたに万一のときの必要額が変わります。");
   });
 });

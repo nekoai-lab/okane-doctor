@@ -29,3 +29,15 @@ export const HERO_TONE: Record<HeroVerdict, string> = {
   rebalanceable: "check",
   pending: "none",
 };
+
+/**
+ * バッジのアイコン（判定は「アイコン＋ラベル＋色」の3点で出す・CLAUDE.md）。
+ * 人ごとの行の `VERDICT_ICON` と同じ記号を使い、世帯にしかない「組み替えの余地」だけ足す。
+ */
+export const HERO_ICON: Record<HeroVerdict, string> = {
+  reducible: "↓",
+  uncertain: "≒",
+  shortage: "!",
+  rebalanceable: "⇄",
+  pending: "?",
+};

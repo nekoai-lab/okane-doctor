@@ -116,8 +116,13 @@
   padding-top: var(--space-3);
 }
 
+/*
+  320px では「あなたに万一の／とき」と見出しが折れていた（PR #5 の UX レビュー）。
+  見出しは折らず、入らなければバッジのほうを次の行へ送る
+*/
 .personHead {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--space-2);
@@ -127,6 +132,7 @@
   font-size: 15px;
   font-weight: 700;
   margin: 0;
+  white-space: nowrap;
 }
 
 .mainLabel {
@@ -257,10 +263,13 @@
   margin: 0;
 }
 
+/* ラベルと年を1行に並べる（縦に積むと、不足の世帯で前提の文の結びが2画面の外に押し出された） */
 .review {
   margin: 0;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-3);
 }
 
 .reviewValue {

@@ -44,7 +44,15 @@ export function LivingDial({ current, hrefFor, absorbedNote }: LivingDialProps) 
               replace
               scroll={false}
             >
-              <span className={s.btnName}>{LABELS[level].name}</span>
+              <span className={s.btnName}>
+                {LABELS[level].name}
+                {/* 選択中は色だけで伝えない（PR #5 の UX レビュー）。印と語を添える */}
+                {on && (
+                  <span className={s.current}>
+                    <span aria-hidden="true">✓</span>選択中
+                  </span>
+                )}
+              </span>
               <span className={s.btnDelta}>{LABELS[level].delta}</span>
               <span className={s.btnSub}>{LABELS[level].sub}</span>
             </Link>

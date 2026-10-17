@@ -172,6 +172,7 @@ export function Conclusion({
   caption,
   householdBadge,
   householdTone,
+  householdIcon,
   headline,
   reason,
   partialNote,
@@ -181,6 +182,7 @@ export function Conclusion({
   fmt,
   nextStep,
   reviewYear,
+  reviewReason,
   bookmarkHint,
   premise,
   premiseFmt,
@@ -189,6 +191,8 @@ export function Conclusion({
   /** 世帯の過不足の判定（過不足軸）の文言と色（`HERO_BADGE` / `HERO_TONE`） */
   householdBadge: string;
   householdTone: string;
+  /** 世帯のバッジのアイコン（`HERO_ICON`） */
+  householdIcon: string;
   headline: string;
   reason: string | null;
   partialNote: string | null;
@@ -200,6 +204,8 @@ export function Conclusion({
   nextStep: string;
   /** 次の見直しのめやす（段差チャートと同じ `projectDeath` の節目）。無ければ null */
   reviewYear: number | null;
+  /** その年を見直しのめやすにする理由（エンジンの年次表の出来事から・`reviewReasonSentence`） */
+  reviewReason: string | null;
   /** 見返す方法（ブックマーク）をここで言うか。お知らせ（保存）が動いているときは、その導線のカードが言う */
   bookmarkHint: boolean;
   premise: KeyPremise | null;
@@ -215,7 +221,11 @@ export function Conclusion({
           <span className={s.caption}>{caption}</span>
         </div>
         <div>
+          {/* 冒頭のバッジも「アイコン＋ラベル＋色」の3点で出す（人ごとの行と同じ・PR #5 の UX レビュー） */}
           <AxisBadge badgeClassName={`${s.badge} ${s[householdTone] ?? ""}`}>
+            <span aria-hidden="true" className={s.icon}>
+              {householdIcon}
+            </span>
             {householdBadge}
           </AxisBadge>
         </div>
@@ -285,11 +295,13 @@ export function Conclusion({
         )}
         {/*
           **いま使えるもの（ブックマークと見直す時期）を言う**（PR #1 の UX レビュー2回目「お知らせの説明」を
-          この置き場所に当てた）。お知らせが止まっているあいだは準備中の導線を出さないので、見返す方法はここで1回だけ言う
+          この置き場所に当てた）。お知らせが止まっているあいだは準備中の導線を出さないので、見返す方法はここで1回だけ言う。
+          年の理由とは1段落にまとめる（不足の世帯で前提の文の結びが最初の2画面に入るように・PR #5 の UX レビュー）
         */}
-        {bookmarkHint && reviewYear !== null && (
+        {reviewYear !== null && (reviewReason || bookmarkHint) && (
           <p className={s.small}>
-            このページのURLをブックマークすると、その頃に見返して答え直せます。
+            {reviewReason}
+            {bookmarkHint && "このページのURLをブックマークすると、その頃に見返して答え直せます。"}
           </p>
         )}
         <p className={s.small}>このサービスは特定の商品を勧めたり、申込みへ誘導したりしません。</p>
@@ -302,10 +314,14 @@ export function Conclusion({
           <h2 className={s.h2} id="key-premise-title">
             {premise.title}
           </h2>
-          <PremiseFigure fmt={premiseFmt} p={premise} />
+          {/*
+            文を図より先に置く（2026-10-18・PR #5 の UX レビュー）。不足の世帯では図の後ろに置いた文の結び
+            （前提が外れたら判定がどう動くか）が最初の2画面に入らなかった。結びがこのカードの要点なので先に読ませる
+          */}
           <p className={s.step}>
             <WithAmounts text={premise.text} />
           </p>
+          <PremiseFigure fmt={premiseFmt} p={premise} />
         </section>
       )}
     </>
