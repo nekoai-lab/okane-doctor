@@ -78,3 +78,17 @@
 - 今回の検証：tsc --noEmit成功、lab / verdict3 の55テスト成功（貯蓄回答帯の重なり・不足・余裕、配偶者収入ゼロを追加）、変更ファイルのBiome lint成功。最初の追加テストは帯の入力を1点だけ渡したため失敗し、契約どおり両端を渡して解消。実AI 0回。
 - 今回の未確認：ユーザー指定により開発サーバー・スクショ・build・e2eなし。390/320px実画面と代表3世帯の視覚DoDはユーザー確認待ち。commit・push・PR作成なし。
 - 次の1手：ローカル表示の確認 → Claude Code の独立レビュー待ち（自分のコードに qa-pass は付けない）。既存 PR #1 の作業・やり残しは上記に残す。
+
+## claude/fintech-tokens（PR #4・2026-10-17・Claude Code）
+
+- Modern Fintech A（2026-10-17 デザイン承認）のテーマ `src/design/theme-fintech.css` と共通部品 `src/design/fintech/`（判定バッジ・ボタン・カード・注記・開閉・ヘッダー・下部ナビ）。`data-theme="fintech"` を付けた要素の中だけが変わる opt-in。フォーカスリング（Yellow-300＋Black）は上書きしない。テーマの中では既存の `--mk-*` も Fintech A に寄せる
+- 横長イラスト6枚（家族・中立・シニア2・単身男女）を `public/illustrations/` に WebP で置いた。家族は子どもの服が参照と違うがオーナー承認済み
+- 開発中だけの部品見本 `/preview/fintech`（本番は 404）
+- 判断の記録は PR #3 の `design/handoff/moshimo-lab-v2/review/DESIGN_DECISIONS.md`。トップ LP は別に作り直すので、v2 を入れる画面はもしもラボ（PR #6）と診断結果だけ
+- 次の1手：request-qa（qa-pass）と ux-pass。そのあと PR #6（もしもラボの見た目）
+
+## feat/lab-fintech（PR #6・2026-10-17・Claude Code）
+
+- もしもラボ（`/lab`）だけを Modern Fintech A の見た目にした（`app/lab/page.tsx` で `data-theme="fintech"`）。判定バッジは `VerdictBadge`、末尾の操作は `Button`、上部に `AppHeader`、グラフの帯と線は Fintech A のグラフ色、金額は Noto Sans JP の太字・ブルー。計算・判定・文言・URL は変えていない
+- 確認：PR #2 と同じ代表3世帯 × 390/320/1280 で横はみ出しなし・12px 未満の文字なし・44px 未満の操作なし（Playwright）。スクショ `design/screenshots/lab-fintech-*.png`
+- 次の1手：PR #4 と PR #2 のマージ後に request-qa と ux-pass
