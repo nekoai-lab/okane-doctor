@@ -21,14 +21,17 @@ type State =
 
 const ERROR_TEXT: Record<string, string> = {
   rate_limited: "いま混み合っています。少し時間をおいてから試してください。",
-  ai_unavailable: "いまは言葉で受け取れません。上のボタンやスライダーで確かめてください。",
+  ai_unavailable: "いまは言葉で受け取れません。下のボタンやスライダーで確かめてください。",
 };
 
 export function Words({
   query,
+  hasSpouse,
   onApply,
 }: {
   query: string;
+  /** 配偶者がいない世帯には、就労の操作を「変えられるもの」に挙げない */
+  hasSpouse: boolean;
   onApply: (changes: LabChanges) => void;
 }) {
   const [text, setText] = useState("");
@@ -69,6 +72,15 @@ export function Words({
           "言葉を操作に置きかえるのは AI です。金額と判定は計算エンジンが出し、AI は変えられません。"
         }
       </p>
+      {/* 何を受け付けるかを入力の前に言う（2026-10-17 UX レビュー）。名前は断りの文と同じ語にそろえる */}
+      {/* 受け取ったあとは札が答えになるので畳む（先頭から最初の図までを1画面に収める・視覚 DoD (a)） */}
+      {state.kind !== "done" && (
+        <p className={s.note}>
+          {hasSpouse
+            ? "変えられるのは、万一の年齢・配偶者の働き方・病気やけがの種類の3つです。"
+            : "変えられるのは、万一の年齢・病気やけがの種類の2つです。"}
+        </p>
+      )}
       <form className={s.wordsForm} onSubmit={submit}>
         <textarea
           id={inputId}

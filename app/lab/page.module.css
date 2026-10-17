@@ -84,3 +84,14 @@
 /* 言葉の適用で飛んだ先の見出しが、固定ヘッダー（高さ60px）の下に隠れないように */
 .card,
 .card [id] { scroll-margin-top: 72px; }
+/* 言葉で変えた条件を、当て先の図の上で名乗る。ブランドの赤は使わない（情報アクセントは ink） */
+.wordsApplied {
+  display: inline-block;
+  margin: 0 0 6px;
+  padding: 1px 8px;
+  line-height: 1.6;
+  border-left: 3px solid var(--color-text);
+  background: var(--color-surface-subtle);
+  font-size: 13px;
+  color: var(--color-text);
+}

@@ -9,7 +9,12 @@ import { formatMan, formatRange } from "../../src/design/tokens.js";
 import { linearScale } from "../result/chartScale.js";
 import { Fold } from "../result/Fold.js";
 import { HERO_BADGE } from "../result/Hero.js";
-import { type LabChanges, type LabScenarioId, WORK_IDS } from "../../src/lab/words.js";
+import {
+  describeLabChanges,
+  type LabChanges,
+  type LabScenarioId,
+  WORK_IDS,
+} from "../../src/lab/words.js";
 import s from "./page.module.css";
 import { Words } from "./Words.js";
 
@@ -67,6 +72,13 @@ function SavingsBadge({
     <span className={small ? s.rowBadge : s.verdictBadge}>
       <VerdictBadge {...VERDICT_BADGE[verdict]} label={SAVINGS_LABEL[verdict]} axis="貯蓄の判定" />
     </span>
+  );
+}
+
+/** 言葉で変えた条件を、効いている図のすぐ上で名乗る（文はコードの表。2026-10-17 UX レビュー） */
+function AppliedNote({ changes }: { changes: LabChanges }) {
+  return (
+    <p className={s.wordsApplied}>言葉で変えた条件：{describeLabChanges(changes).join("・")}</p>
   );
 }
 
@@ -240,8 +252,10 @@ export function Lab({
   const [work, setWork] = useState(0);
   const [age, setAge] = useState(data.minAge);
   const [openScenario, setOpenScenario] = useState<LabScenarioId | null>(null);
+  const [applied, setApplied] = useState<LabChanges | null>(null);
   /** 言葉で受け取った変更を、ふだんの操作と同じ state に当てる（計算はここでは起きない） */
   const applyWords = (c: LabChanges) => {
+    setApplied(c);
     if (c.deathAge !== undefined) setAge(c.deathAge);
     if (c.spouseWork) setWork(WORK_IDS.indexOf(c.spouseWork));
     if (c.scenario) setOpenScenario(c.scenario);
@@ -282,9 +296,10 @@ export function Lab({
           </p>
         </header>
         {/* 言葉の入口は先頭。カードは小さく保つ（ヘッダーから最初の図までを1画面に収める・視覚 DoD (a)） */}
-        {aiEnabled && <Words query={query} onApply={applyWords} />}
+        {aiEnabled && <Words query={query} hasSpouse={data.hasSpouse} onApply={applyWords} />}
         <section className={s.card} id="timing">
           <h2>{point ? `あなたが${point.age}歳で亡くなった場合` : "万一の時期と必要額"}</h2>
+          {applied?.deathAge === age && <AppliedNote changes={{ deathAge: age }} />}
           {point ? (
             <>
               <div className={s.readout} aria-live="polite">
@@ -428,6 +443,9 @@ export function Lab({
         {data.hasSpouse && (
           <section className={s.card} id="work">
             <h2>配偶者の就労シナリオ</h2>
+            {applied?.spouseWork && applied.spouseWork === WORK_IDS[work] && (
+              <AppliedNote changes={{ spouseWork: applied.spouseWork }} />
+            )}
             {spouseIncomeIsZero ? (
               <div className={s.readout}>
                 <p>配偶者の収入が0円の回答なので、働き方の切り替えはありません。</p>
@@ -512,6 +530,7 @@ export function Lab({
                 id={`scenario-${item.id}`}
                 open={openScenario ? openScenario === item.id : i === 0}
               >
+                {applied?.scenario === item.id && <AppliedNote changes={{ scenario: item.id }} />}
                 <div className={s.readout}>
                   <span>貯蓄を差し引く前の負担</span>
                   <strong className={s.amount}>
@@ -561,6 +580,9 @@ export function Lab({
               id="scenario-disability"
               open={openScenario === "disability"}
             >
+              {applied?.scenario === "disability" && (
+                <AppliedNote changes={{ scenario: "disability" }} />
+              )}
               <div className={s.readout}>
                 <span>必要額</span>
                 <strong className={s.amount}>未算定</strong>
@@ -577,6 +599,7 @@ export function Lab({
         </section>
         <section className={s.card} id="scenario-death">
           <h2>死亡保障（現在の年齢）</h2>
+          {applied?.scenario === "death" && <AppliedNote changes={{ scenario: "death" }} />}
           <div className={s.readout}>
             <span>資産を差し引いた後の必要保障額</span>
             <strong className={s.amount}>
