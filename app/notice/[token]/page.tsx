@@ -20,7 +20,6 @@ export default async function NoticePage({ params }: { params: Promise<{ token: 
 
   return (
     <main className={s.page}>
-      <p className={s.eyebrow}>お金の町医者</p>
       <h1 className={s.title}>お子さんの成長で、状況が変わっているかもしれません</h1>
       <p className={s.body}>前回の診断から時間が経っています。ここではまだ金額は出しません。</p>
       <Link className={s.primaryButton} href={`/result?${query}`}>

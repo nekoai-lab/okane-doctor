@@ -26,7 +26,9 @@ export default async function SavePage({
   if (!SAVE_ENABLED) {
     return (
       <main className={s.page}>
-        <p>お知らせを受け取る機能は、いま準備中です。</p>
+        <p>
+          お知らせを受け取る機能は、いま準備中です。結果は、結果画面のURLをブックマークすればあとで開き直せます。
+        </p>
         <Button href={`/result?${q.toString()}`} variant="secondary" full>
           結果に戻る
         </Button>

@@ -80,13 +80,26 @@
   gap: var(--space-2);
 }
 
-/* 金額の選択肢（死亡保険金の10択）は2列。問いは変えず、縦の長さだけ半分にする */
+/* 金額の選択肢（死亡保険金の10択）は、幅があれば2列。問いは変えず、縦の長さだけ半分にする */
 .choicesGrid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(136px, 1fr));
 }
 
 .choicesGrid .choice {
-  padding-inline: var(--space-3);
+  gap: 6px;
+  padding-inline: 10px;
+}
+
+/* 先頭（加入していない）と末尾（分からない）は金額ではないので1行ぶん使う。間の8つの金額が2列に並ぶ */
+.choicesGrid .choice:first-child,
+.choicesGrid .choice:last-child {
+  grid-column: 1 / -1;
+}
+
+/* 金額の途中で折らない（320px で「1,000万／円」「1億以／上」と割れた・UX レビュー）。
+   2列に収まらない幅では、上の auto-fit で1列に落ちる */
+.choicesGrid .choice span {
+  white-space: nowrap;
 }
 
 .choice {
