@@ -54,7 +54,7 @@ describe("次の一歩は人ごとの過不足の判定から組み立てる", (
     expect(text).toContain("団体保険");
   });
 
-  it("組み替えの世帯は、減額の案内だけでなく不足側にも触れ、一度に相談できると言う", () => {
+  it("組み替えの世帯は、減らせる側だけでなく不足側にも触れ、一度に確かめられると言う", () => {
     const { input, f } = fromQuery(REBALANCE);
     const lines = nextStepLines(f, empOf(input));
     expect(lines.some((l) => l.startsWith("あなたの死亡保障は") && l.includes("減らせる"))).toBe(
@@ -89,6 +89,49 @@ describe("次の一歩は人ごとの過不足の判定から組み立てる", (
       AS_OF,
     );
     expect(hasActionableGap(allPending)).toBe(false);
+  });
+});
+
+describe("次の一歩は相談先を名指さず、中立の確認にとどめる（UX レビュー1回目 #2）", () => {
+  const BANNED = ["保険会社", "代理店", "窓口"];
+  const SINGLE = "v=1&sb=1996&emp=employee&sp=0&ch=&inc=lt600&as=lt500&liv=lt25&ho=rent&cvs=m1000";
+
+  it("代表3世帯と、過不足の判定（過不足軸）の4値すべてで、保険会社・代理店・窓口を出さない", () => {
+    const seen = new Set<string>();
+    for (const q of [REBALANCE, SHORT_SELF_EMPLOYED, SINGLE, WIDE]) {
+      const { input, f } = fromQuery(q);
+      for (const x of [f.self, ...(f.spouse ? [f.spouse] : [])]) seen.add(x.verdict);
+      const text = nextStepLines(f, empOf(input)).join("");
+      for (const w of BANNED) expect(text, q).not.toContain(w);
+    }
+    // 保留も通す（保険内容が分からない人）
+    const { input } = fromQuery(WIDE);
+    const pending = resultFigures(P, { ...input, coverageSelf: null }, null, AS_OF);
+    seen.add(pending.self.verdict);
+    for (const w of BANNED) expect(nextStepLines(pending, empOf(input)).join("")).not.toContain(w);
+    // 4値を本当に通ったか（被験体が消えて空回りしないように）
+    expect([...seen].sort()).toEqual(["pending", "reducible", "shortage", "uncertain"]);
+  });
+
+  it("ゴールデン10世帯でも、保険会社・代理店・窓口を出さない", () => {
+    for (const g of GOLDEN) {
+      const f = resultFigures(P, g.input, null, AS_OF);
+      const emp = { self: g.input.self.employment, spouse: g.input.spouse?.employment ?? null };
+      const text = nextStepLines(f, emp).join("");
+      for (const w of BANNED) expect(text, g.id).not.toContain(w);
+    }
+  });
+
+  it("減らせる人には、上回っている額（エンジンの差額）を言い切り、確認の行動を案内する", () => {
+    const { input, f } = fromQuery(SINGLE);
+    expect(f.self.verdict).toBe("reducible");
+    const line = nextStepLines(f, empOf(input))[0];
+    expect(line).toContain(
+      `いまの前提では${formatRange(f.self.gap.low, f.self.gap.high)}減らせる余地`,
+    );
+    expect(line).toContain("契約内容（保障額・期間・更新の時期）を確かめ");
+    expect(line).toContain("実際の値で答え直して");
+    expect(line).not.toContain("減額");
   });
 });
 

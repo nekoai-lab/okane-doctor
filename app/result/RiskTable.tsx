@@ -15,6 +15,8 @@
  * **金額はここで作らない。** 受け取った文字列を描くだけ（CLAUDE.md「本番UIに金額をハードコードしない」）。
  */
 import Link from "next/link";
+import { RangeText } from "./AmountText.js";
+import { AxisBadge } from "./AxisBadge.js";
 import { Fold } from "./Fold.js";
 import {
   PremiseDisclosure,
@@ -131,7 +133,19 @@ function MiniScale({ scale, label }: { scale: RiskScale; label: string }) {
   );
 }
 
-export function RiskTable({ rows, caption }: { rows: RiskRow[]; caption: string }) {
+export function RiskTable({
+  rows,
+  caption,
+  sharedSavingsText = null,
+}: {
+  rows: RiskRow[];
+  caption: string;
+  /**
+   * 病気・けが・失業の行が**共通の**受け皿にしている貯蓄（整形済み・各カードの「いまの貯蓄」と同じ文字列）。
+   * 計算した貯蓄の行が無ければ null
+   */
+  sharedSavingsText?: string | null;
+}) {
   return (
     <section className={s.wrap} aria-labelledby="risk-table-heading">
       <h2 className={s.heading} id="risk-table-heading">
@@ -150,7 +164,10 @@ export function RiskTable({ rows, caption }: { rows: RiskRow[]; caption: string 
                 <p className={s.title}>{r.title}</p>
                 <p className={s.subtitle}>{r.subtitle}</p>
               </div>
-              <span className={`${s.badge} ${s[r.tone]}`}>{r.verdictLabel}</span>
+              {/* 軸名をカードごとに添える。どのカードが画面に入っても、何の判定かが同じ視野で読める */}
+              <AxisBadge badgeClassName={`${s.badge} ${s[r.tone]}`} stack>
+                {r.verdictLabel}
+              </AxisBadge>
             </div>
 
             {/* (b) 金額は明朝の大サイズで主役。文章から出す */}
@@ -158,11 +175,15 @@ export function RiskTable({ rows, caption }: { rows: RiskRow[]; caption: string 
               <div className={s.figures}>
                 <div>
                   <p className={s.figLabel}>{r.figures.needLabel}</p>
-                  <p className={s.figValue}>{r.figures.needText}</p>
+                  <p className={s.figValue}>
+                    <RangeText text={r.figures.needText} />
+                  </p>
                 </div>
                 <div>
                   <p className={s.figLabel}>{r.figures.holdLabel}</p>
-                  <p className={s.figValue}>{r.figures.holdText}</p>
+                  <p className={s.figValue}>
+                    <RangeText text={r.figures.holdText} />
+                  </p>
                 </div>
               </div>
             )}
@@ -216,10 +237,26 @@ export function RiskTable({ rows, caption }: { rows: RiskRow[]; caption: string 
         病気・けが・失業の3行は、同じ貯蓄を受け皿として**単独で**判定している。
         法的免責のような小さい文字にしない（12px以上・本文色）。
       */}
-      <p className={s.overlapNote}>
-        病気・けが・失業の判定は、それぞれ<strong>単独で起きた場合</strong>の見立てです。
-        同じ貯蓄を各行の受け皿として見ています。
-      </p>
+      {/*
+        **注記が指している貯蓄の額を、注記の中で立てる**（2026-10-17・視覚の DoD (a)）。
+        この注記の要点は「3行の受け皿は1つの同じお金」で、その額はカードに3回出ている「いまの貯蓄」そのもの。
+        不足世帯では計算未対応の2行が続き、ここまで図も大きな数字も無い区間が 1,002px あった。
+        額は各カードと同じ文字列（入力の金融資産）で、ここで作っていない。
+      */}
+      <div className={s.overlapNote}>
+        {sharedSavingsText && (
+          <p className={s.overlapStat}>
+            <span className={s.overlapStatLabel}>各行の受け皿にしている貯蓄（同じお金）</span>
+            <span className={s.overlapStatValue}>
+              <RangeText text={sharedSavingsText} />
+            </span>
+          </p>
+        )}
+        <p className={s.overlapText}>
+          病気・けが・失業の過不足の判定は、それぞれ<strong>単独で起きた場合</strong>の見立てです。
+          同じ貯蓄を各行の受け皿として見ています。
+        </p>
+      </div>
 
       {/*
         凡例・図の読み方・精度の説明。**参照材なのでまとめて畳む**
@@ -230,7 +267,7 @@ export function RiskTable({ rows, caption }: { rows: RiskRow[]; caption: string 
       <div className={s.legendFold}>
         <Fold count="（3点）" label="この表の読み方">
         <dl className={s.legend}>
-          <dt>判定</dt>
+          <dt>過不足の判定</dt>
           <dd>
             <span className={`${s.badge} ${s.ok}`}>大丈夫のめやす</span>
             <span className={`${s.badge} ${s.check}`}>圏内・要精査</span>

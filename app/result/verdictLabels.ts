@@ -13,3 +13,9 @@ export const DEATH_LABEL: Record<Verdict3, string> = {
   shortage: "不足の可能性",
   pending: "判定は保留",
 };
+
+/**
+ * 過不足の判定（過不足軸）の**軸名**。バッジの直前に必ず添える（`AxisBadge`）。
+ * 無印の「判定」を画面に出さない（CLAUDE.md「判定には必ず軸名を添える」・2026-10-17 UX レビュー）。
+ */
+export const VERDICT_AXIS = "過不足の判定";

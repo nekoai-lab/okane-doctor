@@ -300,6 +300,29 @@
   margin: var(--space-4) 0 0;
 }
 
+.overlapStat {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 var(--space-2);
+}
+
+.overlapStatLabel {
+  font-size: 12px;
+  color: var(--mk-muted);
+}
+
+/* カードの「いまの貯蓄」と同じ組版（明朝 20px） */
+.overlapStatValue {
+  font-family: var(--mk-font-display);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.overlapText {
+  margin: 0;
+}
+
 /* 読み方の折りたたみ（参照材）。露出は1行だけ */
 .legendFold {
   margin: var(--space-2) 0 0;

@@ -10,6 +10,9 @@
  *
  * **金額はここで作らない。** 差額も `householdSummary`（src/calc）が出したものを受け取るだけ。
  */
+import type { ReactNode } from "react";
+import { RangeText, WithAmounts } from "./AmountText.js";
+import { AxisBadge } from "./AxisBadge.js";
 import s from "./hero.module.css";
 
 /** §1 の世帯4値。`pending` は現保障が未入力で判定しない */
@@ -75,14 +78,16 @@ export const HERO_BADGE: Record<HeroVerdict, string> = {
  * 見出し文。**モックにある3判定は `result.html` の文をそのまま使う。**
  * モックに無い2つ（組み替えの余地・保留）は仕様 §5.3 に文を決めてから実装した。
  */
-function headline(v: HeroVerdict, diff: string | null): string {
+function headline(v: HeroVerdict, diff: string | null): ReactNode {
+  // 差額は数字の途中で折らない（「〜」の後ろでだけ折り返す・2026-10-17 UX レビュー）
+  const d = <RangeText text={diff ?? ""} />;
   switch (v) {
     case "reducible":
-      return `いまの保障、${diff}ぶん 減らせる可能性があります`;
+      return <>いまの保障、{d}ぶん 減らせる可能性があります</>;
     case "uncertain":
       return "いまの保障は、必要額の幅の圏内です — ここでは言い切りません";
     case "shortage":
-      return `いまの保障では、${diff}ほど 足りない可能性があります`;
+      return <>いまの保障では、{d}ほど 足りない可能性があります</>;
     case "rebalanceable":
       return "保障の総量は足りていますが、置き場所に組み替えの余地があります";
     case "pending":
@@ -123,8 +128,9 @@ export function Hero(props: HeroProps) {
         <span className={s.sample}>{caption}</span>
       </div>
 
+      {/* 軸名をバッジの直前に常に出す（CLAUDE.md「判定には必ず軸名を添える」・2026-10-17 UX レビュー） */}
       <div>
-        <span className={`${s.badge} ${s[verdict]}`}>{HERO_BADGE[verdict]}</span>
+        <AxisBadge badgeClassName={`${s.badge} ${s[verdict]}`}>{HERO_BADGE[verdict]}</AxisBadge>
       </div>
 
       <h1 className={s.head} id="hero-head">
@@ -132,16 +138,32 @@ export function Hero(props: HeroProps) {
       </h1>
 
       {/* 結論が判定済みの人だけで出ているなら、そう言う（設計レビュー #3） */}
-      {partialNote && <p className={s.funeral}>{partialNote}</p>}
+      {partialNote && (
+        <p className={s.funeral}>
+          <WithAmounts text={partialNote} />
+        </p>
+      )}
 
       {/* 見出しの差額が2人分の合計なら、そう書いて内訳を出す（2026-10-17・UX） */}
-      {breakdownNote && <p className={s.funeral}>{breakdownNote}</p>}
+      {breakdownNote && (
+        <p className={s.funeral}>
+          <WithAmounts text={breakdownNote} />
+        </p>
+      )}
 
       {/* 必要額が葬儀費用だけの世帯は、その理由を先に言う（仕様 §5.3） */}
-      {funeralOnlyNote && <p className={s.funeral}>{funeralOnlyNote}</p>}
+      {funeralOnlyNote && (
+        <p className={s.funeral}>
+          <WithAmounts text={funeralOnlyNote} />
+        </p>
+      )}
 
       {/* 組み替えの余地：どちらにいくら動かす話なのかを、見出しの直下で言う（仕様 §5.3） */}
-      {rebalanceNote && <p className={s.funeral}>{rebalanceNote}</p>}
+      {rebalanceNote && (
+        <p className={s.funeral}>
+          <WithAmounts text={rebalanceNote} />
+        </p>
+      )}
 
       <div className={s.stats}>
         <div>
@@ -169,21 +191,5 @@ export function Hero(props: HeroProps) {
 
       <p className={s.lead}>この数字がどう出たか、根拠をこのすぐ下にすべて示します。</p>
     </section>
-  );
-}
-
-/**
- * 金額の幅は「〜」の後ろでだけ折り返す。
- * 390px で「約400〜1,700万／円」と数字の途中で折れ、別の金額に読めたため（もしもラボと同じ直し）。
- */
-function RangeText({ text }: { text: string }) {
-  const [start, end] = text.split("〜");
-  if (end === undefined) return <span className={s.nowrap}>{text}</span>;
-  return (
-    <>
-      <span className={s.nowrap}>{start}〜</span>
-      <wbr />
-      <span className={s.nowrap}>{end}</span>
-    </>
   );
 }

@@ -1,0 +1,4 @@
+/* 金額の分割不可の単位。折り返しは「〜」の後ろの <wbr> だけで起きる */
+.nowrap {
+  white-space: nowrap;
+}

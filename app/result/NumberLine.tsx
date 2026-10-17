@@ -10,6 +10,7 @@
  *
  * **金額はここで作らない。** 受け取った額を描くだけ。
  */
+import { VERDICT_AXIS } from "./verdictLabels.js";
 import type { DecisionPoint } from "../../src/calc/decisionPoints.js";
 import s from "./numberLine.module.css";
 
@@ -50,7 +51,7 @@ export function NumberLine({ need, coverage, fmt, verdict, points }: NumberLineP
   return (
     <div className={s.wrap}>
       <p className={s.lead}>
-        必要額の幅と、いまの保障を1本の数直線に重ねます。判定の根拠はこの位置関係だけです。
+        必要額の幅と、いまの保障を1本の数直線に重ねます。過不足の判定の根拠はこの位置関係だけです。
       </p>
 
       <div className={s.lineBox}>
@@ -113,12 +114,14 @@ export function NumberLine({ need, coverage, fmt, verdict, points }: NumberLineP
       </div>
 
       <div className={`${s.verdict} ${s[verdict.tone]}`}>
-        <p className={s.verdictTitle}>判定：{verdict.label}</p>
+        <p className={s.verdictTitle}>
+          {VERDICT_AXIS}：{verdict.label}
+        </p>
         <p className={s.verdictBody}>{verdict.body}</p>
       </div>
 
       <p className={s.rule}>
-        判定のルール
+        過不足の判定のルール
         —「減らせる」は、厳しめの前提（幅の右端）で計算しても保障が上回るときにだけ言い切ります。
         幅がいまの保障を跨ぐときは、言い切らずに「要精査」に降ろします。
       </p>

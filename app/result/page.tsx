@@ -20,6 +20,8 @@ import { survivorIncomeSensitivity } from "../../src/calc/sensitivity.js";
 import { decisionPoints } from "../../src/calc/decisionPoints.js";
 import { reform2028 } from "../../src/calc/reform2028.js";
 import { verdict3 } from "../../src/calc/verdict3.js";
+import { RangeText, WithAmounts } from "./AmountText.js";
+import { AxisBadge } from "./AxisBadge.js";
 import { Fold } from "./Fold.js";
 import { ownStandardEstimates, workDeductionSource } from "./estimates.js";
 import { sensitivityText } from "./sensitivityText.js";
@@ -138,7 +140,7 @@ const SHORTFALL_TONE: Record<string, "ok" | "check" | "short" | "none"> = {
 function shortfallBody(v: string, hasRange: boolean): string {
   switch (v) {
     case "reducible":
-      return `${hasRange ? "厳しめの前提（幅の右端）で計算しても" : "この必要額で計算しても"}、いまの保障が上回っています。減らせる可能性があります。ただし概算です。減額の手続きの前に、推定で補った項目を実際の値で答え直してください。`;
+      return `${hasRange ? "厳しめの前提（幅の右端）で計算しても" : "この必要額で計算しても"}、いまの保障が上回っています。減らせる可能性があります。ただし概算です。契約を見直す前に、契約内容（保障額・期間・更新の時期）を確かめ、推定で補った項目を実際の値で答え直してください。`;
     case "uncertain":
       return "必要額の幅が、いまの保障を跨いでいます。この位置関係のとき、診断は「減らせる」とも「足りない」とも言い切りません。推定で補った項目を実際の値で答えると幅が狭まり、判定が確定に近づきます。";
     case "shortage":
@@ -397,7 +399,9 @@ function CaseCard({
 
       {/* 現在の保障との比較 */}
       {/* 現在の保障との比較。**最終の必要額との差**を幅で言う（`figures.ts`・2026-10-17） */}
-      <p className={s.meta}>{gapText}</p>
+      <p className={s.meta}>
+        <WithAmounts text={gapText} />
+      </p>
 
       {/* 子の年齢での時間軸（見落としの可視化） */}
       {r.years.total > 0 && (
@@ -959,6 +963,9 @@ export default async function ResultPage({
     ),
   ];
 
+  /** 計算未対応で空欄の行の数（「◯つのリスクを並べました（うち◯つは未算定）」） */
+  const unsupportedCount = riskRows.filter((r) => r.precisionTone === "unsupported").length;
+
   // 進路 what-if（子がいる世帯だけ）：公立/私立で必要額（あなた）がどう変わるか
   const eduWhatIf =
     input.children.length > 0
@@ -1115,7 +1122,14 @@ export default async function ResultPage({
       />
 
       {/* 3. 玄関：リスク別健康診断表（仕様 §5.3）。この下に死亡の詳細が縦1本で続く */}
-      <RiskTable caption={caption} rows={riskRows} />
+      <RiskTable
+        caption={caption}
+        rows={riskRows}
+        // 貯蓄で受ける行（制度式で概算）があるときだけ、その共通の受け皿の額を注記に立てる
+        sharedSavingsText={
+          riskRows.some((r) => r.precisionTone === "statutory") ? `約${money(input.assets)}` : null
+        }
+      />
 
       {/*
         **既にある数字を、あるべき声量にする**（DoD (a)(b)）。
@@ -1156,9 +1170,18 @@ export default async function ResultPage({
             **診た件数は既にある数字**（診断表の行数）。あるべき声量で出す（DoD (a)(b)）。
             「何を診たか」を先に線引きするこの節の、いちばん要約された数でもある。
           */}
+          {/*
+            **算定できた数と並べた数を分ける**（2026-10-17・ChatGPT の UX レビュー1回目）。
+            「診ました」は全行を評価し終えたように読めるが、計算未対応の行は正直な空欄で、
+            過不足の判定（過不足軸）も出していない。数は診断表の行（`precisionTone`）から数える。
+          */}
           <p className={s.scopeCount}>
             <span className={s.scopeNum}>{riskRows.length}</span>
-            <span className={s.scopeUnit}>つのリスクを診ました</span>
+            <span className={s.scopeUnit}>
+              {unsupportedCount > 0
+                ? `つのリスクを並べました（うち${unsupportedCount}つは未算定）`
+                : "つのリスクを診ました"}
+            </span>
           </p>
           <p>
             <strong>この診断で分かること：</strong>{" "}
@@ -1266,7 +1289,7 @@ export default async function ResultPage({
                   矛盾した1行になる（実際になった）。要約では行動につながる過不足を優先し、
                   過不足が出ていないときだけ判定を出す。両方の意味は開けば書いてある。 */}
               <span className={s.spouseSummaryVerdict}>
-                {figures.spouse ? gapSentence(figures.spouse) : null}
+                {figures.spouse ? <WithAmounts text={gapSentence(figures.spouse)} /> : null}
               </span>
             </summary>
             <CaseCard
@@ -1351,19 +1374,19 @@ export default async function ResultPage({
         <h2 className={s.h2}>次の一歩</h2>
         {/*
           **導線カードに、本文の数字を再掲する**（2026-09-21・視覚の DoD (a)）。
-          窓口に持っていくのはこの2つの数なので、**再掲であって装飾ではない**。
+          契約を確かめるときに見比べるのはこの2つの数なので、**再掲であって装飾ではない**。
           値は `householdSummary` から来ており、ここで作っていない。
         */}
         <div className={s.narrationSummary}>
-          <span className={`${s.narrationBadge} ${s[HERO_TONE[hh.verdict]] ?? ""}`}>
+          <AxisBadge badgeClassName={`${s.narrationBadge} ${s[HERO_TONE[hh.verdict]] ?? ""}`}>
             {HERO_BADGE[hh.verdict]}
-          </span>
+          </AxisBadge>
           <span className={s.narrationStat}>
             <span className={s.narrationStatLabel}>
               必要額のめやす{heroTotalLabel(figures) ? `（${heroTotalLabel(figures)}）` : ""}
             </span>
             <span className={s.narrationStatValue}>
-              {formatRange(hh.totalNeed.low, hh.totalNeed.high)}
+              <RangeText text={formatRange(hh.totalNeed.low, hh.totalNeed.high)} />
             </span>
           </span>
           <span className={s.narrationStat}>
@@ -1382,7 +1405,7 @@ export default async function ResultPage({
           spouse: input.spouse?.employment ?? null,
         }).map((line) => (
           <p className={s.meta} key={line}>
-            {line}
+            <WithAmounts text={line} />
           </p>
         ))}
 
@@ -1397,7 +1420,7 @@ export default async function ResultPage({
             </ul>
             <p className={s.basis}>
               ※
-              具体的な商品名・会社名・ランキングは出しません。判断はご本人と、契約する保険会社・窓口で。
+              具体的な商品名・会社名・ランキングは出しません。どうするかを決めるのは、ご本人です。
             </p>
           </Fold>
         )}

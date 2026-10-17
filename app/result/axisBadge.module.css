@@ -1,0 +1,22 @@
+/* 判定の軸名（「過不足の判定」）。バッジの直前に、本文より一段小さく置く */
+.row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.stack {
+  flex: none;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.axis {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mk-muted);
+  white-space: nowrap;
+}

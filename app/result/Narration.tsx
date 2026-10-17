@@ -23,6 +23,8 @@
 import { useEffect, useState } from "react";
 import type { PlaceholderValues } from "../../src/narrate/stream.js";
 import { renderStreamed } from "../../src/narrate/stream.js";
+import { RangeText } from "./AmountText.js";
+import { AxisBadge } from "./AxisBadge.js";
 import { Fold } from "./Fold.js";
 import s from "./page.module.css";
 
@@ -156,12 +158,16 @@ export function Narration({
         数字はすべて算定結果から来ており、ここで作っていない。
       */}
       <div className={s.narrationSummary}>
-        <span className={`${s.narrationBadge} ${s[summary.tone] ?? ""}`}>{summary.verdict}</span>
+        <AxisBadge badgeClassName={`${s.narrationBadge} ${s[summary.tone] ?? ""}`}>
+          {summary.verdict}
+        </AxisBadge>
         <span className={s.narrationStat}>
           <span className={s.narrationStatLabel}>
             必要額{summary.totalLabel ? `（${summary.totalLabel}）` : ""}
           </span>
-          <span className={s.narrationStatValue}>{summary.needText}</span>
+          <span className={s.narrationStatValue}>
+            <RangeText text={summary.needText} />
+          </span>
         </span>
         <span className={s.narrationStat}>
           <span className={s.narrationStatLabel}>いまの保障</span>
