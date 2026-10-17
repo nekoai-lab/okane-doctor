@@ -97,3 +97,5 @@
   font-size: 13px;
   color: var(--color-text);
 }
+/* 失敗の文は畳んだカードの見出しの下に出す（入力は畳む） */
+.wordsError { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: var(--color-text); }

@@ -9,7 +9,7 @@
  * 既定は畳んだ1行（見出し＋変えられるもの）。開かないと使えないので、由来は開いた先の先頭で、入力より前に必ず読める。
  * 畳むのは、390px の最初の画面に時期のカードの必要額を入れるため（2026-10-18 UX レビュー2回目）。
  */
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import type { LabChanges, LabWordsResult } from "../../src/lab/words.js";
 import { LAB_WORDS_MAX_CHARS } from "../../src/lab/words.js";
 import { Fold } from "../result/Fold.js";
@@ -25,7 +25,7 @@ const ERROR_TEXT: Record<string, string> = {
   rate_limited: "いま混み合っています。少し時間をおいてから試してください。",
   // 「読み取れなかった」（unclear の断りの文）と区別できるように、つながらなかったことと一時的なことを言う
   ai_unavailable:
-    "AI につながらず、言葉を受け取れませんでした。一時的なものなので、少し時間をおいて試すか、下のボタンやスライダーで確かめてください。",
+    "AI につながりませんでした（一時的なものです）。時間をおいて試すか、下のボタンやスライダーで確かめてください。",
 };
 
 export function Words({
@@ -41,6 +41,14 @@ export function Words({
   const [text, setText] = useState("");
   const [state, setState] = useState<State>({ kind: "idle" });
   const inputId = useId();
+  const cardRef = useRef<HTMLElement>(null);
+
+  /** 失敗したら入力を畳み、文だけをカードの外側に残す。390px で開いたままだと必要額とスライダーが画面から押し出される（2026-10-18 UX レビュー3回目） */
+  function fail(message: string) {
+    setState({ kind: "error", message });
+    const details = cardRef.current?.querySelector("details");
+    if (details) details.open = false;
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,22 +62,19 @@ export function Words({
       });
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string };
-        setState({
-          kind: "error",
-          message: ERROR_TEXT[body.error ?? ""] ?? ERROR_TEXT.ai_unavailable,
-        });
+        fail(ERROR_TEXT[body.error ?? ""] ?? ERROR_TEXT.ai_unavailable);
         return;
       }
       const result = (await res.json()) as LabWordsResult;
       setState({ kind: "done", result });
       if (result.kind === "apply") onApply(result.changes);
     } catch {
-      setState({ kind: "error", message: ERROR_TEXT.ai_unavailable });
+      fail(ERROR_TEXT.ai_unavailable);
     }
   }
 
   return (
-    <section className={`${s.card} ${s.wordsCard}`} aria-label="言葉で確かめる">
+    <section ref={cardRef} className={`${s.card} ${s.wordsCard}`} aria-label="言葉で確かめる">
       <Fold
         label="言葉で確かめる"
         count={hasSpouse ? "（年齢・働き方・病気やけが）" : "（年齢・病気やけが）"}
@@ -113,9 +118,11 @@ export function Words({
           {state.kind === "done" && state.result.kind === "unsupported" && (
             <p className={s.wordsReadout}>{state.result.message}</p>
           )}
-          {state.kind === "error" && <p className={s.wordsReadout}>{state.message}</p>}
         </div>
       </Fold>
+      <div aria-live="polite">
+        {state.kind === "error" && <p className={s.wordsError}>{state.message}</p>}
+      </div>
     </section>
   );
 }
