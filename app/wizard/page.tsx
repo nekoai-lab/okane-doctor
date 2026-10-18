@@ -8,7 +8,7 @@
  * 判定色に頼らないよう、選択はチェック記号でも示す。フォーカスリングは tokens.css に任せる。
  */
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { jstYear } from "../../src/time/jstYear.js";
 import { isComplete } from "../../src/wizard/complete.js";
 import {
@@ -171,6 +171,19 @@ export default function WizardPage() {
     window.history.replaceState(null, "", `${window.location.pathname}?${qs}`);
   }, [sel, level, mounted]);
 
+  // ステップは同じページの中で中身だけ入れ替えるので、ブラウザはスクロール位置を残す。
+  // 「次へ」は画面の下にあるため、そのままだと次の問いが途中から始まる。
+  // 入れ替えのたびに先頭へ戻し、見出しへフォーカスを移して読み上げの位置もそろえる。
+  // 初回表示（URL からの復元を含む）では動かさない。
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const shownStep = useRef(step);
+  useEffect(() => {
+    if (shownStep.current === step) return;
+    shownStep.current = step;
+    window.scrollTo(0, 0);
+    titleRef.current?.focus({ preventScroll: true });
+  }, [step]);
+
   if (!mounted) return null;
 
   const currentYear = jstYear(new Date());
@@ -274,7 +287,9 @@ export default function WizardPage() {
         </div>
       </div>
 
-      <h1 className={s.stepTitle}>{STEP_TITLES[step]}</h1>
+      <h1 ref={titleRef} tabIndex={-1} className={s.stepTitle}>
+        {STEP_TITLES[step]}
+      </h1>
 
       {step === 0 && (
         <>
