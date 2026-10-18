@@ -103,7 +103,7 @@ test("重い経路：配偶者あり・持ち家ローンあり・保障額あ�
   await page.getByRole("button", { name: "次へ" }).click();
 
   // S6 保障額（本人・配偶者）
-  await groupRadio("あなたが亡くなったときに受け取れる死亡保険金（合計）", "1000万円").check();
+  await groupRadio("あなたが亡くなったときに受け取れる死亡保険金（合計）", "1,000万円").check();
   await groupRadio("配偶者が亡くなったときに受け取れる死亡保険金（合計）", "加入していない").check();
   await expectNoHorizontalOverflow(page, "S6(配偶者あり)");
   await page.getByRole("button", { name: "結果を見る" }).click();
@@ -132,4 +132,36 @@ test("再開：URL に状態を載せて開き直すと復元される", async (
   // 3ステップ目まで手で進めなくても、S1 の選択が復元されているか（就業=自営が checked）
   await expect(page.getByRole("radio", { name: "自営・フリーランス" })).toBeChecked();
   await expectNoHorizontalOverflow(page, "resume");
+});
+
+test("ステップを進めても戻っても、次の問いは画面の先頭から始まる", async ({ page }) => {
+  const scrollY = () => page.evaluate(() => window.scrollY);
+  const scrollToBottom = () =>
+    page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+
+  await page.goto("/wizard");
+
+  // S1 → S2。「次へ」は下にあるので、押す前に下までスクロールしておく
+  await page.getByRole("combobox").selectOption("1985");
+  await page.getByRole("radio", { name: "会社員" }).check();
+  await scrollToBottom();
+  await page.getByRole("button", { name: "次へ" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("ご家族のこと");
+  await expect.poll(scrollY).toBe(0);
+  await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
+
+  // S2 は配偶者・子の設問で縦に長くなる。下から「次へ」で S3 へ
+  await page.getByRole("radio", { name: "いない" }).check();
+  await page.getByRole("combobox").selectOption("0");
+  await scrollToBottom();
+  expect(await scrollY()).toBeGreaterThan(0);
+  await page.getByRole("button", { name: "次へ" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("収入のこと");
+  await expect.poll(scrollY).toBe(0);
+
+  // 戻るでも先頭から
+  await scrollToBottom();
+  await page.getByRole("button", { name: "戻る" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("ご家族のこと");
+  await expect.poll(scrollY).toBe(0);
 });
