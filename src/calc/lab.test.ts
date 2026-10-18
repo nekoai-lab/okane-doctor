@@ -162,10 +162,29 @@ describe("ラボの表示用導出", () => {
   it("上昇区間だけをまとめ、下降・横ばいは含めない", () => {
     const points = [100, 200, 300, 200, 200, 250].map((middle, i) => ({ age: 40 + i, middle }));
     expect(labRisingIntervals(points)).toEqual([
-      { from: 40, to: 42 },
-      { from: 44, to: 45 },
+      { from: 40, to: 42, cause: "other" },
+      { from: 44, to: 45, cause: "other" },
     ]);
     expect(labRisingIntervals([])).toEqual([]);
     expect(labRisingIntervals([{ age: 64, middle: 100 }])).toEqual([]);
+  });
+  /**
+   * 2026-10-18：注記は「家族の年齢に伴い、公的な支えや残る支出も変わるため」と書いていたが、
+   * 組み替えの世帯の 61〜62歳は、回答どおりでは配偶者の就労収入が60歳で止まる段差、
+   * 「ゼロ」では就労収入が無いので幅の作り方の切り替わりが理由だった。理由はエンジンの材料から決める
+   */
+  it.each([
+    ["answer", "work_end"],
+    ["zero", "range_rule"],
+  ] as const)("組み替えの世帯の 61〜62歳：%s は %s", (level, cause) => {
+    const sel = toCompleteSelections(
+      decodeSelections(
+        "v=1&sb=1989&emp=employee&sp=1&spb=1991&spe=employee&ch=2024&edu=public&inc=lt600&sinc=lt400&as=lt500&liv=lt30&ho=own_loan&loan=lt3000&dan=yes&cvs=m2000&cvsp=none",
+      ),
+    );
+    const ends = normalizeEnds(p, sel!, date);
+    const data = calculateLab(p, ends.point.input, bandInputs(p, sel!, date, 1), date);
+    const points = data.work.find((w) => w.level === level)!.points;
+    expect(labRisingIntervals(points)).toContainEqual({ from: 61, to: 62, cause });
   });
 });
