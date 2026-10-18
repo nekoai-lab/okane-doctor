@@ -100,3 +100,23 @@
 /* 失敗の文は畳んだカードの見出しの下に出す（入力は畳む） */
 .wordsError { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: var(--color-text); }
 .lead { font-weight: 700; color: var(--color-text); }
+
+/* 死亡保障の「この金額の内訳」（サンプル v2・2026-10-18）。金額は太字の数字、理由は小さな補足 */
+.ledgerHead { margin: 14px 0 6px; font-size: 13px; font-weight: 700; color: var(--color-text-secondary); }
+.lsum { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: baseline; padding: 12px 14px; border-radius: var(--radius-control); background: var(--color-surface-subtle); }
+.lsum > span:first-child { font-weight: 700; }
+.lbig { font-family: var(--mk-font-display); font-size: 20px; font-weight: 800; color: var(--mk-ink, var(--color-text)); white-space: nowrap; }
+.lrows { display: grid; }
+.lrow { display: grid; grid-template-columns: 1fr auto; gap: 0 12px; align-items: baseline; padding: 8px 2px; border-bottom: 1px solid var(--color-border); }
+.lvalue { font-weight: 700; white-space: nowrap; font-size: 18px; }
+.lwhy { grid-column: 1 / -1; font-size: 12px; line-height: 1.6; color: var(--color-text-secondary); }
+.lrows + .lsum, .lrows + .lwhy + .lsum { margin-top: 12px; }
+/* 320px では大きな合計で見出しが細く折れるので、見出し→金額の縦に積む（Codex UX 2026-10-18・好み） */
+@media (max-width: 359px) { .lsum { grid-template-columns: 1fr; } }
+.workBox { margin-top: 16px; }
+.compare { margin-top: 12px; padding: 10px 14px; border-left: 3px solid var(--color-text); background: var(--color-surface-subtle); font-size: 14px; }
+.compare p { margin: 0; }
+.linkButton { min-height: 44px; padding: 0; border: 0; background: none; color: var(--color-link); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+.sickList { margin: 4px 0 8px; display: grid; gap: 6px; }
+.sickList dt { font-size: 12px; font-weight: 700; color: var(--color-text-secondary); }
+.sickList dd { margin: 0; font-size: 14px; line-height: 1.7; }

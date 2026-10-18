@@ -20,6 +20,8 @@ import { linearScale } from "../result/chartScale.js";
 import { Fold } from "../result/Fold.js";
 import { HERO_BADGE } from "../result/Hero.js";
 import { SAVINGS_LABEL as SAVINGS_VERDICT } from "../result/verdictLabels.js";
+import { AmountRange } from "./AmountRange.js";
+import { Ledger, NEED_LABEL } from "./Ledger.js";
 import s from "./page.module.css";
 import { Words } from "./Words.js";
 import { workPlanNote, zeroIncomeNote } from "./workNote.js";
@@ -33,6 +35,7 @@ const SCENARIO_TITLE: Record<string, string> = {
 };
 /** 貯蓄の判定の言葉は結果画面と同じ表。アイコンは VerdictBadge が VERDICT_BADGE から付ける（✓ ↔ ! …） */
 const SAVINGS_LABEL = { ...SAVINGS_VERDICT, pending: "未算定" };
+const WORK_LABEL = ["回答どおり", "半分", "ゼロ"] as const;
 
 /** 必要額が上がる理由。どれを出すかはエンジンの材料（labRisingIntervals）が決める */
 const RISE_REASON: Record<LabRiseCause, (workEndAge: number) => string> = {
@@ -49,23 +52,6 @@ function incomeText(yen: number): string {
   return yen === 0 ? "0円" : `約${formatMan(yen)}`;
 }
 
-function AmountRange({ low, high }: { low: number; high: number }) {
-  const [start, end] = formatRange(low, high).split("〜");
-  return (
-    <span className={s.amountRange}>
-      <span className={s.amountEnd}>
-        {start}
-        {end !== undefined && "〜"}
-      </span>
-      {end !== undefined && (
-        <>
-          <wbr />
-          <span className={s.amountEnd}>{end}</span>
-        </>
-      )}
-    </span>
-  );
-}
 function Comparison({ point }: { point: LabPoint }) {
   return (
     <span className={s.verdictBadge}>
@@ -337,6 +323,8 @@ export function Lab({
       );
   };
   const scenario = data.work[work];
+  const base = data.work[0].points.find((p) => p.age === data.minAge);
+  const changed = age !== data.minAge || work !== 0;
   const spouseIncomeIsZero = data.work[0].now.annualIncome === 0;
   const point = scenario.points.find((p) => p.age === age);
   const difference = point ? labCoverageDifference(data.coverage, point.low, point.high) : null;
@@ -375,7 +363,7 @@ export function Lab({
                 <span>
                   本人の万一：{point.age}歳（{point.year}年）
                 </span>
-                <span>資産を差し引いた後の必要保障額</span>
+                <span>{NEED_LABEL[point.ledger.rangeVerdict]}</span>
                 <strong className={s.amount}>
                   {<AmountRange low={point.low} high={point.high} />}
                 </strong>
@@ -405,6 +393,28 @@ export function Lab({
                 )}
                 <Comparison point={point} />
               </div>
+              {changed && base && (
+                // 直前の状態ではなく、いつも診断時の条件と比べる（サンプル v2）。いまの額は上の読み出しが持つ
+                <div className={s.compare}>
+                  <p>
+                    診断時の条件（{base.age}歳・{WORK_LABEL[0]}）では
+                    <AmountRange low={base.low} high={base.high} />
+                    {base.verdict === point.verdict
+                      ? "で、過不足の判定は変わりません。"
+                      : "でした。過不足の判定が変わります。"}
+                  </p>
+                  <button
+                    type="button"
+                    className={s.linkButton}
+                    onClick={() => {
+                      setAge(data.minAge);
+                      setWork(0);
+                    }}
+                  >
+                    診断時の条件に戻す
+                  </button>
+                </div>
+              )}
               <p className={s.note}>
                 下の病気・けが・休職の金額とは算定対象が異なるため、金額の大小を直接比較しません。
               </p>
@@ -427,6 +437,42 @@ export function Lab({
                 <span>いま（{data.minAge}歳）</span>
                 <span>64歳</span>
               </div>
+              {data.hasSpouse && (
+                <div id="work" className={s.workBox}>
+                  {applied?.spouseWork && applied.spouseWork === WORK_IDS[work] && (
+                    <AppliedNote changes={{ spouseWork: applied.spouseWork }} />
+                  )}
+                  {spouseIncomeIsZero ? (
+                    <p className={s.note}>
+                      配偶者の年収は0円の回答なので、働き方の切り替えはありません。
+                      {data.spouseWork && zeroIncomeNote(data.spouseWork)}
+                    </p>
+                  ) : (
+                    <fieldset className={s.buttons}>
+                      <legend>配偶者の就労収入</legend>
+                      {WORK_LABEL.map((label, i) => (
+                        <button
+                          type="button"
+                          key={label}
+                          aria-pressed={work === i}
+                          onClick={() => setWork(i)}
+                        >
+                          {work === i && <span aria-hidden="true">✓ </span>}
+                          {label}
+                          <span className={s.buttonIncome}>
+                            年収 {incomeText(data.work[i].now.annualIncome ?? 0)}
+                          </span>
+                        </button>
+                      ))}
+                    </fieldset>
+                  )}
+                  {work === 2 && (
+                    <p className={s.note}>
+                      「ゼロ」は働かない前提です。当社基準で見込んでいた就労収入も外して計算しています。
+                    </p>
+                  )}
+                </div>
+              )}
               <p className={s.chartPremise}>
                 いまの収入・生活費・貯蓄・ローン残高のまま、家族の年齢だけを進めた試算です。
               </p>
@@ -529,63 +575,22 @@ export function Lab({
               <li>出典：{data.deathSource}</li>
             </ul>
           </Fold>
+          {data.hasSpouse && !spouseIncomeIsZero && (
+            <Fold label="就労の前提" count="（3項目）">
+              <ul>
+                <li>
+                  試算する年収は{incomeText(scenario.now.annualIncome ?? 0)}
+                  です。回答額・半分・ゼロを比較します。
+                </li>
+                <li>
+                  区分の年収は代表値で表示します。必要額には回答帯の幅も反映します。死亡の場合だけに適用し、生活費は固定します。
+                </li>
+                {data.spouseWork && <li>{workPlanNote(data.spouseWork)}</li>}
+              </ul>
+            </Fold>
+          )}
         </section>
-        {data.hasSpouse && (
-          <section className={s.card} id="work">
-            <h2>配偶者の就労シナリオ</h2>
-            {applied?.spouseWork && applied.spouseWork === WORK_IDS[work] && (
-              <AppliedNote changes={{ spouseWork: applied.spouseWork }} />
-            )}
-            {spouseIncomeIsZero ? (
-              <p>
-                配偶者の収入が0円の回答なので、働き方の切り替えはありません。必要額は上の「死亡保障」のとおりです。
-              </p>
-            ) : (
-              <>
-                <fieldset className={s.buttons}>
-                  <legend>配偶者の就労収入</legend>
-                  {["回答どおり", "半分", "ゼロ"].map((label, i) => (
-                    <button
-                      type="button"
-                      key={label}
-                      aria-pressed={work === i}
-                      onClick={() => setWork(i)}
-                    >
-                      {work === i && <span aria-hidden="true">✓ </span>}
-                      {label}
-                      <span className={s.buttonIncome}>
-                        年収 {incomeText(data.work[i].now.annualIncome ?? 0)}
-                      </span>
-                    </button>
-                  ))}
-                </fieldset>
-                <p className={s.note}>選んだ働き方で、上の「死亡保障」の金額と図が変わります。</p>
-              </>
-            )}
-            {spouseIncomeIsZero ? (
-              // 切り替えが無いので、比べる説明は出さず、いまの前提だけを書く（UX 40回目）
-              <Fold label="就労の試算の前提" count="（2項目）">
-                <ul>
-                  <li>配偶者の回答の年収は0円です。</li>
-                  <li>{data.spouseWork && zeroIncomeNote(data.spouseWork)}</li>
-                </ul>
-              </Fold>
-            ) : (
-              <Fold label="就労の試算の前提" count="（3項目）">
-                <ul>
-                  <li>
-                    試算する年収は{incomeText(scenario.now.annualIncome ?? 0)}
-                    です。回答額・半分・ゼロを比較します。
-                  </li>
-                  <li>
-                    区分の年収は代表値で表示します。必要額には回答帯の幅も反映します。死亡の場合だけに適用し、生活費は固定します。
-                  </li>
-                  {data.spouseWork && <li>{workPlanNote(data.spouseWork)}</li>}
-                </ul>
-              </Fold>
-            )}
-          </section>
-        )}
+        {point && <Ledger data={data} point={point} work={work} />}
         <section className={s.card}>
           <h2>病気・けが・休職</h2>
           <p>
@@ -608,11 +613,24 @@ export function Lab({
                 open={openScenario ? openScenario === item.id : i === 0}
               >
                 {applied?.scenario === item.id && <AppliedNote changes={{ scenario: item.id }} />}
-                <p>
-                  {item.id === "mental"
-                    ? `休職が${duration}を超えると、生活資金がさらに必要です。`
-                    : `休職${item.months}か月の試算で、長引けば負担は増えます。`}
-                </p>
+                <dl className={s.sickList}>
+                  <div>
+                    <dt>使う公的な支え</dt>
+                    <dd>
+                      {data.employee
+                        ? "保険診療の自己負担には高額療養費で月ごとの上限があります。働けない間の傷病手当金を見込みます。"
+                        : "保険診療の自己負担には高額療養費で月ごとの上限があります。傷病手当金は見込んでいません。"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>家計への影響</dt>
+                    <dd>
+                      {item.id === "mental"
+                        ? `休職が${duration}を超えると、生活資金がさらに必要です。`
+                        : `休職${item.months}か月の医療費・収入の減りを見ています。長引けば負担は増えます。`}
+                    </dd>
+                  </div>
+                </dl>
                 <Fold
                   label="制度と計算の前提"
                   count={`（${item.need.assumptions.length + 5}項目）`}
