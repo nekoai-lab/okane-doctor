@@ -42,14 +42,9 @@
   line-height: 1.6;
 }
 
+/* 判定バッジはアプリ共通の部品（形・大きさ・色は fintech.module.css の1か所） */
 .badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 5px 14px;
-  border-radius: 999px;
+  composes: badge from "../../src/design/fintech/fintech.module.css";
   white-space: nowrap;
 }
 
@@ -58,25 +53,17 @@
 }
 
 .ok {
-  background: var(--mk-green-bg);
-  border: 1.5px solid var(--mk-green);
-  color: var(--mk-green-deep);
+  composes: badge_positive from "../../src/design/fintech/fintech.module.css";
 }
 .check {
-  background: var(--mk-amber-bg);
-  border: 1.5px solid var(--mk-amber);
-  color: var(--mk-amber-deep);
+  composes: badge_check from "../../src/design/fintech/fintech.module.css";
 }
-/* 不足は Warning（オレンジ）。エラーの赤・ブランドの赤と混ぜない（CLAUDE.md） */
+/* 不足の可能性は不足専用のピンク。エラーの赤・ブランドの赤・CTA の色と混ぜない */
 .short {
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-verdict-shortage);
-  color: var(--color-verdict-shortage-text);
+  composes: badge_shortage from "../../src/design/fintech/fintech.module.css";
 }
 .none {
-  background: var(--mk-grey-bg);
-  border: 1.5px solid var(--mk-grey-border);
-  color: var(--mk-muted);
+  composes: badge_neutral from "../../src/design/fintech/fintech.module.css";
 }
 
 .head {
@@ -117,15 +104,15 @@
 }
 
 /*
-  320px では「あなたに万一の／とき」と見出しが折れていた（PR #5 の UX レビュー）。
-  見出しは折らず、入らなければバッジのほうを次の行へ送る
+  どの幅でも「見出し → 過不足の判定［バッジ］→ 金額」を左揃えの3段に並べる（2026-10-18・Codex UX レビュー）。
+  以前は見出しが左・判定が右で、375〜390px では判定が右端にぶら下がり、目線が左右に行き来した。
+  見出しは折らない（320px で「あなたに万一の／とき」と折れた・PR #5 の UX レビュー）
 */
 .personHead {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-2);
+  gap: 6px;
 }
 
 .personTitle {
@@ -391,10 +378,6 @@
   .step {
     font-size: 15px;
     line-height: 1.7;
-  }
-  .personHead > span:last-child {
-    flex-direction: row;
-    align-items: center;
   }
   .mainValue {
     font-size: 26px;

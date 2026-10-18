@@ -22,9 +22,9 @@ import { VERDICT_ICON, VERDICT_TONE } from "./conclusionModel.js";
 import type { Verdict3 } from "../../src/calc/verdict3.js";
 import s from "./conclusion.module.css";
 
-function Badge({ verdict, label, stack }: { verdict: Verdict3; label: string; stack?: boolean }) {
+function Badge({ verdict, label }: { verdict: Verdict3; label: string }) {
   return (
-    <AxisBadge badgeClassName={`${s.badge} ${s[VERDICT_TONE[verdict]]}`} stack={stack}>
+    <AxisBadge badgeClassName={`${s.badge} ${s[VERDICT_TONE[verdict]]}`}>
       <span aria-hidden="true" className={s.icon}>
         {VERDICT_ICON[verdict]}
       </span>
@@ -265,7 +265,7 @@ export function Conclusion({
             <li className={s.person} key={r.who} data-person={r.who}>
               <div className={s.personHead}>
                 <p className={s.personTitle}>{r.title}</p>
-                <Badge label={r.verdictLabel} stack verdict={r.verdict} />
+                <Badge label={r.verdictLabel} verdict={r.verdict} />
               </div>
               <p className={s.mainLabel}>{r.mainLabel}</p>
               <p className={`${s.mainValue} ${s[`v_${VERDICT_TONE[r.verdict]}`] ?? ""}`}>

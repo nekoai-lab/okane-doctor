@@ -171,12 +171,19 @@ export function RiskTable({
               </th>
             </tr>
             <tr className={s.values}>
+              {/* 狭い画面では列見出しを畳み、各セルに見出しを出す（読み上げは列見出しのまま） */}
               <td>
+                <span aria-hidden="true" className={s.cellLabel}>
+                  必要額
+                </span>
                 <span className={s.figValue}>
                   <RangeText text={r.figures?.needText ?? ""} />
                 </span>
               </td>
               <td>
+                <span aria-hidden="true" className={s.cellLabel}>
+                  いまの保障・貯蓄
+                </span>
                 <span className={s.figValue}>
                   <RangeText text={r.figures?.holdText ?? ""} />
                 </span>

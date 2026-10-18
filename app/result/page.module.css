@@ -36,12 +36,12 @@
   color: var(--color-success);
 }
 
-/* 不足はエラーではないので赤にしない。Warning（オレンジ） */
+/* 不足はエラーではないので赤にしない。不足専用のピンク */
 .warn {
-  border-left-color: var(--color-warning);
+  border-left-color: var(--color-verdict-shortage);
 }
 .warn .icon {
-  color: var(--color-warning);
+  color: var(--color-verdict-shortage-text);
 }
 
 /* 保留（過不足を出していない）。良し悪しの色を付けず中立に出す */
@@ -146,7 +146,7 @@
   color: var(--color-success-text);
 }
 .verdictLine.warn {
-  color: var(--color-warning-text);
+  color: var(--color-verdict-shortage-text);
 }
 
 /* 子の年齢での時間軸（見落としの可視化）。事実として中立に出す */
@@ -259,30 +259,26 @@
   margin: var(--space-3) 0;
 }
 
+/* 判定バッジはアプリ共通の部品。色は .ok/.check/.short（下）で共通部品の色を使う */
 .narrationBadge {
-  font-size: var(--font-size-std-s);
-  font-weight: var(--font-weight-bold);
-  border-radius: var(--radius-pill);
-  padding: 4px 12px;
-  border: 1.5px solid var(--mk-grey-border);
-  color: var(--mk-muted-2);
+  composes: badge badge_neutral from "../../src/design/fintech/fintech.module.css";
   white-space: nowrap;
 }
 .narrationBadge.ok {
-  border-color: var(--mk-green);
-  color: var(--mk-green-deep);
-  background: var(--mk-green-bg);
+  color: var(--color-verdict-reducible-text);
+  background: var(--color-verdict-reducible-bg);
+  border-color: var(--color-verdict-reducible-border);
 }
 .narrationBadge.check {
-  border-color: var(--mk-amber);
-  color: var(--mk-amber-deep);
-  background: var(--mk-amber-bg);
+  color: var(--color-verdict-check-text);
+  background: var(--color-verdict-check-bg);
+  border-color: var(--color-verdict-check-border);
 }
-/* 不足は判定の色（Fintech A では茶寄りのオレンジ）。赤に見える色は使わない */
+/* 不足の可能性は不足専用のピンク。赤・CTA の色は使わない */
 .narrationBadge.short {
-  border-color: var(--color-verdict-shortage, var(--mk-red));
-  color: var(--color-verdict-shortage-text, var(--mk-red-deep));
-  background: var(--color-verdict-shortage-bg, var(--mk-red-bg));
+  color: var(--color-verdict-shortage-text);
+  background: var(--color-verdict-shortage-bg);
+  border-color: var(--color-verdict-shortage-border);
 }
 
 /* 台帳の行と同じ：ラベル（小）の下に値（明朝）。行頭でそろえる */
@@ -505,7 +501,7 @@
   font-weight: var(--font-weight-bold);
 }
 .wfWarn {
-  color: var(--color-warning-text);
+  color: var(--color-verdict-shortage-text);
   font-weight: var(--font-weight-bold);
 }
 

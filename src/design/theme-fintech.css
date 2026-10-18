@@ -14,9 +14,10 @@
  * - 判定の「アイコン＋ラベル＋色」の3点（色はここで決めるが、アイコンとラベルは部品側が必ず出す）
  * - 不足を赤や CTA 色で塗らない（不足は茶寄りのオレンジ、CTA はブルー）
  *
- * **茶（attention #925300）は「判定」にだけ使う（2026-10-18・オーナー「茶色が多めで違和感」）。**
- * 判定のバッジ（記号＋ラベル＋色）と、判定カードの左の帯だけ。必要額の帯・棒・面、
- * 補足の箱、大きな金額の数字は、判定ではないのでブルー・ネイビーの系統で塗る。
+ * **判定の色（2026-10-18・オーナー確定）**：不足の可能性＝ピンク（不足専用の `--fa-shortage*`）、
+ * 幅の中・要確認＝青みの灰（色を足さない）、減らせる・足りる＝グリーン。緑はこの「良い判定」の意味だけに使う
+ * （リンクは青）。必要額の帯・棒・面、補足の箱、大きな金額の数字は判定ではないのでブルー・ネイビー。
+ * `--fa-attention`（茶）は判定には使わず、注意書きの箱などのために残す。
  */
 [data-theme="fintech"] {
   /* ============================================================
@@ -39,6 +40,14 @@
   --fa-positive-bg: #e8f6ec;
   --fa-attention: #925300;
   --fa-attention-bg: #fff1de;
+  /* 不足の可能性（判定）専用。白地で文字 6.8:1（AA）。ブランドの赤 #ff385c は文字に使えない（3.5:1） */
+  --fa-shortage: #9d3656;
+  --fa-shortage-bg: #fff0f4;
+  --fa-shortage-border: #e7b3c3;
+  /* 幅の中・要確認（判定）。色の系統を増やさず青みの灰 */
+  --fa-check: #3d5670;
+  --fa-check-bg: #eef3f8;
+  --fa-check-border: #c9d6e3;
   --fa-neutral: #506a84;
   --fa-neutral-bg: #eef3f8;
   /* 必要額（支出側）はブルー、収入・資産（受け皿の側）はグリーンの系統。茶は判定にとっておく */
@@ -84,18 +93,24 @@
   --color-warning-text: var(--fa-attention);
 
   /* 判定の色（アイコンとラベルは部品が出す） */
-  --color-verdict-shortage: var(--color-warning);
-  --color-verdict-shortage-text: var(--color-warning-text);
+  --color-verdict-shortage: var(--fa-shortage);
+  --color-verdict-shortage-text: var(--fa-shortage);
   --color-verdict-reducible: var(--color-success);
   --color-verdict-reducible-text: var(--color-success-text);
   --color-verdict-adequate: var(--fa-neutral);
   --color-verdict-none: var(--fa-neutral);
 
   /* 判定バッジの地色（Fintech A で追加。tokens.css には無い名前） */
-  --color-verdict-shortage-bg: var(--fa-attention-bg);
+  --color-verdict-shortage-bg: var(--fa-shortage-bg);
+  --color-verdict-shortage-border: var(--fa-shortage-border);
   --color-verdict-reducible-bg: var(--fa-positive-bg);
+  --color-verdict-reducible-border: #a9d6b8;
+  --color-verdict-check-text: var(--fa-check);
+  --color-verdict-check-bg: var(--fa-check-bg);
+  --color-verdict-check-border: var(--fa-check-border);
   --color-verdict-neutral: var(--fa-neutral);
   --color-verdict-neutral-bg: var(--fa-neutral-bg);
+  --color-verdict-neutral-border: #c9d6e3;
   --color-note-bg: var(--fa-surface-soft-blue);
   --color-note-text: #2d527c;
   --color-note-warning-bg: #fff8eb;
@@ -110,9 +125,9 @@
   /* 必要額の面・棒（数直線の帯・滝の棒・推移の面）。線より一段淡い */
   --chart-need: #4c95f5;
   --chart-need-soft: #b9d5f9;
-  /* 不足している分（階段の図で、収入が支出に届かない部分）。判定の色の地色を淡く */
-  --chart-gap: #fde6cc;
-  --chart-gap-edge: #e9b98a;
+  /* 不足している分（階段の図で、収入が支出に届かない部分）。不足の判定のピンクを淡く */
+  --chart-gap: #ffe3eb;
+  --chart-gap-edge: #e9a6bb;
   /* 支出／収入の対比（内訳の表の色見本）。支出はブルー、収入はグリーン */
   --chart-expense-1: var(--fa-navy-700);
   --chart-expense-2: var(--fa-blue-500);

@@ -90,36 +90,25 @@
   margin: 2px 0 0;
 }
 
-/* 判定は「ラベル＋色」。色だけで意味を伝えない（バッジに必ず文字が入る） */
+/* 判定は「記号＋ラベル＋色」。バッジはアプリ共通の部品（fintech.module.css の1か所） */
 .badge {
+  composes: badge from "../../src/design/fintech/fintech.module.css";
   flex: none;
-  font-size: 12px;
-  font-weight: 700;
-  border-radius: 999px;
-  padding: 5px 12px;
   white-space: nowrap;
 }
 
 .ok {
-  background: var(--mk-green-bg);
-  border: 1.5px solid var(--mk-green);
-  color: var(--mk-green-deep);
+  composes: badge_positive from "../../src/design/fintech/fintech.module.css";
 }
 .check {
-  background: var(--mk-amber-bg);
-  border: 1.5px solid var(--mk-amber);
-  color: var(--mk-amber-deep);
+  composes: badge_check from "../../src/design/fintech/fintech.module.css";
 }
-/* 不足は Warning（オレンジ）。赤に見える色を判定に使わない（CLAUDE.md・2026-10-17 UX レビュー） */
+/* 不足の可能性は不足専用のピンク。エラーの赤・ブランドの赤・CTA の色と混ぜない */
 .short {
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-verdict-shortage);
-  color: var(--color-verdict-shortage-text);
+  composes: badge_shortage from "../../src/design/fintech/fintech.module.css";
 }
 .none {
-  background: var(--mk-grey-bg);
-  border: 1.5px solid var(--mk-grey-border);
-  color: var(--mk-muted);
+  composes: badge_neutral from "../../src/design/fintech/fintech.module.css";
 }
 
 /*
@@ -262,8 +251,9 @@
   color: var(--mk-muted);
 }
 
+/* リンクは青（緑は「減らせる」の判定にだけ使う・2026-10-18 Codex UX レビュー） */
 .link {
-  color: var(--mk-green);
+  color: var(--color-link);
   font-weight: 700;
   font-size: 13px;
   text-decoration: underline;
@@ -611,10 +601,12 @@
 }
 
 .values .badge {
-  display: inline-block;
-  white-space: normal;
-  line-height: 1.4;
   margin-top: 2px;
+}
+
+/* セルの見出し。広い画面では列見出しがあるので出さない */
+.cellLabel {
+  display: none;
 }
 
 .crossing {
@@ -681,10 +673,6 @@
   width: 34%;
 }
 
-.values .badge {
-  padding: 3px 8px;
-}
-
 @media (max-width: 479px) {
   .verdictCell {
     display: none;
@@ -702,8 +690,50 @@
   .badgeNarrow .badge {
     white-space: nowrap;
   }
-  .table thead th:nth-child(1),
-  .table thead th:nth-child(2) {
-    width: 50%;
+  /*
+    必要額と保障を2列に押し込むと、幅のある金額が「約6,200万〜／1億600万円」と折れ、
+    隣の「0円」と高さがずれて崩れて見えた（2026-10-18・オーナー）。
+    狭い画面では「見出し：金額」の横1行ずつにする。列見出しは見た目だけ隠し、読み上げには残す
+  */
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .table,
+  .table tbody,
+  .table tr {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+  }
+  .table .rowHead {
+    display: block;
+  }
+  .values td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding: 2px var(--space-3);
+  }
+  .values td:nth-child(2) {
+    padding-bottom: var(--space-3);
+  }
+  .values td.verdictCell {
+    display: none;
+  }
+  .cellLabel {
+    display: block;
+    flex: none;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--mk-muted);
+  }
+  .values .figValue {
+    text-align: right;
   }
 }

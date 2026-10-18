@@ -14,16 +14,13 @@ import { VERDICT_AXIS } from "./verdictLabels.js";
 export function AxisBadge({
   badgeClassName,
   children,
-  stack = false,
 }: {
-  /** バッジ本体のクラス（色と形は各画面の既存のものを使う） */
+  /** バッジ本体のクラス（形と色は共通の判定バッジ `fintech.module.css` を composes したもの） */
   badgeClassName: string;
   children: ReactNode;
-  /** true なら軸名をバッジの上に積む（カード右上の狭い場所用）。false なら横に並べる */
-  stack?: boolean;
 }) {
   return (
-    <span className={stack ? s.stack : s.row}>
+    <span className={s.row}>
       <span className={s.axis}>{VERDICT_AXIS}</span>
       <span className={badgeClassName}>{children}</span>
     </span>

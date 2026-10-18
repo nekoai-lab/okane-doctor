@@ -99,7 +99,7 @@
   border-left-color: var(--mk-green);
 }
 .check {
-  border-left-color: var(--mk-amber);
+  border-left-color: var(--color-verdict-check-border);
 }
 .short {
   border-left-color: var(--color-verdict-shortage-text, var(--mk-red));
@@ -115,7 +115,7 @@
   color: var(--mk-green-deep);
 }
 .check .verdictTitle {
-  color: var(--mk-amber-deep);
+  color: var(--color-verdict-check-text);
 }
 .short .verdictTitle {
   color: var(--color-verdict-shortage-text, var(--mk-red-deep));
