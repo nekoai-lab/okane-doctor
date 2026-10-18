@@ -9,6 +9,7 @@ import { loadParams } from "../params/index.js";
 import { calcDeath } from "./death.js";
 import { projectDeath } from "./projection.js";
 import type { Household, Person } from "./types.js";
+import { labInput } from "./lab.js";
 import { survivorWorkAt, survivorWorkPlan, survivorWorkTotal, survivorWorkYears } from "./work.js";
 
 const P = loadParams("2026-08");
@@ -152,5 +153,47 @@ describe("総額と年次（台帳）が同じ式を通る", () => {
     const rows = projectDeath(P, household(emp(40, 300)), { asOfYear: 2026 }).rows;
     const at60 = rows.find((r) => r.ages.survivor === 60);
     expect(at60?.events.some((e) => e.startsWith("就労収入を見込むのは59歳まで"))).toBe(true);
+  });
+});
+
+describe("もしもラボで年齢を先へ進めたとき（PR #32 の QA）", () => {
+  // 本人・配偶者ともに50歳・配偶者年収300万円・子なし
+  const input = {
+    self: { age: 50, income: 500 * MAN, employment: "employee" as const },
+    spouse: { age: 50, income: 300 * MAN, employment: "employee" as const },
+    children: [],
+    housing: { type: "rent" as const },
+    assets: 300 * MAN,
+    monthlyLiving: 30 * MAN,
+    educationPlan: "public" as const,
+    coverageSelf: null,
+    coverageSpouse: null,
+  };
+  const remaining = (age: number) => {
+    const sp = labInput(input as never, age, "answer").spouse!;
+    const plan = survivorWorkPlan(P, sp);
+    return survivorWorkTotal(plan, sp.age, 0, 65 - sp.age);
+  };
+
+  it("いま60歳未満の配偶者は、進めた年齢が60歳以上でも就労収入が戻らない", () => {
+    expect(remaining(59)).toBe(240 * MAN);
+    expect(remaining(60)).toBe(0);
+    expect(remaining(63)).toBe(0);
+  });
+
+  it("いま60歳以上で働いている配偶者は、進めても65歳まで見込む", () => {
+    const sp = labInput(
+      { ...input, self: { ...input.self, age: 61 }, spouse: { ...input.spouse, age: 61 } } as never,
+      63,
+      "answer",
+    ).spouse!;
+    const plan = survivorWorkPlan(P, sp);
+    expect(plan.endAge).toBe(65);
+    expect(survivorWorkTotal(plan, sp.age, 0, 65 - sp.age)).toBe(240 * MAN * 2);
+  });
+
+  it("65歳まで働く比較で、いま60歳以上の年収0円の人に下限の年100万円を足さない", () => {
+    const plan = survivorWorkPlan(P, { age: 62, income: 0, employment: "none", workEndAge: 65 });
+    expect(plan.netAfter).toBe(0);
   });
 });

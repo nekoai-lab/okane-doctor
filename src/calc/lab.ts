@@ -21,6 +21,8 @@ export function labInput(input: DiagnoseInput, age: number, work: WorkLevel): Di
       ? {
           ...input.spouse,
           age: input.spouse.age + elapsed,
+          // 「すでに60歳以上で働いている」の例外は診断した時点の年齢で決める（work.ts）
+          ...(elapsed > 0 ? { diagnosedAge: input.spouse.diagnosedAge ?? input.spouse.age } : {}),
           income: Math.round(input.spouse.income * factor),
           // 「ゼロ」は働かないことの明示。当社基準の下限（独立後 年100万円）も外す（work.ts）
           ...(work === "zero" ? { noWork: true } : {}),

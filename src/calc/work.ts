@@ -29,15 +29,19 @@ export function survivorWorkPlan(p: ParamSet, survivor: Person): WorkPlan {
 
   const netNow = survivor.income * v(p, "netIncomeRatio");
   const endAge = survivor.workEndAge ?? v(p, "survivorWorkEndAge");
+  // 例外と下限は、ラボが進めた年齢ではなく診断した時点の年齢で決める
+  const ageAtDiagnosis = survivor.diagnosedAge ?? survivor.age;
   /**
    * **すでに終わりの年齢を過ぎて働いている人**には、いまの収入をそのまま算定期間の終わりまで使う。
    * いま60歳以上で働いている事実があるのに即0にしない。過去の減収も重ねない。
    * 働き始める見立ての下限（`postIndepMinIncome`）は、この年齢では置かない
    */
-  if (survivor.age >= endAge) {
+  if (ageAtDiagnosis >= endAge) {
     return { netNow, netAfter: netNow, endAge: v(p, "pensionAge") };
   }
-  return { netNow, netAfter: Math.max(netNow, v(p, "postIndepMinIncome")), endAge };
+  // 65歳まで働く比較で、いま60歳以上の人に「働き始める見立て」の下限を後から足さない
+  const floor = ageAtDiagnosis < v(p, "survivorWorkEndAge") ? v(p, "postIndepMinIncome") : 0;
+  return { netNow, netAfter: Math.max(netNow, floor), endAge };
 }
 
 /** その年の就労収入。`ageNow` はその年の遺族の年齢、`inDependent` は末子の独立前か */
