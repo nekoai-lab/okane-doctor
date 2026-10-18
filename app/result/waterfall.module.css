@@ -36,10 +36,10 @@
   background: var(--mk-green);
 }
 .lgNeed {
-  background: var(--mk-amber);
+  background: var(--chart-need, var(--mk-amber));
 }
 .lgSurplus {
-  background: #cfe0d5;
+  background: var(--mk-green-bg, #cfe0d5);
   border: 1.5px dashed var(--mk-green);
 }
 
@@ -80,8 +80,9 @@
   white-space: nowrap;
 }
 
+/* 結論行のラベルは必要額と同じブルー。判定は上の判定カードとバッジが出すので、ここは茶にしない（2026-10-18） */
 .labelResult {
-  color: var(--mk-amber-text);
+  color: var(--chart-need-line, var(--mk-amber-text));
 }
 
 /* 結論行：ラベルの下に金額（横に並べると幅のある金額にラベルが押されて縦に折れる） */
@@ -106,7 +107,7 @@
 }
 .amountNeed {
   font-size: 20px;
-  color: var(--mk-amber-text);
+  color: var(--mk-ink, var(--mk-amber-text));
   /* 下端・上端はそれぞれ分割不可（RangeText）。折り返すなら「〜」の後ろだけ */
   white-space: normal;
 }
@@ -125,7 +126,7 @@
 /* 回答でも出典でもない導出の説明。キャプションと同じ薄さにそろえる */
 .note {
   font-size: 12px;
-  color: #8d968f;
+  color: var(--mk-muted);
   line-height: 1.4;
 }
 
@@ -145,7 +146,7 @@
 }
 
 .barTotal {
-  background: #4a5a53;
+  background: var(--color-text-secondary, #4a5a53);
 }
 .cover1 {
   background: var(--mk-green);
@@ -163,14 +164,14 @@
   これは総額を超えて余ったぶんで、性質が違う。
 */
 .barSurplus {
-  background: #cfe0d5;
+  background: var(--mk-green-bg, #cfe0d5);
   border: 1.5px dashed var(--mk-green);
 }
 
 /* 民間保険で備える額。T-B でレンジが復活したら、この帯が幅を持つ */
 .barNeed {
-  background: rgb(166 105 15 / 26%);
-  border: 1.5px solid var(--mk-amber);
+  background: var(--chart-need-soft, rgb(166 105 15 / 26%));
+  border: 1.5px solid var(--chart-need, var(--mk-amber));
   box-sizing: border-box;
 }
 
@@ -179,7 +180,7 @@
   top: 0;
   bottom: 0;
   width: 3px;
-  background: var(--mk-amber);
+  background: var(--chart-need, var(--mk-amber));
   border-radius: 2px;
 }
 

@@ -185,7 +185,7 @@ function Curve({
         y={mobile ? 204 : 152}
         textAnchor="middle"
         fontSize={font}
-        fill="var(--color-warning-text)"
+        fill="var(--chart-need-line, var(--color-warning-text))"
       >
         {mobile ? "必要額の幅" : "必要額のめやす（幅）"}
       </text>

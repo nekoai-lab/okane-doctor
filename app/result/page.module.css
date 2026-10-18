@@ -278,10 +278,11 @@
   color: var(--mk-amber-deep);
   background: var(--mk-amber-bg);
 }
+/* 不足は判定の色（Fintech A では茶寄りのオレンジ）。赤に見える色は使わない */
 .narrationBadge.short {
-  border-color: var(--mk-red);
-  color: var(--mk-red-deep);
-  background: var(--mk-red-bg);
+  border-color: var(--color-verdict-shortage, var(--mk-red));
+  color: var(--color-verdict-shortage-text, var(--mk-red-deep));
+  background: var(--color-verdict-shortage-bg, var(--mk-red-bg));
 }
 
 /* 台帳の行と同じ：ラベル（小）の下に値（明朝）。行頭でそろえる */
@@ -835,24 +836,24 @@
   色はモック（`docs/design-mock/tokens.css`）の ink / 反転テキストをそのまま使う。
 */
 .statement {
-  background: #1e2a26;
+  background: var(--color-surface-inverse, #1e2a26);
   border-radius: 16px;
   padding: var(--space-6) var(--space-5);
   margin: var(--space-7) 0 0;
 }
 
 .statementHead {
-  font-family: "Shippori Mincho", serif;
+  font-family: var(--mk-font-display);
   font-size: 19px;
   font-weight: 700;
-  color: #f7f5f0;
+  color: var(--color-text-on-inverse, #f7f5f0);
   line-height: 1.5;
   margin: 0 0 var(--space-2);
 }
 
 .statementBody {
   font-size: 13px;
-  color: #b9c4bd;
+  color: rgb(255 255 255 / 78%);
   line-height: 1.8;
   margin: 0;
 }

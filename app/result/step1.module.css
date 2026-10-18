@@ -22,7 +22,7 @@
   height: 30px;
   border-radius: 999px;
   background: var(--mk-ink);
-  color: #f7f5f0;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -127,16 +127,16 @@
 /* キーは「回答:」キャプションと同じ薄墨・小サイズ。目に入るのは値のほうでよい */
 .chipKey {
   font-size: 12px;
-  color: #a5aca7;
+  color: var(--mk-muted);
   white-space: nowrap;
 }
 
 .chipValue {
   font-size: 12.5px;
-  color: #2c3833;
+  color: var(--mk-ink-2);
 }
 
-/* 推定で補った項目＝橙。**答えたことと色で分ける**のがこのブロックの要点 */
+/* 推定で補った項目＝淡いブルーの箱。**答えたこと（白い札）と色で分ける**のがこのブロックの要点。判定ではないので茶にしない（2026-10-18） */
 /* 推定0件のときの1行。良い知らせなので緑の系統で、ただし控えめに */
 .noEstimate {
   font-size: 12px;
@@ -159,8 +159,8 @@
 }
 
 .estimates {
-  background: var(--mk-amber-bg);
-  border: 1px solid var(--mk-amber-border);
+  background: var(--color-info-bg, var(--mk-amber-bg));
+  border: 1px solid var(--color-info-border, var(--mk-amber-border));
   border-radius: 12px;
   padding: var(--space-4);
   display: flex;
@@ -171,7 +171,7 @@
 .estimatesHead {
   font-size: 13px;
   font-weight: 700;
-  color: var(--mk-amber-deep);
+  color: var(--color-info-text, var(--mk-amber-deep));
   margin: 0;
 }
 
@@ -189,16 +189,16 @@
 
 .estimateNote {
   font-size: 12px;
-  color: var(--mk-amber-body);
+  color: var(--color-info-text, var(--mk-amber-body));
   line-height: 1.6;
   margin: 0;
 }
 
 .estimatesFoot {
   font-size: 12px;
-  color: var(--mk-amber-body);
+  color: var(--color-info-text, var(--mk-amber-body));
   line-height: 1.7;
-  border-top: 1px solid var(--mk-amber-border);
+  border-top: 1px solid var(--color-info-border, var(--mk-amber-border));
   padding-top: var(--space-3);
   margin: 0;
 }

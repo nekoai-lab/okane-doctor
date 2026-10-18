@@ -215,13 +215,13 @@
 }
 .lgLiving {
   width: 20px;
-  border-top: 3px solid var(--mk-red);
+  border-top: 3px solid var(--chart-need-line, var(--mk-red));
 }
 .lgGap {
   width: 14px;
   height: 10px;
-  background: rgb(156 70 51 / 15%);
-  border: 1px solid var(--mk-red);
+  background: var(--chart-gap, rgb(156 70 51 / 15%));
+  border: 1px solid var(--chart-gap-edge, var(--mk-red));
 }
 
 .chart {
@@ -250,29 +250,31 @@
   fill: var(--mk-muted);
 }
 
+/* 不足が最大の期間。判定ではなく「ここを見て」の印なので、ネイビーを薄く */
 .worstBand {
-  fill: rgb(156 70 51 / 7%);
+  fill: rgb(16 42 80 / 6%);
 }
 
 .worstLabel {
   font-size: 12.5px;
   font-weight: 700;
-  fill: var(--mk-red-deep);
+  fill: var(--mk-ink);
 }
 
 .stepLine {
-  stroke: #cfc9bb;
+  stroke: var(--mk-border-btn);
   stroke-dasharray: 3 4;
 }
 
 /* 保険で埋める不足。**塗りだけで、輪郭線は引かない**（線を引くと階段と競合する） */
 .gap {
-  fill: rgb(156 70 51 / 15%);
+  fill: var(--chart-gap, rgb(156 70 51 / 15%));
 }
 
+/* 生活費（必要額の側）。数直線・滝と同じブルー（茶は判定にだけ使う・2026-10-18） */
 .living {
   fill: none;
-  stroke: var(--mk-red);
+  stroke: var(--chart-need-line, var(--mk-red));
   stroke-width: 3;
 }
 
@@ -296,7 +298,7 @@
 .stepNum {
   font-size: 12.5px;
   font-weight: 700;
-  fill: #f7f5f0;
+  fill: #fff;
 }
 
 /*
@@ -355,7 +357,7 @@
   height: 22px;
   border-radius: 999px;
   background: var(--mk-ink);
-  color: #f7f5f0;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;

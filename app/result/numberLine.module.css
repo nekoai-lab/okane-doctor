@@ -45,16 +45,16 @@
   fill: var(--mk-muted);
 }
 
-/* 必要額の幅。滝・診断表と同じ橙 */
+/* 必要額の幅。滝・推移の図と同じブルー（茶は判定にだけ使う・2026-10-18） */
 .band {
-  fill: rgb(166 105 15 / 26%);
-  stroke: var(--mk-amber);
+  fill: var(--chart-need-soft, rgb(166 105 15 / 26%));
+  stroke: var(--chart-need, var(--mk-amber));
   stroke-width: 1.5;
 }
 
 /* 幅が無いときの描画。帯と混同しないよう線で出す */
 .needTick {
-  stroke: var(--mk-amber);
+  stroke: var(--chart-need, var(--mk-amber));
   stroke-width: 3;
   stroke-linecap: round;
 }
@@ -76,32 +76,33 @@
 }
 
 .markNeed {
-  color: var(--mk-amber-text);
+  color: var(--chart-need-line, var(--mk-amber-text));
 }
 
 .markCov {
   color: var(--mk-ink);
 }
 
-/* 判定カード。色だけで意味を伝えないので、必ずラベル文字が入る */
+/*
+  判定カード。色だけで意味を伝えないので、必ず記号とラベル文字が入る。
+  地は白に近い灰で、判定の色は左の帯と見出しだけに使う（箱ごと茶や赤で塗らない・2026-10-18）
+*/
 .verdict {
   border-radius: 14px;
   padding: var(--space-4);
-  border: 1.5px solid var(--mk-grey-border);
-  background: var(--mk-grey-bg);
+  border: 1px solid var(--mk-hairline);
+  border-left: 4px solid var(--mk-grey-border);
+  background: var(--mk-surface-alt);
 }
 
 .ok {
-  border-color: var(--mk-green);
-  background: var(--mk-green-bg);
+  border-left-color: var(--mk-green);
 }
 .check {
-  border-color: var(--mk-amber);
-  background: var(--mk-amber-bg);
+  border-left-color: var(--mk-amber);
 }
 .short {
-  border-color: var(--mk-red);
-  background: var(--mk-red-bg);
+  border-left-color: var(--color-verdict-shortage-text, var(--mk-red));
 }
 
 .verdictTitle {
@@ -117,13 +118,13 @@
   color: var(--mk-amber-deep);
 }
 .short .verdictTitle {
-  color: var(--mk-red-deep);
+  color: var(--color-verdict-shortage-text, var(--mk-red-deep));
 }
 
 .verdictBody {
   font-size: 13px;
   line-height: 1.85;
-  color: #2c3833;
+  color: var(--mk-ink-2);
   margin: 0;
 }
 
