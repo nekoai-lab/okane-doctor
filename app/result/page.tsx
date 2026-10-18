@@ -698,7 +698,7 @@ export default async function ResultPage({
   const hh = figures.household;
 
   /**
-   * リスク別健康診断表の6行（仕様 §5.3）。
+   * リスク別の診断表の6行（仕様 §5.3）。
    *
    * **死亡は本人・配偶者を2行に分ける。** 個人の判定が正で、世帯の集約（組み替えの余地など）は
    * 軸が違うのでここには混ぜない（世帯の結論は下の死亡詳細セクションに出る）。
@@ -1106,7 +1106,7 @@ export default async function ResultPage({
         rows={rows}
       />
 
-      {/* 根拠 1：リスク別健康診断表（仕様 §5.3） */}
+      {/* 根拠 1：リスク別の診断表（仕様 §5.3） */}
       <RiskTable
         caption={caption}
         countUnit={unsupportedCount > 0 ? "つのリスク" : "つのリスクを診断"}

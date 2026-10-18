@@ -1,5 +1,5 @@
 /**
- * リスク別健康診断表（結果画面の玄関・仕様 §5.3）
+ * リスク別の診断表（結果画面の玄関・仕様 §5.3）
  *
  * **3列の表にする（2026-10-18 オーナー決定・AUDIT 2-3）。** 列は「必要額／いまの保障・貯蓄／判定」。
  * カードごとに上限が違うミニ数直線は、カードどうしで棒の長さを比べる誤読を招き、
@@ -116,7 +116,7 @@ export function RiskTable({
   return (
     <section className={s.wrap} aria-labelledby="risk-table-heading">
       <h2 className={s.heading} id="risk-table-heading">
-        あなたのお金の健康診断表
+        あなたのリスク別の診断表
       </h2>
       {/* 自称語（正直・安心など）を使わない。機能を書く（UIラベル規約・2026-10-17 §指摘） */}
       {countUnit && (

@@ -14,7 +14,7 @@ export interface WatchRunOptions {
   params: ParamSet;
   now: Date;
   webhookUrl: string;
-  /** Slack通知のリンク先を組み立てる基底URL(例: https://okane-kenko-xxx.a.run.app) */
+  /** Slack通知のリンク先を組み立てる基底URL(例: https://okane-doctor-xxx.a.run.app) */
   baseUrl: string;
   /** テスト用に差し替える(既定はグローバルの fetch) */
   fetchImpl?: typeof fetch;

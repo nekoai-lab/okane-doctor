@@ -1,5 +1,5 @@
 /*
-  リスク別健康診断表（仕様 §5.3 / モック docs/design-mock/check.html）
+  リスク別の診断表（仕様 §5.3 / モック docs/design-mock/check.html）
 
   色と字は再設計のトークン（docs/design-mock/tokens.css）から取る。
   **このセクションの中だけに閉じて定義する。** ページの下半分（死亡の詳細）はまだ旧トークン

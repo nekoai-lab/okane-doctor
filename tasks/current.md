@@ -214,3 +214,10 @@
 - やり残し：320px では図の中の字が約9.4px（390px は 12px 以上）
 - 2026-10-18（Mac mini）：request-qa（228ab06）blocking なしで qa-pass。UX 25回目で ux-pass（8752674）。320px の図の字（約9.4px）はこの PR では直さず、別の直しに回すと UX_REVIEW.md に書いた
 - 次の1手：CI を確かめて #22 をマージする（オーナーの OK 待ち）
+
+## fix/product-name（旧名の残り・2026-10-18・Claude Code）
+
+- 結果画面の見出し「あなたのお金の健康診断表」を「あなたのリスク別の診断表」に（コメントの「リスク別健康診断表」も）。制度監視の User-Agent を okane-doctor-param-watch に、run.ts の例の URL を okane-doctor に
+- タブのタイトルはすでに全ページ「お金の町医者」だった（確認のみ）。package.json の name も okane-doctor
+- 残したもの：cloudbuild・Firestore・ARCHITECTURE などの okane-kenko は、前身の本番に触らないための説明と設定なので残す。管理画面のクッキーの鍵の用途名（`src/paramwatch/auth.ts` の "okane-kenko/admin/v1"）は認証にかかわるので、この PR では変えない
+- 次の1手：UX レビュー＋request-qa → マージ
