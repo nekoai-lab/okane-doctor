@@ -2,7 +2,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { LabData, LabPoint } from "../../src/calc/lab.js";
-import { labCoverageDifference, labRisingIntervals } from "../../src/calc/labView.js";
+import {
+  type LabRiseCause,
+  labCoverageDifference,
+  labRisingIntervals,
+} from "../../src/calc/labView.js";
 import { AppHeader, Button, VerdictBadge } from "../../src/design/fintech/index.js";
 import { VERDICT_BADGE } from "../../src/design/fintech/verdict.js";
 import { formatMan, formatRange } from "../../src/design/tokens.js";
@@ -28,6 +32,16 @@ const SCENARIO_TITLE: Record<string, string> = {
 };
 /** 貯蓄の判定の言葉は結果画面と同じ表。アイコンは VerdictBadge が VERDICT_BADGE から付ける（✓ ↔ ! …） */
 const SAVINGS_LABEL = { ...SAVINGS_VERDICT, pending: "未算定" };
+
+/** 必要額が上がる理由。どれを出すかはエンジンの材料（labRisingIntervals）が決める */
+const RISE_REASON: Record<LabRiseCause, (workEndAge: number) => string> = {
+  work_end: (age) => `配偶者が${age}歳になる年から就労収入を見込まないので、支えが減るためです。`,
+  range_rule: () =>
+    "不足や余裕が小さくなると、葬儀・予備費に生活費の数か月分を足した幅で示すためです。",
+  support_drop: () =>
+    "年齢が進むと、減る支出より、減る支え（年金や就労収入）のほうが大きくなるためです。",
+  other: () => "この年齢で計算の内訳が変わるためです。",
+};
 
 /** 年収の表示。0円に「約」を付けない（少しの収入があるように読める・PR #32 の UX レビュー） */
 function incomeText(yen: number): string {
@@ -438,8 +452,14 @@ export function Lab({
               )}
               {rising.length > 0 && (
                 <p className={s.note}>
-                  {rising.map((r) => `${r.from}〜${r.to}歳`).join("・")}
-                  では必要額が上がります。家族の年齢に伴い、公的な支えや残る支出も変わるためです。
+                  {(["work_end", "range_rule", "support_drop", "other"] as const)
+                    .map((cause) => ({ cause, ages: rising.filter((r) => r.cause === cause) }))
+                    .filter((g) => g.ages.length > 0)
+                    .map(
+                      (g) =>
+                        `${g.ages.map((r) => `${r.from}〜${r.to}歳`).join("・")}では必要額が上がります。${RISE_REASON[g.cause](data.survivorWorkEndAge)}`,
+                    )
+                    .join("")}
                 </p>
               )}
               <Fold label="年齢ごとの金額" count={`（${scenario.points.length}年分）`}>
@@ -552,7 +572,8 @@ export function Lab({
                 </li>
                 <li>
                   末子独立後は最低でも年約{formatMan(data.postIndepMinIncome)}
-                  の手取り就労収入を推定します（当社基準）。ゼロでも推定は残り、働けない場合は必要額が増えます。
+                  の手取り就労収入を、配偶者が{data.survivorWorkEndAge}
+                  歳になるまで推定します（当社基準）。「ゼロ」ではこの推定も外します。
                 </li>
               </ul>
             </Fold>

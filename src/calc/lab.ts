@@ -5,6 +5,7 @@ import { type DiagnoseInput, diagnose } from "./index.js";
 import { envelope, crossingNote } from "./envelope.js";
 import { needForSickness } from "./scenarios.js";
 import { householdSummary, verdict3, verdictBySavings } from "./verdict3.js";
+import { survivorWorkPlan } from "./work.js";
 
 export const WORK_LEVELS = ["answer", "half", "zero"] as const;
 export type WorkLevel = (typeof WORK_LEVELS)[number];
@@ -48,6 +49,13 @@ export function labDeath(
     asOf,
   );
   const d = diagnose(p, at, asOf).self;
+  // 必要額が年齢で上がる理由を、画面が推測で書かないための材料（labView の labRisingIntervals）
+  const plan = at.spouse ? survivorWorkPlan(p, at.spouse) : null;
+  const spouseWorkCounted =
+    plan !== null &&
+    at.spouse !== null &&
+    plan.endAge > at.spouse.age &&
+    plan.netAfter + plan.netNow > 0;
   const summary = householdSummary([
     { coverage: at.coverageSelf, needLow: range.low, needHigh: range.high },
   ]);
@@ -64,6 +72,15 @@ export function labDeath(
     crossing: crossingNote(range),
     assumptions: d.assumptions.map((a) => a.note),
     annualIncome: at.spouse?.income ?? null,
+    spouseWorkCounted,
+    /** 回答の代表条件で見た、かかるお金と支えに数えたお金の総額（円） */
+    expenseTotal: d.expense.total,
+    incomeTotal: d.income.total,
+    /**
+     * 幅の作り方を決めている必要額の判定（ニーズ軸）。回答帯の候補ごと・候補の順に並ぶ。
+     * 端の2つ（いちばん軽い・重い）だけだと、中の候補が切り替わって下端が上がる年を拾えない
+     */
+    needVerdicts: range.ends.map((e) => e.verdict),
   };
 }
 
@@ -132,6 +149,7 @@ export function calculateLab(
     employee: input.self.employment === "employee",
     minAge,
     postIndepMinIncome: v(p, "postIndepMinIncome"),
+    survivorWorkEndAge: v(p, "survivorWorkEndAge"),
     maxBenefitMonths: p.shobyoTeate.maxMonths,
     deathSource: p.public.izokuKisoBase.source ?? "日本年金機構",
   };
