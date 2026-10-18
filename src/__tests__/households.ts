@@ -70,7 +70,8 @@ export const GOLDEN: GoldenCase[] = [
       coverageSpouse: 0,
     },
     expect: {
-      self: { verdict: "shortage", low: 2000, high: 3000, gap: "shortage", gapAmount: 1000 },
+      // 2026-10-18（ADR-030）：遺族の就労収入を60歳まで。専業の配偶者の独立後の下限（年100万円）が60歳で止まり 2000〜3000 → 2400〜3600（xlsx「就労収入(60歳まで)」で検算）
+      self: { verdict: "shortage", low: 2400, high: 3600, gap: "shortage", gapAmount: 1400 },
       spouse: { verdict: "ample", low: 200, high: 200, gap: "shortage", gapAmount: 200 },
       medical: "self_insurable",
       reform2028: true,
@@ -161,7 +162,8 @@ export const GOLDEN: GoldenCase[] = [
     },
     expect: {
       // 2026-10-17：中高齢寡婦加算を外した（遺族厚生年金が無いので受け取れない。ADR-024）。旧 1600/2500/600
-      self: { verdict: "shortage", low: 2500, high: 3700, gap: "shortage", gapAmount: 1500 },
+      // 2026-10-18（ADR-030）：同上。2500〜3700 → 2900〜4300（xlsx「就労収入(60歳まで)」で検算）
+      self: { verdict: "shortage", low: 2900, high: 4300, gap: "shortage", gapAmount: 1900 },
       spouse: { verdict: "ample", low: 200, high: 200, gap: "shortage", gapAmount: 200 },
       medical: "self_insurable",
       reform2028: false,

@@ -159,6 +159,49 @@ export function personRows(f: ResultFigures): PersonRow[] {
 }
 
 /**
+ * 就労収入を見込む年齢の前提と、65歳になるまで見込んだ場合の必要額（ADR-030）。
+ *
+ * **同じ指標（必要額）を、60歳まで・65歳までの2行で並べる**（PR #32 の UX レビュー）。
+ * 冒頭の主金額（差の幅）と並べると、意味の違う金額が前後の比較に読めるので、比較元にしない。
+ * 本人と配偶者は別の行。必要額が動かない人は出さない。金額はすべて `ResultFigures` から
+ */
+export interface WorkEndCompare {
+  lead: string;
+  rows: {
+    who: "self" | "spouse";
+    title: string;
+    lines: { label: string; text: string }[];
+  }[];
+}
+
+export function workEndCompare(
+  f: ResultFigures,
+  until65: ResultFigures,
+  endAge: number,
+  pensionAge: number,
+): WorkEndCompare | null {
+  const rows = people(f).flatMap((x) => {
+    const y = x.who === "self" ? until65.self : until65.spouse;
+    if (!y || (y.need.low === x.need.low && y.need.high === x.need.high)) return [];
+    return [
+      {
+        who: x.who,
+        title: `${x.who === "self" ? "あなた" : "配偶者"}に万一のときの必要額`,
+        lines: [
+          { label: `${endAge}歳になるまで見込む`, text: formatRange(x.need.low, x.need.high) },
+          { label: `${pensionAge}歳になるまで見込む`, text: formatRange(y.need.low, y.need.high) },
+        ],
+      },
+    ];
+  });
+  if (rows.length === 0) return null;
+  return {
+    lead: `遺された方の就労収入は、当社の前提で${endAge}歳になるまで見込んでいます（法律で決まった退職年齢ではありません）。${pensionAge}歳になるまで見込むと、必要額は下がります。年収などほかの条件は同じです。`,
+    rows,
+  };
+}
+
+/**
  * 減らせる箇所が1つも無いときの1文（CLAUDE.md「出力に必ず含めること」）。
  * 減らせる人がいれば、その差の幅は人ごとの行の主金額として出ているので null（同じ事実を2回出さない）。
  */

@@ -24,6 +24,7 @@ const base: SurvivorIncomeSensitivity = {
   yearsDependent: 15,
   yearsAlone: 0,
   yearsTotal: 15,
+  workEndAge: 60,
   needNow: { low: 200 * MAN, high: 200 * MAN },
   needAtHalf: { low: 200 * MAN, high: 200 * MAN },
   needAtZero: { low: 2100 * MAN, high: 3200 * MAN },

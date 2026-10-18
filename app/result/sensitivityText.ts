@@ -90,6 +90,7 @@ export function sensitivityText(sv: SurvivorIncomeSensitivity, who: "self" | "sp
     sv.annualNet === sv.netAfter
       ? `手取り 年${bare(sv.annualNet)}万円×${sv.yearsTotal}年`
       : `手取り 年${bare(sv.annualNet)}万円×${sv.yearsDependent}年＋年${bare(sv.netAfter)}万円×${sv.yearsAlone}年`;
-  const lead = `この判定を支えているのは、${label}の就労収入 ${total}（${breakdown}）です。`;
+  // 掛けている年数は算定期間ではなく、就労収入を見込む年齢まで（work.ts）。年数の出どころを同じ括弧で名乗る
+  const lead = `この判定を支えているのは、${label}の就労収入 ${total}（${breakdown}・${sv.workEndAge}歳まで）です。`;
   return `${lead}${sensitivityMove(sv)}`;
 }

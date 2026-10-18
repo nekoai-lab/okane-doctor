@@ -21,6 +21,7 @@ import { v } from "../params/index.js";
 import { annualEducation } from "./death.js";
 import { chukoreiKafuAnnual, izokuKisoAnnual, izokuKoseiAnnual, koseiYears } from "./pension.js";
 import type { EducationPlan, Household } from "./types.js";
+import { survivorWorkAt, survivorWorkPlan } from "./work.js";
 
 /**
  * 行ごとの変動率（年率）。**支出だけに掛けない。**
@@ -106,8 +107,8 @@ export function projectDeath(
 
   const koseiAnnual = izokuKoseiAnnual(p, deceased);
   const koseiLimit = survivor ? koseiYears(p, children.length > 0, survivor.age, yTotal) : 0;
-  const netNow = survivor ? survivor.income * v(p, "netIncomeRatio") : 0;
-  const netAfter = Math.max(netNow, v(p, "postIndepMinIncome"));
+  // 就労収入は総額と同じ式（work.ts）。年ごとに遺族の年齢で終わりの年齢を判定する
+  const workPlan = survivor ? survivorWorkPlan(p, survivor) : null;
 
   // 団信なしの住宅ローンは、総額では残高を一括で計上している。年次では返済として
   // 均等に割る（FP協会も「69歳まで一定」として扱う）。一括のままだと谷が見えない。
@@ -154,7 +155,10 @@ export function projectDeath(
     expense.total = expense.living + expense.education + expense.housing + expense.funeral;
 
     const income = {
-      work: survivor && inTerm ? grow(inDep ? netNow : netAfter, rates.work, t) : 0,
+      work:
+        survivor && workPlan && inTerm
+          ? grow(survivorWorkAt(workPlan, survivor.age + t, inDep), rates.work, t)
+          : 0,
       pensionBasic:
         survivor && inTerm ? grow(izokuKisoAnnual(p, agesNow), rates.pensionBasic, t) : 0,
       pensionKosei: survivor && t < koseiLimit ? grow(koseiAnnual, rates.pensionKosei, t) : 0,
@@ -210,6 +214,11 @@ export function projectDeath(
         row.events.push("中高齢寡婦加算が始まる");
       }
       if (prev.expense.education > 0 && expense.education === 0) row.events.push("教育費が終わる");
+      if (prev.income.work > 0 && income.work === 0 && inTerm && survivor) {
+        row.events.push(
+          `就労収入を見込むのは${survivor.age + t - 1}歳まで（この年から入れていません）`,
+        );
+      }
       if (prev.income.pensionKosei > 0 && income.pensionKosei === 0) {
         row.events.push("遺族厚生年金が終わる");
       }

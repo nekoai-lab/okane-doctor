@@ -125,13 +125,18 @@ describe("ラボ：既存算定と同じ必要額を表示する", () => {
       expect(item.savingsVerdict).toBe(item.need.low > 0 ? "shortage" : "uncertain");
     }
   });
-  it("配偶者収入ゼロは切替のどの段でも同じ結果", () => {
+  it("配偶者収入ゼロ：回答どおりと半分は同じ、「ゼロ」は独立後の当社基準の見込みも外す", () => {
     const answers = { ...input, spouse: { ...input.spouse!, income: 0 } };
     const data = calculateLab(p, answers, [answers, answers], date);
     expect(data.hasSpouse).toBe(true);
     expect(data.work[0].now.annualIncome).toBe(0);
     expect(data.work[0].points).toEqual(data.work[1].points);
-    expect(data.work[0].points).toEqual(data.work[2].points);
+    // 2026-10-18：「ゼロ」は働かないことの明示なので、独立後の年100万円の見込み（当社基準）より優先する。
+    // 以前は年収0円と同じ扱いで見込みが残り、「ゼロ」を選んでも必要額が動かなかった
+    const now = data.work[0].now;
+    const zero = data.work[2].now;
+    expect(zero.low).toBeGreaterThanOrEqual(now.low);
+    expect(zero.high).toBeGreaterThan(now.high);
   });
   it("期限切れの制度では試算を止める", () => {
     expect(() => calculateLab(p, input, [input, input], new Date("2100-01-01"))).toThrow();

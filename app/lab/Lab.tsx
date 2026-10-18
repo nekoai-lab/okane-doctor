@@ -28,6 +28,12 @@ const SCENARIO_TITLE: Record<string, string> = {
 };
 /** 貯蓄の判定の言葉は結果画面と同じ表。アイコンは VerdictBadge が VERDICT_BADGE から付ける（✓ ↔ ! …） */
 const SAVINGS_LABEL = { ...SAVINGS_VERDICT, pending: "未算定" };
+
+/** 年収の表示。0円に「約」を付けない（少しの収入があるように読める・PR #32 の UX レビュー） */
+function incomeText(yen: number): string {
+  return yen === 0 ? "0円" : `約${formatMan(yen)}`;
+}
+
 function AmountRange({ low, high }: { low: number; high: number }) {
   const [start, end] = formatRange(low, high).split("〜");
   return (
@@ -365,18 +371,19 @@ export function Lab({
                 </span>
                 {/* 保険なしの世帯では差＝必要額そのもので、同じ額の繰り返しになるので出さない */}
                 {difference && data.coverage !== 0 && (
-                  <p>
+                  <p data-difference="">
                     {difference.verdict === "pending" ? (
                       "いまの保険が不明のため、差は未算定です。"
                     ) : difference.verdict === "uncertain" ? (
                       "いまの前提では、いまの保険は必要額の幅の中に収まる可能性があります。"
                     ) : (
+                      // 何が何を上回る（足りない）のかを先に名乗る。必要額と差は別の事実なので、
+                      // 両端の和がいまの保険と同じ世帯で同じ数字になっても、ラベルを分けて出す（PR #32 の UX レビュー）
                       <>
-                        いまの前提では、
-                        <AmountRange low={difference.low!} high={difference.high!} />{" "}
                         {difference.verdict === "shortage"
-                          ? "不足する可能性があります。"
-                          : "上回る可能性があります。"}
+                          ? "いまの保険が必要額に足りない分："
+                          : "いまの保険が必要額を上回る分："}
+                        <AmountRange low={difference.low!} high={difference.high!} />
                       </>
                     )}
                   </p>
@@ -526,7 +533,7 @@ export function Lab({
                       {work === i && <span aria-hidden="true">✓ </span>}
                       {label}
                       <span className={s.buttonIncome}>
-                        年収 約{formatMan(data.work[i].now.annualIncome ?? 0)}
+                        年収 {incomeText(data.work[i].now.annualIncome ?? 0)}
                       </span>
                     </button>
                   ))}
@@ -537,7 +544,7 @@ export function Lab({
             <Fold label="就労の試算の前提" count="（3項目）">
               <ul>
                 <li>
-                  試算する年収は約{formatMan(scenario.now.annualIncome ?? 0)}
+                  試算する年収は{incomeText(scenario.now.annualIncome ?? 0)}
                   です。回答額・半分・ゼロを比較します。
                 </li>
                 <li>

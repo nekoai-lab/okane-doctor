@@ -18,7 +18,9 @@ import {
   noReducibleSentence,
   personRows,
   reviewReasonSentence,
+  workEndCompare,
 } from "./conclusionModel.js";
+import { workingUntil } from "../../src/calc/work.js";
 import { ownStandardEstimates } from "./estimates.js";
 import { DEATH_LABEL } from "./verdictLabels.js";
 
@@ -228,5 +230,51 @@ describe("次の見直しのめやすの理由", () => {
   it("起点と算定の終端の注記は理由に使わない", () => {
     const t = reviewReasonSentence(["診断の起点", "算定はここまで（配偶者65歳）"]);
     expect(t).toBe("遺族年金の額が変わる年なので、あなたに万一のときの必要額が変わります。");
+  });
+});
+
+describe("就労収入の終わりの年齢と、65歳まで働く場合の必要額（ADR-030）", () => {
+  const until65 = (q: string) => {
+    const { ri, f } = fromQuery(q);
+    const g = resultFigures(
+      P,
+      workingUntil(ri.input, 65),
+      ri.bands.map((b) => workingUntil(b, 65)),
+      AS_OF,
+    );
+    return { f, g, w: workEndCompare(f, g, 60, 65) };
+  };
+
+  it("不足世帯：本人と配偶者を別の行にし、同じ指標（必要額）を60歳まで・65歳までで並べる", () => {
+    const { f, g, w } = until65(SHORT);
+    expect(w?.lead).toContain("60歳になるまで見込んでいます");
+    expect(w?.lead).toContain("法律で決まった退職年齢ではありません");
+    expect(w?.lead).toContain("65歳になるまで見込むと、必要額は下がります");
+    expect(w?.rows.map((r) => r.title)).toEqual([
+      "あなたに万一のときの必要額",
+      "配偶者に万一のときの必要額",
+    ]);
+    expect(w?.rows[0].lines).toEqual([
+      { label: "60歳になるまで見込む", text: formatRange(f.self.need.low, f.self.need.high) },
+      { label: "65歳になるまで見込む", text: formatRange(g.self.need.low, g.self.need.high) },
+    ]);
+    expect(w?.rows[1].lines[1].text).toBe(formatRange(g.spouse!.need.low, g.spouse!.need.high));
+  });
+
+  it("組み替えの世帯：比較元は差の幅ではなく必要額", () => {
+    const { f, w } = until65(REBALANCE);
+    expect(w?.rows[0].lines[0].text).toBe(formatRange(f.self.need.low, f.self.need.high));
+  });
+
+  it("65歳まで働けば必要額は増えない（就労収入を減らすと必要額は減らない、の裏返し）", () => {
+    for (const q of [SHORT, REBALANCE]) {
+      const { f, g } = until65(q);
+      expect(g.self.need.high).toBeLessThanOrEqual(f.self.need.high);
+      expect(g.self.need.low).toBeLessThanOrEqual(f.self.need.low);
+    }
+  });
+
+  it("単身世帯：遺族がいないので書かない", () => {
+    expect(until65(SINGLE).w).toBeNull();
   });
 });

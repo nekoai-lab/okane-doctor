@@ -17,16 +17,19 @@ import { envelope } from "./envelope.js";
 import { resultFigures } from "./figures.js";
 import { diagnose } from "./index.js";
 import { verdict3 } from "./verdict3.js";
+import { withWorkEndAtPension } from "./__fixtures__/workEndAtPension.js";
 
 const P = loadParams("2026-08");
+/** 被験体を保つための、就労の終わりが65歳の params（ADR-030 前の前提・`__fixtures__/workEndAtPension.ts`） */
+const P65 = withWorkEndAtPension(P);
 const AS_OF = new Date("2026-10-17T12:00:00+09:00");
 const MAN = 10_000;
 
-function fromQuery(query: string, level: LivingLevel = "asis") {
+function fromQuery(query: string, level: LivingLevel = "asis", p = P) {
   const complete = toCompleteSelections(decodeSelections(query));
   if (!complete) throw new Error("入力が足りない");
-  const ri = resultInputs(P, complete, level, AS_OF);
-  return { complete, ri, f: resultFigures(P, ri.input, ri.bands, AS_OF) };
+  const ri = resultInputs(p, complete, level, AS_OF);
+  return { complete, ri, f: resultFigures(p, ri.input, ri.bands, AS_OF) };
 }
 
 /** コーディネーター指摘の世帯：代表値 400〜700万・回答の幅 200〜2,000万・本人の保障 1,000万 */
@@ -38,7 +41,8 @@ const SHORT =
 
 describe("最終の必要額は回答の幅を包絡したレンジで、判定もそこから出す", () => {
   it("回帰：代表値では減らせるが、回答の幅では圏内の世帯で、冒頭も「圏内・要精査」になる", () => {
-    const { f } = fromQuery(WIDE);
+    // 被験体を保つため就労の終わりを65歳に固定（ADR-030 で60歳にすると幅の上端が動く）
+    const { f } = fromQuery(WIDE, "asis", P65);
     // 前提の確認（この世帯がまだ被験体であること）：代表値と幅でレンジが違う
     expect(f.self.point.range).toEqual({ low: 400 * MAN, high: 700 * MAN });
     expect(f.self.need).toEqual({ low: 200 * MAN, high: 2000 * MAN });
@@ -219,15 +223,16 @@ describe("QA #1：年収の端は本人・配偶者で独立に組む（同じ�
 });
 
 describe("QA #2：包絡したレンジは、代表値の必要額の判定（ニーズ軸）で呼ばない", () => {
+  // 被験体を保つため就労の終わりを65歳に固定（ADR-030 で60歳にすると代表値が sufficient に動く）
   it("前提の確認：代表値は ample・厳しめ端は shortage", () => {
-    const { f } = fromQuery(QA2);
+    const { f } = fromQuery(QA2, "asis", P65);
     expect(f.self.point.verdict).toBe("ample");
     expect(f.self.band?.verdictStrict).toBe("shortage");
     expect(f.self.need.high).toBeGreaterThan(f.self.point.range.high);
   });
 
   it("レンジの呼び名に使う必要額の判定は mixed、内訳（代表値）の判定は ample のまま", () => {
-    const { f } = fromQuery(QA2);
+    const { f } = fromQuery(QA2, "asis", P65);
     expect(f.self.needVerdict).toBe("mixed");
     expect(f.diagnosis.self.rangeVerdict).toBe("mixed");
     expect(f.diagnosis.self.verdict).toBe("ample");

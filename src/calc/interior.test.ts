@@ -31,8 +31,11 @@ import { inputAtEnds } from "../wizard/uncertainty.js";
 import { decodeSelections } from "../wizard/url.js";
 import { resultFigures } from "./figures.js";
 import { type DiagnoseInput, diagnose } from "./index.js";
+import { withWorkEndAtPension } from "./__fixtures__/workEndAtPension.js";
 
 const P = loadParams("2026-08");
+/** 被験体を保つための、就労の終わりが65歳の params（ADR-030 前の前提・`__fixtures__/workEndAtPension.ts`） */
+const P65 = withWorkEndAtPension(P);
 const AS_OF = new Date("2026-10-17T12:00:00+09:00");
 const MAN = 10_000;
 
@@ -179,14 +182,15 @@ const HOUSEHOLDS: Array<[string, WizardSelections]> = [
   ],
 ];
 
-function figuresOf(sel: WizardSelections, level: LivingLevel = "asis") {
-  const ri = resultInputs(P, sel, level, AS_OF);
-  return { ri, f: resultFigures(P, ri.input, ri.bands, AS_OF) };
+function figuresOf(sel: WizardSelections, level: LivingLevel = "asis", p = P) {
+  const ri = resultInputs(p, sel, level, AS_OF);
+  return { ri, f: resultFigures(p, ri.input, ri.bands, AS_OF) };
 }
 
 describe("11回目の QA：区分の内側の必要額を取りこぼさない", () => {
   it("回帰：代表値は 600〜1,000万円なのに、最終の必要額が 200〜800万円で「減らせる」と出ていた", () => {
-    const { f } = figuresOf(selFromQuery(QA11));
+    // 被験体を保つため就労の終わりを65歳に固定（ADR-030 で60歳にすると代表値が shortage に動く）
+    const { f } = figuresOf(selFromQuery(QA11), "asis", P65);
     // 前提の確認（この世帯がまだ被験体であること）：代表値は当座資金（必要額の判定・ニーズ軸 sufficient）
     expect(f.self.point.verdict).toBe("sufficient");
     expect(f.self.point.range).toEqual({ low: 600 * MAN, high: 1000 * MAN });
@@ -260,7 +264,9 @@ function denseNeeds(sel: WizardSelections, dial: number): Sample[] {
   const axes = {
     self: span(L.self.income, S.self.income),
     spouse: span(L.spouse?.income ?? 0, S.spouse?.income ?? 0),
-    living: estimate ? span(base.monthlyLiving, base.monthlyLiving) : span(L.monthlyLiving, S.monthlyLiving),
+    living: estimate
+      ? span(base.monthlyLiving, base.monthlyLiving)
+      : span(L.monthlyLiving, S.monthlyLiving),
     assets: span(L.assets, S.assets),
     loan: span(loanOf(L), loanOf(S)),
   };

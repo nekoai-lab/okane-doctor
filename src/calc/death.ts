@@ -11,6 +11,7 @@ import { v } from "../params/index.js";
 import { chukoreiKafuTotal, izokuKisoTotal, izokuKoseiAnnual, koseiYears } from "./pension.js";
 import { REFORM_2028_NOT_APPLIED } from "./reform2028.js";
 import type { Assumption, DeathResult, EducationPlan, Household, Verdict } from "./types.js";
+import { survivorWorkPlan, survivorWorkTotal, survivorWorkYears } from "./work.js";
 
 function roundToUnit(x: number, unit: number): number {
   return Math.round(x / unit) * unit;
@@ -44,6 +45,11 @@ function buildSurvivorAssumptions(x: {
   hasChildren: boolean;
   /** 算定期間の終わり（`pensionAge`）。文言に書き写すと式を変えたとき文だけ古く残る */
   pensionAge: number;
+  /** 就労収入を見込む年齢の上限（`work.ts`）と、そのうち実際に積んだ年数 */
+  workEndAge: number;
+  workYears: number;
+  /** 独立後に就労収入を入れた年数（下限が効くのはこの年数だけ） */
+  workYearsAlone: number;
 }): Assumption[] {
   const man = (yen: number) => Math.round(yen / 10000).toLocaleString("ja-JP");
   const out: Assumption[] = [];
@@ -51,20 +57,29 @@ function buildSurvivorAssumptions(x: {
   if (x.hasSurvivor && x.survivorIncome > 0) {
     out.push({
       field: "survivor.income.flat",
-      label: `${x.yTotal}年間ずっと働き続ける`,
+      label: `${x.workEndAge}歳まで${x.workYears}年間働く`,
       value: x.survivorIncome,
       reason: "estimated",
       // **額面と手取りの役割を書き分ける。** 額面はユーザーが答えた値、手取りは計算に使う値
-      note: `年収${man(x.survivorIncome)}万円（手取りに換算して計算）が${x.pensionAge}歳まで途切れない扱いです。下がれば必要額は増えます。`,
+      note: `年収${man(x.survivorIncome)}万円（手取りに換算して計算）が${x.workEndAge}歳まで途切れない扱いです。下がれば必要額は増えます。`,
     });
   }
-  if (x.hasSurvivor && x.yAlone > 0) {
+  if (x.hasSurvivor && x.workYearsAlone > 0) {
     out.push({
       field: "survivor.income.floor",
       label: "独立後も収入は下がらない",
       value: x.netAfter,
       reason: "estimated",
       note: `手取り 年${man(x.netAfter)}万円を下回らない扱いです。`,
+    });
+  }
+  if (x.hasSurvivor && x.workEndAge < x.pensionAge) {
+    out.push({
+      field: "survivor.work.end",
+      label: `就労収入は${x.workEndAge}歳まで`,
+      value: x.workEndAge,
+      reason: "default",
+      note: `${x.workEndAge}歳から${x.pensionAge}歳までの就労収入は入れていません（就労収入を少なめに見込む当社の備え方で、法律で決まった退職年齢ではありません）。${x.pensionAge}歳まで働けば必要額は減ります。`,
     });
   }
   if (x.hasSurvivor) {
@@ -187,30 +202,30 @@ export function calcDeath(p: ParamSet, h: Household): DeathResult {
   let chukoreiKafu = 0;
   let survivorWork = 0;
   let netAfter = 0;
+  let workPlan: ReturnType<typeof survivorWorkPlan> | null = null;
+  let workYears = { dependent: 0, alone: 0 };
   /** 判定を支える前提。**`ample` 系に落ちたときだけ結果に載せる** */
   let survivorAssumptions: Assumption[];
 
   if (survivor) {
     pensionBasic = izokuKisoTotal(p, children, yTotal);
-    pensionKosei = izokuKoseiAnnual(p, deceased) * koseiYears(
-      p,
-      children.length > 0,
-      survivor.age,
-      yTotal,
-    );
+    pensionKosei =
+      izokuKoseiAnnual(p, deceased) * koseiYears(p, children.length > 0, survivor.age, yTotal);
     chukoreiKafu = chukoreiKafuTotal(p, survivor, deceased, children, yTotal);
 
-    // 就労収入の連続推定（ADR-008）：崖をつくらない
-    const netNow = survivor.income * v(p, "netIncomeRatio");
-    netAfter = Math.max(netNow, v(p, "postIndepMinIncome"));
-    survivorWork = netNow * yDep + netAfter * yAlone;
+    // 就労収入の連続推定（ADR-008）：崖をつくらない。見込むのは終わりの年齢まで（ADR-030・work.ts）
+    workPlan = survivorWorkPlan(p, survivor);
+    netAfter = workPlan.netAfter;
+    survivorWork = survivorWorkTotal(workPlan, survivor.age, yDep, yTotal);
+    workYears = survivorWorkYears(workPlan, survivor.age, yDep, yTotal);
 
-    if (survivor.income === 0) {
+    // 下限が実際に1年でも効いたときだけ「当社基準で補った」と言う（終わりの年齢の後は効かない）
+    if (survivor.income === 0 && workYears.alone > 0 && netAfter > 0) {
       assumptions.push({
         field: "survivor.income",
         value: v(p, "postIndepMinIncome"),
         reason: "estimated",
-        note: `末子独立後は年${Math.round(
+        note: `末子独立後は${workPlan.endAge}歳まで、年${Math.round(
           v(p, "postIndepMinIncome") / 10000,
         )}万円程度の就労収入があるものとして算定しています（当社基準）。`,
       });
@@ -226,6 +241,10 @@ export function calcDeath(p: ParamSet, h: Household): DeathResult {
     yAlone,
     hasChildren: children.length > 0,
     pensionAge,
+    // 「就労なし」の明示では終わりの年齢を語らない（働く前提そのものが無い）
+    workEndAge: workPlan && !survivor?.noWork ? workPlan.endAge : pensionAge,
+    workYears: workYears.dependent + workYears.alone,
+    workYearsAlone: workYears.alone,
   });
 
   const assets = h.assets;

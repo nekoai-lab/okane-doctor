@@ -19,18 +19,25 @@ const HOUSEHOLDS = {
   single: "v=1&sb=1996&emp=employee&sp=0&ch=&inc=lt600&as=lt500&liv=lt25&ho=rent&cvs=m1000",
 };
 
-/** カード1枚の見えている文字数の上限（空白を除く）。2026-10-18 の整理後の最大 + 1割ほど */
-const CARD_CHAR_LIMIT = 370;
+/**
+ * カード1枚の見えている文字数の上限（空白を除く）。2026-10-18 の整理後の最大 + 1割ほど。
+ * 2026-10-18 に 370 → 400：就労収入を60歳までにした（ADR-030）ことで、組み替えの世帯の必要額の推移に
+ * 上がる区間が出て、そのときだけ出る注記（「61〜62歳では必要額が上がります…」約46字）が加わったため。文言は足していない
+ */
+const CARD_CHAR_LIMIT = 400;
 
 /** 見えている文字だけ（閉じた details の中・ボタン・図は除く）をカードごとに返す */
 async function visibleTexts(page: Page) {
   return page.evaluate(() => {
-    const visible = (root: Element) => {
+    const visible = (root: Element, skipDifference = false) => {
       const out: string[] = [];
       const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
       for (let n = walker.nextNode(); n; n = walker.nextNode()) {
         const el = n.parentElement;
         if (!el || el.closest("button, svg, [aria-hidden='true']")) continue;
+        // 差の段落は「いまの保険が必要額を上回る分：」と役割を名乗る別の事実なので、繰り返しの数に入れない。
+        // 必要額の両端の和がいまの保険と同じ世帯では、差の幅が必要額の幅と同じ数字になる（PR #32 の UX レビュー）
+        if (skipDifference && el.closest("[data-difference]")) continue;
         if (!el.checkVisibility()) continue;
         out.push(n.textContent ?? "");
       }
@@ -39,7 +46,7 @@ async function visibleTexts(page: Page) {
     const main = document.querySelector("main");
     if (!main) throw new Error("main が無い");
     return {
-      page: visible(main),
+      page: visible(main, true),
       cards: [...main.querySelectorAll("section, footer")].map((c) => ({
         title: c.querySelector("h2")?.textContent ?? "(見出しなし)",
         text: visible(c),
@@ -58,6 +65,11 @@ for (const [name, query] of Object.entries(HOUSEHOLDS)) {
     const amounts = text.match(/約[\d,億]+(?:万)?(?:〜[\d,億]+)?万円/g) ?? [];
     const repeated = [...new Set(amounts.filter((a, i) => amounts.indexOf(a) !== i))];
     expect(repeated, `同じ金額が2回以上見えている（${name}）`).toEqual([]);
+
+    // 差の段落は、何の差かを先に名乗る
+    for (const t of await page.locator("[data-difference]").allTextContents()) {
+      expect(t).toMatch(/^(いまの保険が必要額を上回る分：|いまの保険が必要額に足りない分：|いまの)/);
+    }
 
     expect(text.split("次の一歩").length - 1, `「次の一歩」の数（${name}）`).toBe(1);
     expect(text).not.toContain("準備中");

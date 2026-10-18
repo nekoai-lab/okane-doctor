@@ -130,7 +130,8 @@ describe("感度は、カードと同じ暮らし方の目盛り・同じ回答�
     const input = { ...BASE, coverageSelf: 0, lifestyleDial: 1.1 };
     const s = survivorIncomeSensitivity(P, input, "self", AS_OF);
     if (!s || !input.spouse) throw new Error("感度が出ない");
-    const zero = { ...input, spouse: { ...input.spouse, income: 0 } };
+    // 「働けない場合」は就労なしの明示（独立後の当社基準の見込みも外す・2026-10-18）
+    const zero = { ...input, spouse: { ...input.spouse, income: 0, noWork: true } };
     // 働けない場合（生活費が効く側）で比べる。目盛り1.1と1.0で必要額が違うこと自体も確かめる
     expect(s.needAtZero).toEqual(diagnose(P, zero, AS_OF).self.range);
     expect(s.needAtZero).not.toEqual(diagnose(P, { ...zero, lifestyleDial: 1 }, AS_OF).self.range);
