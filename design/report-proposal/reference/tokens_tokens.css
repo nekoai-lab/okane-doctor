@@ -1,0 +1,37 @@
+/* Moshimo Lab visual tokens; opt-in only, no existing styles overwritten. */
+:root {
+  --ml-color-brand-900: #0C2954;
+  --ml-color-brand-700: #124D94;
+  --ml-color-brand-600: #006EE6;
+  --ml-color-brand-500: #1678F2;
+  --ml-color-brand-100: #EAF4FF;
+  --ml-color-text-primary: #102A50;
+  --ml-color-text-secondary: #536B87;
+  --ml-color-text-muted: #61748A;
+  --ml-color-surface-base: #FFFFFF;
+  --ml-color-surface-subtle: #F5F9FD;
+  --ml-color-surface-softBlue: #EFF7FF;
+  --ml-color-surface-border: #D8E4F0;
+  --ml-color-status-positive: #16734A;
+  --ml-color-status-positiveBg: #E8F6EC;
+  --ml-color-status-attention: #925300;
+  --ml-color-status-attentionBg: #FFF1DE;
+  --ml-color-status-neutral: #506A84;
+  --ml-color-status-neutralBg: #EEF3F8;
+  --ml-color-chart-line: #D76A2B;
+  --ml-color-chart-range: #F7D7BF;
+  --ml-color-chart-grid: #E3EAF2;
+  --ml-space-1: 4px;
+  --ml-space-2: 8px;
+  --ml-space-3: 12px;
+  --ml-space-4: 16px;
+  --ml-space-5: 20px;
+  --ml-space-6: 24px;
+  --ml-space-8: 32px;
+  --ml-radius-sm: 8px;
+  --ml-radius-md: 12px;
+  --ml-radius-card: 16px;
+  --ml-radius-pill: 999px;
+  --ml-font-sans: "Noto Sans JP", system-ui, sans-serif;
+  --ml-shadow-card: 0 4px 18px rgb(16 42 80 / 5%);
+}
