@@ -23,6 +23,10 @@
   line-height: 1.4;
   margin: 0 0 var(--space-2);
 }
+/* 「診断表」は一まとまり。320px で「表」だけが次の行に残らないように（見出し全体は折り返してよい・UX 28・29回目） */
+.nowrap {
+  white-space: nowrap;
+}
 
 .lead {
   font-size: 13.5px;
