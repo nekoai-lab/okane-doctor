@@ -552,3 +552,10 @@
   font-size: 12px;
   font-weight: var(--font-weight-bold);
 }
+
+/* 図や数字の前に置く、前提の1文。本文と同じ大きさで読ませる */
+.lead {
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0 0 12px;
+}

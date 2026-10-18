@@ -157,6 +157,13 @@ export function NeedBand({
 
   return (
     <>
+      {/*
+        「いま／10年後」が将来の予測に読まれないよう、固定している前提を先に言う（UX 34回目）。
+        `labDeath` は年齢だけを進め、収入・生活費・資産・ローン残高は回答のまま置いている
+      */}
+      <p className={r.lead}>
+        いまの制度・収入・生活費・資産・ローン残高を固定し、家族の年齢だけを進めた試算です。将来の予測ではありません。
+      </p>
       <div className={r.pair}>
         <div>
           <span className={r.pairYear}>いま（{now.year}年）</span>
