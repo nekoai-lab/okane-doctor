@@ -84,6 +84,29 @@ export function labDeath(
   };
 }
 
+/**
+ * 就労の前提の文を書くための材料（回答どおりの就労計画・ADR-030）。
+ * 画面が共通の定数（60歳・年100万円）から文を組むと、すでに60歳以上で働いている配偶者や
+ * 子のいない世帯で、エンジンが実際に使っている見込みと食い違う（UX 41回目）
+ */
+function spouseWorkFacts(p: ParamSet, input: DiagnoseInput) {
+  if (!input.spouse) return null;
+  const plan = survivorWorkPlan(p, input.spouse);
+  const continuing = (input.spouse.diagnosedAge ?? input.spouse.age) >= v(p, "survivorWorkEndAge");
+  return {
+    /** この年齢になった年から就労収入を入れない */
+    endAge: plan.endAge,
+    /** すでに終わりの年齢を過ぎて働いている（いまの収入のまま算定期間の終わりまで） */
+    continuing,
+    /** 当社基準の就労の終わりの年齢（ふつうの世帯の `endAge`） */
+    usualEndAge: v(p, "survivorWorkEndAge"),
+    /** 当社基準の下限（手取り・年額）。続けて働く人には置かない */
+    floor: continuing ? 0 : v(p, "postIndepMinIncome"),
+    hasChildren: input.children.length > 0,
+    counted: plan.endAge > input.spouse.age && plan.netNow + plan.netAfter > 0,
+  };
+}
+
 export function calculateLab(
   p: ParamSet,
   input: DiagnoseInput,
@@ -148,8 +171,7 @@ export function calculateLab(
     hasSpouse: input.spouse !== null,
     employee: input.self.employment === "employee",
     minAge,
-    postIndepMinIncome: v(p, "postIndepMinIncome"),
-    survivorWorkEndAge: v(p, "survivorWorkEndAge"),
+    spouseWork: spouseWorkFacts(p, input),
     maxBenefitMonths: p.shobyoTeate.maxMonths,
     deathSource: p.public.izokuKisoBase.source ?? "日本年金機構",
   };

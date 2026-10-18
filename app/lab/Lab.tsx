@@ -22,6 +22,7 @@ import { HERO_BADGE } from "../result/Hero.js";
 import { SAVINGS_LABEL as SAVINGS_VERDICT } from "../result/verdictLabels.js";
 import s from "./page.module.css";
 import { Words } from "./Words.js";
+import { workPlanNote, zeroIncomeNote } from "./workNote.js";
 
 const SCENARIO_TITLE: Record<string, string> = {
   hospital: "短期入院・手術",
@@ -457,7 +458,7 @@ export function Lab({
                     .filter((g) => g.ages.length > 0)
                     .map(
                       (g) =>
-                        `${g.ages.map((r) => `${r.from}〜${r.to}歳`).join("・")}では必要額が上がります。${RISE_REASON[g.cause](data.survivorWorkEndAge)}`,
+                        `${g.ages.map((r) => `${r.from}〜${r.to}歳`).join("・")}では必要額が上がります。${RISE_REASON[g.cause](data.spouseWork?.endAge ?? 0)}`,
                     )
                     .join("")}
                 </p>
@@ -566,17 +567,7 @@ export function Lab({
               <Fold label="就労の試算の前提" count="（2項目）">
                 <ul>
                   <li>配偶者の回答の年収は0円です。</li>
-                  <li>
-                    {data.work[0].now.spouseWorkCounted ? (
-                      <>
-                        末子独立後は年約{formatMan(data.postIndepMinIncome)}
-                        の手取り就労収入を、配偶者が{data.survivorWorkEndAge}
-                        歳になるまで見込みます（当社基準）。
-                      </>
-                    ) : (
-                      "就労収入は見込んでいません。"
-                    )}
-                  </li>
+                  <li>{data.spouseWork && zeroIncomeNote(data.spouseWork)}</li>
                 </ul>
               </Fold>
             ) : (
@@ -589,11 +580,7 @@ export function Lab({
                   <li>
                     区分の年収は代表値で表示します。必要額には回答帯の幅も反映します。死亡の場合だけに適用し、生活費は固定します。
                   </li>
-                  <li>
-                    末子独立後は最低でも年約{formatMan(data.postIndepMinIncome)}
-                    の手取り就労収入を、配偶者が{data.survivorWorkEndAge}
-                    歳になるまで推定します（当社基準）。「ゼロ」ではこの推定も外します。
-                  </li>
+                  {data.spouseWork && <li>{workPlanNote(data.spouseWork)}</li>}
                 </ul>
               </Fold>
             )}
