@@ -47,7 +47,7 @@ import {
   noReducibleSentence,
   personRows,
   reviewReasonSentence,
-  workEndSentence,
+  workEndCompare,
 } from "./conclusionModel.js";
 import { ownStandardEstimates, workDeductionSource } from "./estimates.js";
 import { Fold } from "./Fold.js";
@@ -948,7 +948,7 @@ export default async function ResultPage({
               noReducible={noReducibleSentence(figures)}
               partialNote={partialNote(figures)}
               premise={premise}
-              workEnd={workEndSentence(
+              workEnd={workEndCompare(
                 figures,
                 figuresUntil65,
                 v(params, "survivorWorkEndAge"),

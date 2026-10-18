@@ -20,7 +20,7 @@ import type { Verdict3 } from "../../src/calc/verdict3.js";
 import { RangeText, WithAmounts } from "./AmountText.js";
 import { AxisBadge } from "./AxisBadge.js";
 import s from "./conclusion.module.css";
-import type { KeyPremise, PersonRow } from "./conclusionModel.js";
+import type { KeyPremise, PersonRow, WorkEndCompare } from "./conclusionModel.js";
 import { VERDICT_ICON, VERDICT_TONE } from "./conclusionModel.js";
 
 function Badge({ verdict, label }: { verdict: Verdict3; label: string }) {
@@ -185,6 +185,30 @@ function PremiseFigure({ p, fmt }: { p: KeyPremise; fmt: (yen: number) => string
   );
 }
 
+/** 就労収入を見込む年齢の前提と、60歳まで・65歳までの必要額（本人・配偶者は別の行・ADR-030） */
+function WorkEnd({ w }: { w: WorkEndCompare }) {
+  return (
+    <div className={s.workEnd}>
+      <p className={s.note}>{w.lead}</p>
+      {w.rows.map((r) => (
+        <div className={s.workEndRow} key={r.who}>
+          <p className={s.workEndTitle}>{r.title}</p>
+          <div className={s.subs}>
+            {r.lines.map((x) => (
+              <p className={s.sub} key={x.label}>
+                <span className={s.subLabel}>{x.label}</span>
+                <span className={s.subValue}>
+                  <RangeText text={x.text} />
+                </span>
+              </p>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function Conclusion({
   caption,
   householdBadge,
@@ -227,8 +251,8 @@ export function Conclusion({
   /** 見返す方法（ブックマーク）をここで言うか。お知らせ（保存）が動いているときは、その導線のカードが言う */
   bookmarkHint: boolean;
   premise: KeyPremise | null;
-  /** 就労収入の終わりの年齢と、65歳まで働く場合の必要額（`workEndSentence`）。動かなければ null */
-  workEnd: string | null;
+  /** 就労収入の終わりの年齢と、65歳まで見込んだ場合の必要額（`workEndCompare`）。動かなければ null */
+  workEnd: WorkEndCompare | null;
   /** 前提の図の金額の書式（内訳と同じ丸め単位） */
   premiseFmt: (yen: number) => string;
 }) {
@@ -292,11 +316,7 @@ export function Conclusion({
         <PeopleLine fmt={fmt} rows={rows} />
 
         {/* 就労収入の前提カードが無い世帯だけ、ここに置く（下の「この結論を決めている前提」を参照） */}
-        {workEnd && premise?.kind !== "work" && (
-          <p className={s.note}>
-            <WithAmounts text={workEnd} />
-          </p>
-        )}
+        {workEnd && premise?.kind !== "work" && <WorkEnd w={workEnd} />}
 
         {noReducible && (
           <p className={s.note}>
@@ -355,11 +375,7 @@ export function Conclusion({
             就労収入の前提の話なのでこのカードに置く。結論のカードに置くと、不足の世帯で
             このカードが最初の2画面から押し出された（e2e の #key-premise）
           */}
-          {workEnd && premise.kind === "work" && (
-            <p className={s.note}>
-              <WithAmounts text={workEnd} />
-            </p>
-          )}
+          {workEnd && premise.kind === "work" && <WorkEnd w={workEnd} />}
         </section>
       )}
     </>

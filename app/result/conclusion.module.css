@@ -411,3 +411,22 @@
 .nowrap {
   white-space: nowrap;
 }
+
+/* 就労収入を見込む年齢の比較（ADR-030）。人ごとの行の小さい金額と同じ型で、本人・配偶者を別の行に */
+.workEnd {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.workEndRow {
+  margin: 0;
+}
+
+.workEndTitle {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--mk-ink);
+}
