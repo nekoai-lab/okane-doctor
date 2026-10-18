@@ -15,6 +15,7 @@
  *
  * **座標系だけ 390px 用に組み直す**（モックは1280px前提の 660×252）。
  * viewBox をそのまま使うと、文字が 5〜6px まで縮んで読めない。
+ * 幅は 390px の画面で実際に描く幅（約290px）に合わせて 300 にしてある（390 では字が約10px だった・2026-10-18）。
  * `docs/design-mock/README.md` も 390px では組み直すよう指示している。
  *
  * **金額はここで作らない。** `projectDeath` が返した年次配列を描くだけ。
@@ -39,9 +40,9 @@ export interface StepYear {
   events: string[];
 }
 
-const W = 390;
-const H = 232;
-const PAD_L = 34;
+const W = 300;
+const H = 240;
+const PAD_L = 38;
 const PAD_R = 8;
 const PLOT_TOP = 18;
 const PLOT_BOTTOM = 150;

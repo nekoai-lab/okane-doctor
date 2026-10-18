@@ -187,7 +187,7 @@
 .scaleTicks {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--mk-muted);
   margin-top: 3px;
 }
@@ -202,7 +202,7 @@
   height: 20px;
   border: 1.5px dashed var(--mk-grey-border);
   border-radius: 5px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--mk-muted);
   display: flex;
   align-items: center;
@@ -217,8 +217,8 @@
 .crossing {
   font-size: 13px;
   line-height: 1.8;
-  color: #6b5a38;
-  margin: var(--space-2) 0 0;
+  color: var(--mk-muted);
+  padding: 0 0 var(--space-3);
 }
 
 .note {
@@ -237,7 +237,7 @@
 
 /* 精度もモックどおりピル型バッジ。文字だけにすると判定と精度の走査しやすさが揃わない */
 .precision {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   border-radius: 999px;
   padding: 3px 11px;
@@ -539,4 +539,166 @@
   border: none;
   padding: 0;
   margin-top: var(--space-2);
+}
+
+/*
+  3列の表（2026-10-18・AUDIT 2-3）。390px では「リスク名の行」＋「3つの値の行」の2段。
+  白い面に罫線で区切り、縦に走査して比べられるようにする。
+*/
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--mk-surface);
+  border: 1px solid var(--mk-hairline);
+  border-radius: 12px;
+  overflow: hidden;
+  table-layout: fixed;
+}
+
+.table thead th {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mk-muted);
+  text-align: left;
+  padding: var(--space-3) var(--space-2) var(--space-2);
+  background: var(--mk-bg);
+  border-bottom: 1px solid var(--mk-hairline);
+}
+
+.table thead th:first-child,
+.table td:first-child,
+.rowHead {
+  padding-left: var(--space-3);
+}
+
+.table thead th:last-child,
+.table td:last-child {
+  padding-right: var(--space-3);
+}
+
+.group + .group .rowHead {
+  border-top: 1px solid var(--mk-hairline);
+}
+
+.rowHead {
+  text-align: left;
+  font-weight: 400;
+  padding: var(--space-3) var(--space-3) 0;
+}
+
+.rowHead .title {
+  display: block;
+}
+
+.rowHead .subtitle {
+  display: block;
+}
+
+.values td {
+  vertical-align: top;
+  padding: var(--space-1) var(--space-2) var(--space-3);
+}
+
+.values .figValue {
+  display: block;
+  font-size: 18px;
+  margin: 0;
+}
+
+.values .badge {
+  display: inline-block;
+  white-space: normal;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.crossing {
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+}
+
+.unsupportedNote {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--mk-muted);
+  margin: var(--space-3) 0 0;
+}
+
+.notes {
+  margin: 0;
+}
+
+.notes dt {
+  font-weight: 700;
+  font-size: 14px;
+  margin: var(--space-4) 0 0;
+}
+
+.notes > div:first-child dt {
+  margin-top: 0;
+}
+
+.notes dd {
+  margin: 0;
+}
+
+.notes .note {
+  margin-top: var(--space-1);
+}
+
+/*
+  列幅。480px 以上は3列そのまま。狭い画面では判定を見出しの行の右端に寄せ、
+  金額の2列に幅を渡す（320px で「約2,000万円」とバッジが重なった・2026-10-18）。
+*/
+.rowHeadInner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.badgeNarrow {
+  display: none;
+}
+.narrowAxis {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--mk-muted);
+}
+
+.table thead th:nth-child(1) {
+  width: 36%;
+}
+.table thead th:nth-child(2) {
+  width: 30%;
+}
+.table thead th:nth-child(3) {
+  width: 34%;
+}
+
+.values .badge {
+  padding: 3px 8px;
+}
+
+@media (max-width: 479px) {
+  .verdictCell {
+    display: none;
+  }
+  .rowHeadInner {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .badgeNarrow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .badgeNarrow .badge {
+    white-space: nowrap;
+  }
+  .table thead th:nth-child(1),
+  .table thead th:nth-child(2) {
+    width: 50%;
+  }
 }

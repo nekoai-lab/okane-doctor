@@ -108,7 +108,7 @@ export function gapHeadline(x: DeathFigures): { label: string; amount: string } 
 export function bandWidenedNote(x: DeathFigures): string | null {
   const p = x.point.range;
   if (p.low === x.need.low && p.high === x.need.high) return null;
-  return `上の棒は、答えた区分の代表値で計算した内訳です。この額は、答えた区分の上下端でも計算して広げた幅です（代表値だけなら${formatRange(p.low, p.high)}）。`;
+  return `上の棒は、答えた区分のまんなかの目安で計算した内訳です。この額は、答えた区分の上下端でも計算して広げた幅です（まんなかの目安だけなら${formatRange(p.low, p.high)}）。`;
 }
 
 /**

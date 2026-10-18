@@ -13,9 +13,9 @@
  * §6-9 の「保険の窓口や共済で相談できます」は採らない。
  */
 import type { DeathFigures, ResultFigures } from "../../src/calc/figures.js";
+import type { SurvivorIncomeSensitivity } from "../../src/calc/sensitivity.js";
 import type { Employment } from "../../src/calc/types.js";
 import type { Verdict3 } from "../../src/calc/verdict3.js";
-import type { SurvivorIncomeSensitivity } from "../../src/calc/sensitivity.js";
 import { formatRange } from "../../src/design/tokens.js";
 import { sensitivityMove } from "./sensitivityText.js";
 import { DEATH_LABEL } from "./verdictLabels.js";
@@ -118,7 +118,13 @@ export interface PersonRow {
 export function personRows(f: ResultFigures): PersonRow[] {
   return people(f).map((x) => {
     const need = formatRange(x.need.low, x.need.high);
-    const cov = x.coverage === null ? "未入力" : formatRange(x.coverage, x.coverage);
+    // 0円に「約」を付けない（「約0万円」は読み手に桁の誤りに見える・AUDIT 1-8）
+    const cov =
+      x.coverage === null
+        ? "未入力"
+        : x.coverage === 0
+          ? "0円"
+          : formatRange(x.coverage, x.coverage);
     const base = {
       who: x.who,
       title: x.who === "self" ? "あなたに万一のとき" : "配偶者に万一のとき",

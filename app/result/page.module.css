@@ -199,8 +199,10 @@
   gap: 2px;
 }
 
+/* 補足（出どころ・注記）。本文より一段下げる（18px のままでは注記が本文より目立っていた・2026-10-18） */
 .basis {
-  font-size: var(--font-size-std-xs);
+  font-size: var(--font-size-dense);
+  line-height: 1.7;
   color: var(--color-text-secondary);
 }
 
@@ -572,6 +574,7 @@
 .chartSvg {
   display: block;
   width: 100%;
+  max-width: 400px;
   height: auto;
 }
 
@@ -890,6 +893,7 @@
   font-size: 22px;
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
+  white-space: nowrap;
 }
 
 .footHead {
@@ -898,8 +902,3 @@
   color: var(--color-text);
 }
 
-.footNote {
-  font-size: 13px;
-  line-height: 1.7;
-  margin: var(--space-2) 0;
-}

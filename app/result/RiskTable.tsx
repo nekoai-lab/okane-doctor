@@ -1,22 +1,19 @@
 /**
  * リスク別健康診断表（結果画面の玄関・仕様 §5.3）
  *
- * **1280px のモックは5列のテーブルだが、本番は 390px 基準なのでカードに組み直す**
- * （`docs/design-mock/README.md` の指示どおり）。列を潰すと所見が読めなくなる。
+ * **3列の表にする（2026-10-18 オーナー決定・AUDIT 2-3）。** 列は「必要額／いまの保障・貯蓄／判定」。
+ * カードごとに上限が違うミニ数直線は、カードどうしで棒の長さを比べる誤読を招き、
+ * 「目盛りがカードごとに違います」の注意書きで補っていた。表なら縦に走査するだけで比べられる。
  *
- * **視覚の DoD（CLAUDE.md「デザイン」）をこのカードで満たす：**
- * - (a) 1カードに必ず図（ミニ数直線）が1つ入る
- * - (b) 金額は Shippori Mincho 20px の独立行に出し、**文章の中に埋めない**
- * - (c) 判定バッジはカード右上の固定位置。縦に走査すれば色と位置だけで読める
- *
- * ミニ数直線は `docs/design-mock/result.html` STEP 4 の数直線の縮小版で、
- * **帯（橙）＝必要額の幅・縦線（黒）＝いまの受け皿**という対応を変えない。
+ * 390px では「リスク名の行」と「3つの値の行」を2段にする。列は3つのまま。
+ * 所見と前提は表の下の折りたたみにまとめる（1行＝見出し・金額・判定）。
+ * **答えの幅で判定が変わるときの一文だけは、その行の直下に畳まずに出す**（T-H・2026-09-23）。
+ * 計算未対応の行は表に空欄で並べず、表の下の1文にまとめる（AUDIT 1-7）。
  *
  * **金額はここで作らない。** 受け取った文字列を描くだけ（CLAUDE.md「本番UIに金額をハードコードしない」）。
  */
 import Link from "next/link";
 import { RangeText, WithAmounts } from "./AmountText.js";
-import { AxisBadge } from "./AxisBadge.js";
 import { Fold } from "./Fold.js";
 import {
   PremiseDisclosure,
@@ -24,6 +21,7 @@ import {
   type PremiseWeight,
 } from "./PremiseDisclosure.js";
 import s from "./riskTable.module.css";
+import { VERDICT_AXIS } from "./verdictLabels.js";
 
 /** 金額の主役2つ。ラベルは行ごとに変わる（いまの保障／いまの貯蓄） */
 export interface RiskFigures {
@@ -85,54 +83,6 @@ export interface RiskRow {
   link: { href: string; label: string } | { pending: string };
 }
 
-/** 両端が切れないように、描画域を 4%〜96% に寄せる */
-const PAD = 4;
-const SPAN = 92;
-
-/**
- * ミニ数直線。
- *
- * **幅のないものを帯で描かない。** 必要額が1点（葬儀費用だけ）の世帯で最小幅の矩形を置くと、
- * 幅のある必要額と見分けがつかず、図が「レンジがある」と嘘をつく。
- * 点のときは**目盛り（縦のティック）**という別の描画文法に切り替える。
- * 幅の有無はこの図でいちばん意味のある情報なので、そこを丸めない。
- */
-function MiniScale({ scale, label }: { scale: RiskScale; label: string }) {
-  const max = Math.max(scale.needHigh, scale.hold ?? 0);
-  const pct = (v: number) => (max <= 0 ? PAD : PAD + (v / max) * SPAN);
-  const left = pct(scale.needLow);
-  const width = pct(scale.needHigh) - left;
-  // 1% 未満は 390px でも潰れて読めない。そこから下は帯ではなく点として描く
-  const isPoint = width < 1;
-
-  return (
-    <div className={s.scaleWrap}>
-      <svg className={s.scale} height="20" role="img" aria-label={label}>
-        <line className={s.axis} x1="0%" x2="100%" y1="10" y2="10" />
-        {isPoint ? (
-          <line className={s.needTick} x1={`${left}%`} x2={`${left}%`} y1="3" y2="17" />
-        ) : (
-          // **角丸と枠線を付けない。** 幅の狭い帯が「つまみ」に見え、動かせる部品と誤解される
-          <rect className={s.band} x={`${left}%`} width={`${width}%`} y="5" height="10" />
-        )}
-        {scale.hold !== null && (
-          <line
-            className={s.hold}
-            x1={`${pct(scale.hold)}%`}
-            x2={`${pct(scale.hold)}%`}
-            y1="0"
-            y2="20"
-          />
-        )}
-      </svg>
-      <div className={s.scaleTicks}>
-        <span>0</span>
-        <span>{scale.axisMaxText}</span>
-      </div>
-    </div>
-  );
-}
-
 export function RiskTable({
   rows,
   caption,
@@ -161,6 +111,8 @@ export function RiskTable({
    */
   sharedSavingsText?: string | null;
 }) {
+  const computed = rows.filter((r) => r.figures !== null);
+  const unsupported = rows.filter((r) => r.figures === null);
   return (
     <section className={s.wrap} aria-labelledby="risk-table-heading">
       <h2 className={s.heading} id="risk-table-heading">
@@ -188,93 +140,76 @@ export function RiskTable({
       )}
       <p className={s.lead}>{lead ?? "死亡・病気・失業を、同じ表で並べて見ています。"}</p>
       <p className={s.caption}>{caption}</p>
-      {/*
-        **尺度がカードごとに違うことを、畳まずに言う**（2026-10-17・UX レビュー2回目・任意）。
-        「この表の読み方」の中にしか書いておらず、カードどうしで棒の長さを比べる誤読を招いていた。
-      */}
-      <p className={s.scaleNote}>
-        図の目盛りはカードごとに違います。棒の長さはカードどうしで比べず、カードの中で帯と縦線の位置を見てください。
-      </p>
 
-      <ul className={s.list}>
-        {rows.map((r) => (
-          <li className={s.card} key={r.key}>
-            <div className={s.cardHead}>
-              <div>
-                <p className={s.title}>{r.title}</p>
-                <p className={s.subtitle}>{r.subtitle}</p>
-              </div>
-              {/* 軸名をカードごとに添える。どのカードが画面に入っても、何の判定かが同じ視野で読める */}
-              <AxisBadge badgeClassName={`${s.badge} ${s[r.tone]}`} stack>
-                {r.verdictLabel}
-              </AxisBadge>
-            </div>
-
-            {/* (b) 金額は明朝の大サイズで主役。文章から出す */}
-            {r.figures && (
-              <div className={s.figures}>
-                <div>
-                  <p className={s.figLabel}>{r.figures.needLabel}</p>
-                  <p className={s.figValue}>
-                    <RangeText text={r.figures.needText} />
-                  </p>
+      <table className={s.table}>
+        <thead>
+          <tr>
+            <th scope="col">必要額</th>
+            <th scope="col">いまの保障・貯蓄</th>
+            <th className={s.verdictCell} scope="col">
+              {VERDICT_AXIS}
+            </th>
+          </tr>
+        </thead>
+        {computed.map((r) => (
+          <tbody className={s.group} key={r.key}>
+            <tr>
+              <th className={s.rowHead} colSpan={3} scope="colgroup">
+                <div className={s.rowHeadInner}>
+                  <span className={s.rowHeadText}>
+                    <span className={s.title}>{r.title}</span>
+                    <span className={s.subtitle}>
+                      {r.subtitle}・{r.precisionLabel}
+                    </span>
+                  </span>
+                  {/* 狭い画面では判定の列を見出しの下に軸名つきで出す（金額の2列に幅を渡す）。CSS で片方だけ出す */}
+                  <span className={s.badgeNarrow}>
+                    <span className={s.narrowAxis}>{VERDICT_AXIS}</span>
+                    <Badge tone={r.tone} label={r.verdictLabel} />
+                  </span>
                 </div>
-                <div>
-                  <p className={s.figLabel}>{r.figures.holdLabel}</p>
-                  <p className={s.figValue}>
-                    <RangeText text={r.figures.holdText} />
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/*
-              **答えの幅で判定が変わるときの一文**（T-H・2026-09-23 オーナー裁定）。
-              レンジのすぐ下に出す。**畳まない** ── 判定が動きうるという事実を、
-              開いてもらって初めて見える場所に置かない
-            */}
+              </th>
+            </tr>
+            <tr className={s.values}>
+              <td>
+                <span className={s.figValue}>
+                  <RangeText text={r.figures?.needText ?? ""} />
+                </span>
+              </td>
+              <td>
+                <span className={s.figValue}>
+                  <RangeText text={r.figures?.holdText ?? ""} />
+                </span>
+              </td>
+              <td className={s.verdictCell}>
+                <Badge tone={r.tone} label={r.verdictLabel} />
+              </td>
+            </tr>
+            {/* 答えの幅で判定が変わるときの一文（T-H・2026-09-23 オーナー裁定）。**畳まない** */}
             {r.crossingNote ? (
-              <p className={s.crossing}>
-                <WithAmounts text={r.crossingNote} />
-              </p>
+              <tr>
+                <td className={s.crossing} colSpan={3}>
+                  <WithAmounts text={r.crossingNote} />
+                </td>
+              </tr>
             ) : null}
-
-            {/* (a) 図の視覚アンカー。判定が文章ではなく位置関係で読める */}
-            {r.scale ? (
-              <MiniScale
-                scale={r.scale}
-                label={`${r.title}：必要額は${r.figures?.needText ?? ""}、${r.figures?.holdLabel ?? ""}は${r.figures?.holdText ?? ""}。${r.verdictLabel}。`}
-              />
-            ) : (
-              // 計算未対応でも**枠は見せる**。空いている場所があることを図でも伝える
-              <div className={s.scaleWrap}>
-                <div className={s.emptyScale}>計算未対応</div>
-              </div>
-            )}
-
-            <p className={s.note}>{r.note}</p>
-
-            {/* 判定を支えている前提（仕様 §5.3 T-A / T-E）。2カードで共通の部品 */}
-            <PremiseDisclosure
-              items={r.assumptions}
-              sensitivity={r.premiseSensitivity}
-              weight={r.premiseWeight}
-            />
-
-            <div className={s.cardFoot}>
-              <span className={`${s.precision} ${s[r.precisionTone]}`}>{r.precisionLabel}</span>
-              {
-                "href" in r.link ? (
-                  <Link className={s.link} href={r.link.href}>
-                    {r.link.label}
-                  </Link>
-                ) : null
-                /* 準備中の導線は出さない（押せない機能を見せない・2026-10-17 UX レビュー §指摘） */
-              }
-            </div>
-          </li>
+          </tbody>
         ))}
-      </ul>
+      </table>
+
+      {unsupported.length > 0 && (
+        <p className={s.unsupportedNote}>
+          {unsupported.map((r) => r.title).join("、")}は、今回は計算していません。
+          {"href" in unsupported[0].link ? (
+            <>
+              {" "}
+              <Link className={s.link} href={unsupported[0].link.href}>
+                もしもラボで見る
+              </Link>
+            </>
+          ) : null}
+        </p>
+      )}
 
       {/*
         仕様 §5.3：**緑が3つ並んだときに実力以上の安心を売らない**ための注記。
@@ -308,34 +243,49 @@ export function RiskTable({
         カードの図が終わったあとに文字だけの区間を作っていた。
         露出は件数を明示した1行、中身はそのまま（開示の規約）。
       */}
+      {/*
+        各行の所見・前提・ラボへの導線。**参照材なのでまとめて畳む**（1行＝見出し・金額・判定・2026-10-18）。
+        露出は件数つきの1行、中身はそのまま（開示の規約）。
+      */}
       <div className={s.legendFold}>
-        <Fold count="（3点）" label="この表の読み方">
-          <dl className={s.legend}>
-            <dt>過不足の判定</dt>
-            <dd>
-              <span className={`${s.badge} ${s.ok}`}>大丈夫のめやす</span>
-              <span className={`${s.badge} ${s.check}`}>圏内・要精査</span>
-              <span className={`${s.badge} ${s.short}`}>備え不足の可能性</span>
-              <span className={`${s.badge} ${s.none}`}>未診断</span>
-            </dd>
-            <dt>図の読み方</dt>
-            <dd className={s.legendText}>
-              <span className={s.swatchBand} />
-              帯が必要額の幅（幅が無いときは
-              <span className={s.swatchTick} />
-              の目盛り）、
-              <span className={s.swatchHold} />
-              縦線がいまの受け皿（保障・貯蓄）です。<strong>カードごとに目盛りが違います</strong>
-              ──左端は0円、右端は必要額と受け皿の大きいほうです。
-            </dd>
-            <dt>精度</dt>
-            <dd className={s.legendText}>
-              「計算済み」はあなたの回答からの試算、「制度式で概算」は公的制度の計算式どおりの概算、
-              「計算未対応」は正直な空欄です。
-            </dd>
+        <Fold count={`（${computed.length}行）`} label="各行の見方と前提">
+          <dl className={s.notes}>
+            {computed.map((r) => (
+              <div key={r.key}>
+                <dt>{r.title}</dt>
+                <dd>
+                  <p className={s.note}>{r.note}</p>
+                  <PremiseDisclosure
+                    items={r.assumptions}
+                    sensitivity={r.premiseSensitivity}
+                    weight={r.premiseWeight}
+                  />
+                  {"href" in r.link ? (
+                    <Link className={s.link} href={r.link.href}>
+                      {r.link.label}
+                    </Link>
+                  ) : null}
+                </dd>
+              </div>
+            ))}
           </dl>
+          <p className={s.legendText}>
+            「計算済み」はあなたの回答からの試算、「制度式で概算」は公的制度の計算式どおりの概算です。
+          </p>
         </Fold>
       </div>
     </section>
+  );
+}
+
+/** 判定は記号＋ラベル＋色の3点で出す（色だけで意味を伝えない・2026-10-18 UX レビュー24回目） */
+const TONE_ICON: Record<RiskRow["tone"], string> = { ok: "✓", check: "↔", short: "!", none: "…" };
+
+function Badge({ tone, label }: { tone: RiskRow["tone"]; label: string }) {
+  return (
+    <span className={`${s.badge} ${s[tone]}`}>
+      <span aria-hidden="true">{TONE_ICON[tone]} </span>
+      {label}
+    </span>
   );
 }

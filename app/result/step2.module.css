@@ -39,7 +39,7 @@
 }
 
 .tiny {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--mk-muted);
   margin: 0;
   line-height: 1.6;
@@ -188,7 +188,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px 14px;
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--mk-muted-2);
   margin-bottom: var(--space-2);
 }
@@ -227,6 +227,7 @@
 .chart {
   display: block;
   width: 100%;
+  max-width: 420px;
   height: auto;
 }
 
@@ -240,12 +241,12 @@
 }
 
 .axisText {
-  font-size: 10px;
+  font-size: 12.5px;
   fill: var(--mk-muted);
 }
 
 .axisSub {
-  font-size: 9.5px;
+  font-size: 12.5px;
   fill: var(--mk-muted);
 }
 
@@ -254,7 +255,7 @@
 }
 
 .worstLabel {
-  font-size: 10.5px;
+  font-size: 12.5px;
   font-weight: 700;
   fill: var(--mk-red-deep);
 }
@@ -293,7 +294,7 @@
 }
 
 .stepNum {
-  font-size: 10px;
+  font-size: 12.5px;
   font-weight: 700;
   fill: #f7f5f0;
 }
@@ -313,7 +314,7 @@
 }
 
 .depletedLabel {
-  font-size: 9.5px;
+  font-size: 12.5px;
   font-weight: 700;
   fill: var(--mk-ink);
 }
@@ -329,7 +330,7 @@
 }
 
 .braceText {
-  font-size: 10.5px;
+  font-size: 12.5px;
   font-weight: 700;
   fill: var(--mk-muted-2);
 }
@@ -358,7 +359,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   flex: none;
 }
@@ -458,7 +459,7 @@
 }
 
 .reform {
-  font-size: 11.5px;
+  font-size: 12px;
   line-height: 1.7;
   color: var(--mk-muted);
   margin: var(--space-3) 0 0;

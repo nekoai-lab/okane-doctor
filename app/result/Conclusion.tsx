@@ -314,13 +314,12 @@ export function Conclusion({
           この置き場所に当てた）。お知らせが止まっているあいだは準備中の導線を出さないので、見返す方法はここで1回だけ言う。
           年の理由とは1段落にまとめる（不足の世帯で前提の文の結びが最初の2画面に入るように・PR #5 の UX レビュー）
         */}
-        {reviewYear !== null && (reviewReason || bookmarkHint) && (
-          <p className={s.small}>
-            {reviewReason}
-            {bookmarkHint && "このページのURLをブックマークすると、その頃に見返して答え直せます。"}
-          </p>
-        )}
-        <p className={s.small}>このサービスは特定の商品を勧めたり、申込みへ誘導したりしません。</p>
+        {/* 商品を勧めない一文も同じ段落に入れる（段落の間の余白で前提の文が2画面から押し出された・PR #22 の UX レビュー） */}
+        <p className={s.small}>
+          {reviewYear !== null && reviewReason}
+          {reviewYear !== null && bookmarkHint && "URLをブックマークすると、その頃に見返して答え直せます。"}
+          このサービスは特定の商品を勧めたり、申込みへ誘導したりしません。
+        </p>
       </section>
 
       {/* 3. この結論を決めている前提（1点） */}
