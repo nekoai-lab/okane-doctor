@@ -88,12 +88,12 @@ export function Step1({ chips, estimations, terms, editHref }: Step1Props) {
 
   return (
     <section className={s.wrap} aria-labelledby="step1-heading">
+      {/* 通し番号はレポートの節（前提の確認と次へ）が持つので、ここでは振らない（2026-10-18） */}
       <div className={s.head}>
-        <span className={s.num}>1</span>
         <div>
-          <h2 className={s.title} id="step1-heading">
+          <h3 className={s.title} id="step1-heading">
             あなたが答えたこと
-          </h2>
+          </h3>
           <p className={s.sub}>
             10問の回答が計算の出発点です。答えた内容は下で開いて確かめられます。
           </p>

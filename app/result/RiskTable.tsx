@@ -90,8 +90,11 @@ export function RiskTable({
   countUnit = null,
   unsupportedCount = 0,
   lead = null,
+  showHeading = true,
 }: {
   rows: RiskRow[];
+  /** 表の見出しを出すか。レポートの節の見出し（「他のリスク」）の下に置くときは出さない */
+  showHeading?: boolean;
   caption: string;
   /**
    * 並べた行の数に添える語（「つのリスク」）。数は `rows.length`。
@@ -114,10 +117,16 @@ export function RiskTable({
   const computed = rows.filter((r) => r.figures !== null);
   const unsupported = rows.filter((r) => r.figures === null);
   return (
-    <section className={s.wrap} aria-labelledby="risk-table-heading">
-      <h2 className={s.heading} id="risk-table-heading">
-        あなたのリスク別の<span className={s.nowrap}>診断表</span>
-      </h2>
+    <section
+      className={s.wrap}
+      aria-label={showHeading ? undefined : "あなたのリスク別の診断表"}
+      aria-labelledby={showHeading ? "risk-table-heading" : undefined}
+    >
+      {showHeading && (
+        <h2 className={s.heading} id="risk-table-heading">
+          あなたのリスク別の<span className={s.nowrap}>診断表</span>
+        </h2>
+      )}
       {/* 自称語（正直・安心など）を使わない。機能を書く（UIラベル規約・2026-10-17 §指摘） */}
       {countUnit && (
         <p

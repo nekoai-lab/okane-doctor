@@ -15,12 +15,13 @@
  *
  * **金額はここで作らない。** 受け取った文字列と、算定結果の円を描くだけ。
  */
+
+import type { Verdict3 } from "../../src/calc/verdict3.js";
 import { RangeText, WithAmounts } from "./AmountText.js";
 import { AxisBadge } from "./AxisBadge.js";
+import s from "./conclusion.module.css";
 import type { KeyPremise, PersonRow } from "./conclusionModel.js";
 import { VERDICT_ICON, VERDICT_TONE } from "./conclusionModel.js";
-import type { Verdict3 } from "../../src/calc/verdict3.js";
-import s from "./conclusion.module.css";
 
 function Badge({ verdict, label }: { verdict: Verdict3; label: string }) {
   return (
@@ -292,7 +293,7 @@ export function Conclusion({
             <WithAmounts text={noReducible} />
           </p>
         )}
-        <p className={s.mode}>暮らし方の前提：{modeText}（下の根拠で変えられます）</p>
+        <p className={s.mode}>暮らし方の前提：{modeText}（「前提の確認と次へ」で変えられます）</p>
       </section>
 
       {/* 2. 次の一歩（1つ） */}
@@ -317,7 +318,9 @@ export function Conclusion({
         {/* 商品を勧めない一文も同じ段落に入れる（段落の間の余白で前提の文が2画面から押し出された・PR #22 の UX レビュー） */}
         <p className={s.small}>
           {reviewYear !== null && reviewReason}
-          {reviewYear !== null && bookmarkHint && "URLをブックマークすると、その頃に見返して答え直せます。"}
+          {reviewYear !== null &&
+            bookmarkHint &&
+            "URLをブックマークすると、その頃に見返して答え直せます。"}
           このサービスは特定の商品を勧めたり、申込みへ誘導したりしません。
         </p>
       </section>
