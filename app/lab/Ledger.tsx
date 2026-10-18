@@ -87,6 +87,10 @@ export function Ledger({
         回答の代表条件で見た収支
         {solo ? "" : `（${point.age}歳で万一のときから${b.years.total}年間の累計）`}
       </p>
+      {/* 上の幅と、この1例の不足分が違って見える理由を初期表示で言う（Codex UX 2026-10-18） */}
+      <p className={s.lwhy}>
+        ここは1つの例です。上の幅は、区分の中の条件の違いと当社基準の幅を含みます。
+      </p>
       <div className={s.lsum}>
         <span>かかるお金</span>
         {/* 上の金額と同じ額（葬儀・予備費だけの世帯）は繰り返さず、そうだと言う */}
@@ -125,6 +129,8 @@ export function Ledger({
         )}
         <Row label="いまの金融資産" value={i.assets} why="いま持っているお金です。" />
       </div>
+      {/* 寡婦加算の額は妻として計算した前提に依存するので、年金の行のすぐ下に常に出す */}
+      {!solo && <p className={s.lwhy}>遺族年金と寡婦加算は、配偶者を妻として計算しています。</p>}
       <div className={s.lsum}>
         <span>計算上の不足分</span>
         <span className={s.lbig}>{b.rawNeed > 0 ? yen(b.rawNeed) : "不足分なし"}</span>
@@ -136,12 +142,15 @@ export function Ledger({
               : `支えが${yen(b.margin)}上回ります（将来の収入を含みます）。`}
         </span>
       </div>
-      <Fold label="上の金額になるまで" count={`（${steps.length}項目）`}>
+      <Fold
+        label="上の金額になるまで"
+        count={`（${steps.length + (b.rangeVerdict === "mixed" ? 1 : 0)}項目）`}
+      >
         <ul>
           {steps.map((t) => (
             <li key={t}>{t}</li>
           ))}
-          {point.ledger.rangeVerdict === "mixed" && (
+          {b.rangeVerdict === "mixed" && (
             <li>答えた区分によって、不足分の場合と、葬儀・予備費などの目安の場合があります。</li>
           )}
         </ul>
@@ -155,8 +164,7 @@ export function Ledger({
         </div>
         <p className={s.note}>
           各行を万円に丸めているため、足した額と合計が少し合わないことがあります。
-          {!solo &&
-            "遺族年金は、亡くなった方に支えられていた家族への公的な年金です。配偶者は妻として計算しています。"}
+          {!solo && "遺族年金は、亡くなった方に支えられていた家族への公的な年金です。"}
           出典：{data.deathSource}
         </p>
       </Fold>

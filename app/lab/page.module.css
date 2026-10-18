@@ -110,7 +110,9 @@
 .lrow { display: grid; grid-template-columns: 1fr auto; gap: 0 12px; align-items: baseline; padding: 8px 2px; border-bottom: 1px solid var(--color-border); }
 .lvalue { font-weight: 700; white-space: nowrap; font-size: 18px; }
 .lwhy { grid-column: 1 / -1; font-size: 12px; line-height: 1.6; color: var(--color-text-secondary); }
-.lrows + .lsum { margin-top: 12px; }
+.lrows + .lsum, .lrows + .lwhy + .lsum { margin-top: 12px; }
+/* 320px では大きな合計で見出しが細く折れるので、見出し→金額の縦に積む（Codex UX 2026-10-18・好み） */
+@media (max-width: 359px) { .lsum { grid-template-columns: 1fr; } }
 .workBox { margin-top: 16px; }
 .compare { margin-top: 12px; padding: 10px 14px; border-left: 3px solid var(--color-text); background: var(--color-surface-subtle); font-size: 14px; }
 .compare p { margin: 0; }
