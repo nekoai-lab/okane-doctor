@@ -19,14 +19,14 @@ describe("VERDICT_BADGE", () => {
   it("すべての判定にアイコンと色の系統がある", () => {
     for (const v of ALL) {
       expect(VERDICT_BADGE[v].icon.length).toBeGreaterThan(0);
-      expect(["positive", "attention", "neutral"]).toContain(VERDICT_BADGE[v].tone);
+      expect(["positive", "shortage", "check", "neutral"]).toContain(VERDICT_BADGE[v].tone);
     }
   });
 
-  it("**不足は赤系にしない**：減らせる＝positive、不足・圏内＝attention、保留＝neutral", () => {
+  it("減らせる＝positive、不足＝shortage（専用のピンク）、圏内＝check（色を足さない）、保留＝neutral", () => {
     expect(VERDICT_BADGE.reducible.tone).toBe("positive");
-    expect(VERDICT_BADGE.shortage.tone).toBe("attention");
-    expect(VERDICT_BADGE.uncertain.tone).toBe("attention");
+    expect(VERDICT_BADGE.shortage.tone).toBe("shortage");
+    expect(VERDICT_BADGE.uncertain.tone).toBe("check");
     expect(VERDICT_BADGE.pending.tone).toBe("neutral");
   });
 });

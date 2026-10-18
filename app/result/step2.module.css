@@ -154,7 +154,7 @@
 }
 
 .netShort {
-  color: var(--mk-amber-text);
+  color: var(--color-verdict-shortage-text);
 }
 .netOk {
   color: var(--mk-green-deep);

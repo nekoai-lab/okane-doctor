@@ -662,9 +662,13 @@
   grid-template-columns: 1fr;
   gap: 4px;
 }
-.tone_attention {
+.tone_shortage {
   background: var(--color-verdict-shortage-bg);
   color: var(--color-verdict-shortage-text);
+}
+.tone_check {
+  background: var(--color-verdict-check-bg);
+  color: var(--color-verdict-check-text);
 }
 .tone_positive {
   background: var(--color-verdict-reducible-bg);
@@ -692,8 +696,11 @@
   font-size: 18px;
   font-weight: 900;
 }
-.tone_attention .verdictIcon {
+.tone_shortage .verdictIcon {
   background: var(--color-verdict-shortage-text);
+}
+.tone_check .verdictIcon {
+  background: var(--color-verdict-check-text);
 }
 .tone_positive .verdictIcon {
   background: var(--color-verdict-reducible-text);

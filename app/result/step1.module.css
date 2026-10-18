@@ -210,8 +210,9 @@
   margin: 0;
 }
 
+/* リンクは青（緑は良い判定の意味だけ・2026-10-18 UX 31回目） */
 .link {
-  color: var(--mk-green);
+  color: var(--color-link);
   text-decoration: underline;
   text-underline-offset: 3px;
 }

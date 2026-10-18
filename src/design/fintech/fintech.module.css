@@ -3,15 +3,21 @@
   文字は 12px 以上、操作要素は 44px 以上（--target-min）。フォーカスは tokens.css の共通リングをそのまま使う。
 */
 
-/* ---------- 判定バッジ ---------- */
+/* ---------- 判定バッジ ----------
+  アプリ中の判定バッジはこの1つ（2026-10-18・Codex UX レビュー）。結果画面の各部品も composes で使う。
+  以前は結果画面（白地に枠・34px）とラボ（塗り・24px）で別の部品に見えていた。
+  13px・行高20px・上下5px・枠1px・高さ32px。塗り＋同系の枠。 */
 .badge {
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
-  line-height: 1.5;
+  min-height: 32px;
+  font-size: 13px;
+  line-height: 20px;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 5px 12px;
+  border: 1px solid transparent;
   border-radius: var(--radius-pill);
 }
 .badgeIcon {
@@ -23,14 +29,24 @@
 .badge_positive {
   color: var(--color-verdict-reducible-text);
   background: var(--color-verdict-reducible-bg);
+  border-color: var(--color-verdict-reducible-border);
 }
-.badge_attention {
+/* 不足の可能性＝ピンク。エラーの赤・CTA の色とは別の、不足専用の色 */
+.badge_shortage {
   color: var(--color-verdict-shortage-text);
   background: var(--color-verdict-shortage-bg);
+  border-color: var(--color-verdict-shortage-border);
+}
+/* 幅の中・要確認＝色を足さない青みの灰（記号 ↔ とラベルで区別する） */
+.badge_check {
+  color: var(--color-verdict-check-text);
+  background: var(--color-verdict-check-bg);
+  border-color: var(--color-verdict-check-border);
 }
 .badge_neutral {
   color: var(--color-verdict-neutral);
   background: var(--color-verdict-neutral-bg);
+  border-color: var(--color-verdict-neutral-border);
 }
 
 /* ---------- ボタン ---------- */

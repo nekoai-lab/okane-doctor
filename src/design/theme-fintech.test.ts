@@ -53,6 +53,8 @@ describe("theme-fintech.css", () => {
     ["--color-link", "--color-surface"],
     ["--color-verdict-reducible-text", "--color-verdict-reducible-bg"],
     ["--color-verdict-shortage-text", "--color-verdict-shortage-bg"],
+    ["--color-verdict-shortage-text", "--color-surface"],
+    ["--color-verdict-check-text", "--color-verdict-check-bg"],
     ["--color-verdict-neutral", "--color-verdict-neutral-bg"],
     ["--color-note-text", "--color-note-bg"],
     ["--color-note-warning-text", "--color-note-warning-bg"],
