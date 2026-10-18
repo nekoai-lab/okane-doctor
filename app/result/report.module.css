@@ -1,0 +1,561 @@
+/*
+ * 結果画面のレポート形式（2026-10-18・オーナー承認の見本 design/report-proposal/ を実装）。
+ * 目次 → 番号つきの5節。DOM の順は幅によらず同じで、1000px 以上だけ目次を左の固定列にする。
+ * 文字は 12px 未満にしない。金額の幅は数字の途中で折らない（AmountText の RangeText）。
+ */
+
+.layout {
+  display: block;
+}
+
+.body {
+  min-width: 0;
+}
+
+/* ── 目次 ── */
+.toc {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 10px 12px;
+  margin: 0 0 var(--space-5);
+}
+
+.tocHead {
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.04em;
+  margin: 0 0 6px;
+}
+
+/* 世帯の要約と基準日。スマホでは結論のカードが同じ要約を持つので、目次では出さない（最初の2画面に収める） */
+.tocLead {
+  display: none;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  margin: 0 0 8px;
+}
+
+.tocList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+}
+
+/* スマホでは5つを番号つきの語で横に流し、2行に収める（12px・番号22px・押せる高さ28px）。
+   枠つきの札にすると3行になり、最初の2画面から「この結論を決めている前提」が押し出された */
+.tocLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 2px 4px 2px 0;
+  border-radius: var(--radius-s);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.tocLink:hover {
+  background: var(--color-info-bg);
+}
+
+.tocTitle {
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: var(--font-weight-bold);
+}
+
+.tocSub {
+  display: none;
+}
+
+.num {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-surface-inverse);
+  color: var(--color-text-on-inverse);
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+/* ── 節 ── */
+.sec {
+  margin: 0 0 var(--space-7);
+  scroll-margin-top: 16px;
+}
+
+.sec + .sec {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-6);
+}
+
+.secHead {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 10px;
+  align-items: start;
+  margin: 0 0 14px;
+}
+
+.secHead .num {
+  width: 32px;
+  height: 32px;
+  font-size: 15px;
+}
+
+.secTitle {
+  font-size: 20px;
+  line-height: 1.45;
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+.secSub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+/* 「ここで分かること」。節を読む前に、何が分かる節かを1文で */
+.knows {
+  background: var(--color-info-bg);
+  border-radius: var(--radius-m);
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-note-text);
+  margin: 0 0 14px;
+}
+
+.note {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-text-secondary);
+  margin: 10px 0 0;
+}
+
+/* ── 2. 金額の根拠：だれに万一のときかの切り替え ── */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+/* 指で押せる高さ 44px（UX 33回目） */
+.tab {
+  min-height: 44px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.4;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.tab[aria-selected="true"] {
+  background: var(--color-surface-inverse);
+  border-color: var(--color-surface-inverse);
+  color: var(--color-text-on-inverse);
+}
+
+/* ── 2. 縦に積む2本（同じ目盛り） ── */
+.balance {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: end;
+}
+
+.balance > * {
+  min-width: 0;
+}
+
+.colHead {
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  margin: 0 0 2px;
+}
+
+.colTotal {
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 6px;
+}
+
+.stack {
+  height: 300px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  border-radius: var(--radius-s);
+  overflow: hidden;
+}
+
+.seg {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 8px;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: var(--font-weight-bold);
+}
+
+.seg span {
+  font-weight: var(--font-weight-normal);
+}
+
+.segLight {
+  color: var(--color-text);
+}
+
+.spacer {
+  min-height: 0;
+}
+
+/* 保険で備える分。不足の判定と同じピンクを淡く、斜線で「埋まっていない」ことを示す */
+.gap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px;
+  border: 2px dashed var(--chart-gap-edge);
+  border-radius: var(--radius-s);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-verdict-shortage-bg) 0 8px,
+    var(--chart-gap) 8px 16px
+  );
+  color: var(--color-verdict-shortage-text);
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: var(--font-weight-bold);
+}
+
+.gapValue {
+  font-size: 20px;
+  line-height: 1.35;
+}
+
+.gapSmall {
+  font-size: 12px;
+  font-weight: var(--font-weight-normal);
+}
+
+.eq {
+  margin: 14px 0 0;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.eq strong {
+  font-size: 16px;
+}
+
+.eqGap {
+  color: var(--color-verdict-shortage-text);
+}
+
+.ledgers {
+  display: grid;
+  gap: 8px;
+}
+
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ledger caption {
+  text-align: left;
+  font-weight: var(--font-weight-bold);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  padding: 0 0 4px;
+}
+
+.ledger td {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.ledger td:last-child {
+  text-align: right;
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+  padding-left: 12px;
+}
+
+.ledgerSrc {
+  display: block;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.ledgerSum td {
+  border-bottom: 2px solid var(--color-text);
+  font-weight: var(--font-weight-bold);
+}
+
+.sw {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+
+.points {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.point {
+  border-left: 3px solid var(--color-info-border);
+  padding: 2px 0 2px 10px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-text-secondary);
+}
+
+.point strong {
+  display: block;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+/* ── 3. いつ見直すか ── */
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+.pair > * {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  padding: 12px;
+}
+
+.pairYear {
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+}
+
+.pairValue {
+  display: block;
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: var(--font-weight-bold);
+  color: var(--fa-navy-700);
+}
+
+.timeline {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  border-left: 2px solid var(--color-border);
+}
+
+.timeline li {
+  position: relative;
+  padding: 0 0 12px 16px;
+}
+
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 2px solid var(--fa-navy-700);
+}
+
+.timelineHead {
+  display: block;
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: var(--font-weight-bold);
+}
+
+.timelineBody {
+  display: block;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-text-secondary);
+}
+
+/* ── 5. 次へ ── */
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: var(--space-5);
+}
+
+.ctaPrimary,
+.ctaSecondary {
+  flex: 1 1 200px;
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+  text-decoration: none;
+}
+
+.ctaPrimary {
+  background: var(--color-primary);
+  color: var(--color-text-on-inverse);
+}
+
+.ctaSecondary {
+  border: 1px solid var(--color-primary);
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+@media (max-width: 389px) {
+  .pairValue {
+    font-size: 16px;
+  }
+  .gapValue {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 1000px) {
+  .layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+  .toc {
+    position: sticky;
+    top: 16px;
+    padding: 16px;
+    margin: 0;
+  }
+  .tocList {
+    display: grid;
+  }
+  .tocLink {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 10px;
+    align-items: start;
+    padding: 8px;
+    border: 0;
+    border-radius: var(--radius-m);
+  }
+  .tocLead {
+    display: block;
+  }
+  .tocHead {
+    font-size: 14px;
+    margin: 0;
+  }
+  .tocLink .num {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+  .tocTitle {
+    font-size: 14px;
+  }
+  .tocSub {
+    display: block;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+  }
+  .ledgers {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .balance,
+  .pair {
+    max-width: 640px;
+  }
+}
+
+/* 見出しの番号を読み上げにも渡す（丸数字は aria-hidden） */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* 図の中の字が帯や線に重なっても読めるよう、白い縁を付ける */
+.halo {
+  paint-order: stroke;
+  stroke: var(--color-surface);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+/* 選んでいる側の札。色だけに頼らず「✓ 選択中」の字でも示す（UX 33回目） */
+.tabState {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+}
+
+/* 図や数字の前に置く、前提の1文。本文と同じ大きさで読ませる */
+.lead {
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0 0 12px;
+}
