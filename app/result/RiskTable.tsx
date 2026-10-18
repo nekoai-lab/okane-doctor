@@ -116,7 +116,7 @@ export function RiskTable({
   return (
     <section className={s.wrap} aria-labelledby="risk-table-heading">
       <h2 className={s.heading} id="risk-table-heading">
-        あなたのリスク別の診断表
+        あなたのリスク別の<span className={s.nowrap}>診断表</span>
       </h2>
       {/* 自称語（正直・安心など）を使わない。機能を書く（UIラベル規約・2026-10-17 §指摘） */}
       {countUnit && (
