@@ -139,6 +139,18 @@
   --chart-income-3: #3f9168;
   --chart-income-4: #7fb89a;
   --chart-income-5: #d5ebde;
+  /* 金額の根拠の縦積みの図（2026-10-18・レポート形式）。出ていくお金はネイビー、入ってくるお金はブルー。
+     緑は良い判定だけに使うので、ここでは使わない。白文字を載せるのは out-1・out-2・in-1 だけ */
+  --chart-out-1: #0c2954;
+  --chart-out-2: #3a5f8f;
+  --chart-out-3: #9fb6d4;
+  --chart-out-4: #c4d3e6;
+  --chart-out-5: #d3deeb;
+  --chart-in-1: #0f5fc7;
+  --chart-in-2: #6aa8f7;
+  --chart-in-3: #9cc5f8;
+  --chart-in-4: #c2dbfa;
+  --chart-in-5: #dcebfc;
 
   /* 補足の箱（推定で補った項目・前提の説明など）。判定ではないので茶にしない */
   --color-info-bg: var(--fa-surface-soft-blue);
