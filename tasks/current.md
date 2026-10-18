@@ -220,4 +220,5 @@
 - 結果画面の見出し「あなたのお金の健康診断表」を「あなたのリスク別の診断表」に（コメントの「リスク別健康診断表」も）。制度監視の User-Agent を okane-doctor-param-watch に、run.ts の例の URL を okane-doctor に
 - タブのタイトルはすでに全ページ「お金の町医者」だった（確認のみ）。package.json の name も okane-doctor
 - 残したもの：cloudbuild・Firestore・ARCHITECTURE などの okane-kenko は、前身の本番に触らないための説明と設定なので残す。管理画面のクッキーの鍵の用途名（`src/paramwatch/auth.ts` の "okane-kenko/admin/v1"）は認証にかかわるので、この PR では変えない
-- 次の1手：UX レビュー＋request-qa → マージ
+- 2026-10-18（Mac mini）：bed181c で request-qa は qa-pass、UX 28回目（軽い確認）で ux-pass（08f880a）。320px で見出しの「表」だけが次の行に残るのは好みで、この PR では直さない
+- 次の1手：CI を確かめて #24 をマージする（オーナーの OK 待ち）
