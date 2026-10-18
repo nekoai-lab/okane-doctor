@@ -52,7 +52,7 @@ export async function fetchSource(
   try {
     const res = await fetchImpl(url, {
       redirect: "follow",
-      headers: { "User-Agent": "okane-kenko-param-watch/1.0" },
+      headers: { "User-Agent": "okane-doctor-param-watch/1.0" },
       signal: AbortSignal.timeout(15_000),
     });
 

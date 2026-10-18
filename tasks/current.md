@@ -223,4 +223,12 @@
 - 2026-10-18（Mac mini）：request-qa（4eb7a44）blocking なしで qa-pass。UX 26回目は修正依頼（分かりにくい2件）：収入の階段の図で「大学の学費がかかる時期（2042〜2045）」が 320〜390px で右に 22〜32px 切れる、不足世帯 320px の推移の図で「10,000」の左端が 1px 切れる。図の字は 320〜1280px で全部 12px 以上
 - UX 26回目への対応：階段グラフのブレースのラベルを「大学の学費（〇〜〇年）」に縮め、図の端に近いときは端にそろえた（図の下へは移さず、字も小さくしない）。推移の図の左の余白を 58 に。図の枠からはみ出す字は 3世帯 × 320〜414・1280px で0（数直線の端の目盛りは `overflow: visible` で切れない）
 - 2026-10-18（Mac mini）：ef09efa で request-qa は qa-pass、UX 27回目で ux-pass（abf361d）
-- 次の1手：CI を確かめて #23 をマージする（オーナーの OK 待ち）
+- 2026-10-18 00:33 UTC：#23 をマージした（d0fe662）
+
+## fix/product-name（旧名の残り・2026-10-18・Claude Code）
+
+- 結果画面の見出し「あなたのお金の健康診断表」を「あなたのリスク別の診断表」に（コメントの「リスク別健康診断表」も）。制度監視の User-Agent を okane-doctor-param-watch に、run.ts の例の URL を okane-doctor に
+- タブのタイトルはすでに全ページ「お金の町医者」だった（確認のみ）。package.json の name も okane-doctor
+- 残したもの：cloudbuild・Firestore・ARCHITECTURE などの okane-kenko は、前身の本番に触らないための説明と設定なので残す。管理画面のクッキーの鍵の用途名（`src/paramwatch/auth.ts` の "okane-kenko/admin/v1"）は認証にかかわるので、この PR では変えない
+- 2026-10-18（Mac mini）：bed181c で request-qa は qa-pass、UX 28回目（軽い確認）で ux-pass（08f880a）。320px で見出しの「表」だけが次の行に残るのは好みで、この PR では直さない
+- 次の1手：CI を確かめて #24 をマージする（オーナーの OK 待ち）
