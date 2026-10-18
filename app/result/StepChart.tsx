@@ -282,17 +282,27 @@ export function StepChart({
               className={s.brace}
               d={`M ${x(eduFrom)} ${PLOT_BOTTOM + 34} V ${PLOT_BOTTOM + 39} H ${x(eduTo)} V ${PLOT_BOTTOM + 34}`}
             />
+            {/*
+              ラベルはブレースの中央に置くが、図の端に近いときは端にそろえる。
+              中央のままだと 320〜390px で右に 20〜30px はみ出して切れた（2026-10-18・PR #23 の UX レビュー26回目）
+            */}
             <text
               className={s.braceText}
-              x={(x(eduFrom) + x(eduTo)) / 2}
+              {...braceLabelAnchor((x(eduFrom) + x(eduTo)) / 2)}
               y={PLOT_BOTTOM + 53}
-              textAnchor="middle"
             >
-              大学の学費がかかる時期（{rows[eduFrom].year}〜{rows[eduTo].year}）
+              大学の学費（{rows[eduFrom].year}〜{rows[eduTo].year}年）
             </text>
           </g>
         )}
       </svg>
     </figure>
   );
+}
+
+/** ブレースのラベルの置き方。中央が図の左右 4 割より外なら、その側の端にそろえる */
+function braceLabelAnchor(cx: number): { x: number; textAnchor: "start" | "middle" | "end" } {
+  if (cx > W * 0.6) return { x: W - PAD_R, textAnchor: "end" };
+  if (cx < W * 0.4) return { x: PAD_L, textAnchor: "start" };
+  return { x: cx, textAnchor: "middle" };
 }
