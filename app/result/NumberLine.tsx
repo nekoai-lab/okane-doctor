@@ -146,6 +146,7 @@ export function NumberLine({ need, coverage, fmt, verdict, points }: NumberLineP
 
       <div className={`${s.verdict} ${s[verdict.tone]}`}>
         <p className={s.verdictTitle}>
+          <span aria-hidden="true">{TONE_ICON[verdict.tone]} </span>
           {VERDICT_AXIS}：{verdict.label}
         </p>
         <p className={s.verdictBody}>{verdict.body}</p>
@@ -190,3 +191,6 @@ export function NumberLine({ need, coverage, fmt, verdict, points }: NumberLineP
     </div>
   );
 }
+
+/** 判定カードの見出しの記号。判定は記号＋ラベル＋色の3点で出す（診断表のバッジと同じ記号） */
+const TONE_ICON = { ok: "✓", check: "↔", short: "!", none: "…" } as const;

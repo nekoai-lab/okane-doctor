@@ -168,12 +168,12 @@
 /* **フラットな帯にする。** 角丸＋枠線＋淡い塗りはスライダーのつまみに見え、
    「動かせる部品」と誤解される（2026-09-21 のレビューで指摘）。 */
 .band {
-  fill: var(--mk-amber);
+  fill: var(--chart-need, var(--mk-amber));
 }
 
 /* 必要額に幅が無いときの描画。帯と混同しないよう、塗りではなく線で出す */
 .needTick {
-  stroke: var(--mk-amber);
+  stroke: var(--chart-need, var(--mk-amber));
   stroke-width: 2.5;
   stroke-linecap: round;
 }
@@ -285,13 +285,13 @@
 .swatchBand {
   width: 18px;
   height: 10px;
-  background: var(--mk-amber);
+  background: var(--chart-need, var(--mk-amber));
 }
 
 .swatchTick {
   width: 2.5px;
   height: 14px;
-  background: var(--mk-amber);
+  background: var(--chart-need, var(--mk-amber));
   margin-left: 4px;
 }
 
@@ -383,11 +383,12 @@
   **畳まない。** 以前は死亡詳細の <details> の中にあり、判定を決めている4,320万円ぶんの前提が
   開かないと見えなかった。必要額が1点に潰れる世帯では幅から感度が読めないので、ここが唯一の手がかりになる。
   目立たせはしないが、隠しもしない。
+  判定ではないので茶で塗らず、補足の箱の色にする（2026-10-18）。
 */
 .premises {
   margin: var(--space-3) 0 0;
-  background: var(--mk-amber-bg);
-  border: 1px solid #e8d5ac;
+  background: var(--color-info-bg, var(--mk-amber-bg));
+  border: 1px solid var(--color-info-border, #e8d5ac);
   border-radius: 10px;
   padding: var(--space-3) var(--space-4);
 }
@@ -395,7 +396,7 @@
 .premisesHead {
   font-size: 12.5px;
   font-weight: 700;
-  color: var(--mk-amber-deep);
+  color: var(--color-info-text, var(--mk-amber-deep));
   margin: 0 0 var(--space-2);
 }
 
@@ -404,7 +405,7 @@
   padding-left: 1.2em;
   font-size: 12.5px;
   line-height: 1.75;
-  color: #6b5a38;
+  color: var(--mk-ink-2, #6b5a38);
 }
 
 .premisesList li {
@@ -414,7 +415,7 @@
 /* 拾い読みできるように、各項目は見出し語＋1行にする（全部読まないと分からない壁にしない） */
 .premisesLabel {
   display: block;
-  color: var(--mk-amber-deep);
+  color: var(--color-info-text, var(--mk-amber-deep));
 }
 
 /*
@@ -429,14 +430,14 @@
 .weightBar {
   height: 14px;
   border-radius: 7px;
-  background: #e8dcc2;
+  background: var(--chart-need-soft, #e8dcc2);
   overflow: hidden;
 }
 
 .weightBar span {
   display: block;
   height: 100%;
-  background: var(--mk-amber);
+  background: var(--chart-need, var(--mk-amber));
 }
 
 
@@ -447,7 +448,7 @@
 .sensitivity {
   font-size: 13px;
   line-height: 1.8;
-  color: #6b5a38;
+  color: var(--mk-ink-2, #6b5a38);
   margin: 0;
 }
 
@@ -457,14 +458,14 @@
 */
 .premisesMore {
   margin: var(--space-3) 0 0;
-  border-top: 1px solid #e8d5ac;
+  border-top: 1px solid var(--color-info-border, #e8d5ac);
   padding-top: var(--space-3);
 }
 
 .premisesMore summary {
   font-size: 12.5px;
   font-weight: 700;
-  color: var(--mk-amber-deep);
+  color: var(--color-info-text, var(--mk-amber-deep));
   cursor: pointer;
   min-height: var(--target-min);
   display: flex;

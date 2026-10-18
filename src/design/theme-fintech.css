@@ -13,6 +13,10 @@
  * - フォーカスリング（`--color-focus-*`。Yellow-300＋Black の2重。デジタル庁DSで変更禁止）
  * - 判定の「アイコン＋ラベル＋色」の3点（色はここで決めるが、アイコンとラベルは部品側が必ず出す）
  * - 不足を赤や CTA 色で塗らない（不足は茶寄りのオレンジ、CTA はブルー）
+ *
+ * **茶（attention #925300）は「判定」にだけ使う（2026-10-18・オーナー「茶色が多めで違和感」）。**
+ * 判定のバッジ（記号＋ラベル＋色）と、判定カードの左の帯だけ。必要額の帯・棒・面、
+ * 補足の箱、大きな金額の数字は、判定ではないのでブルー・ネイビーの系統で塗る。
  */
 [data-theme="fintech"] {
   /* ============================================================
@@ -37,8 +41,9 @@
   --fa-attention-bg: #fff1de;
   --fa-neutral: #506a84;
   --fa-neutral-bg: #eef3f8;
-  --fa-chart-line: #d76a2b;
-  --fa-chart-range: #f7d7bf;
+  /* 必要額（支出側）はブルー、収入・資産（受け皿の側）はグリーンの系統。茶は判定にとっておく */
+  --fa-chart-line: #1678f2;
+  --fa-chart-range: #d6e7fb;
   --fa-chart-grid: #e3eaf2;
 
   /* ============================================================
@@ -102,6 +107,28 @@
   --chart-axis-text: var(--fa-ink-secondary);
   --chart-need-range: var(--fa-chart-range);
   --chart-need-line: var(--fa-chart-line);
+  /* 必要額の面・棒（数直線の帯・滝の棒・推移の面）。線より一段淡い */
+  --chart-need: #4c95f5;
+  --chart-need-soft: #b9d5f9;
+  /* 不足している分（階段の図で、収入が支出に届かない部分）。判定の色の地色を淡く */
+  --chart-gap: #fde6cc;
+  --chart-gap-edge: #e9b98a;
+  /* 支出／収入の対比（内訳の表の色見本）。支出はブルー、収入はグリーン */
+  --chart-expense-1: var(--fa-navy-700);
+  --chart-expense-2: var(--fa-blue-500);
+  --chart-expense-3: #4c95f5;
+  --chart-expense-4: #8dbaf5;
+  --chart-expense-5: #d6e7fb;
+  --chart-income-1: #0f5c3b;
+  --chart-income-2: var(--fa-positive);
+  --chart-income-3: #3f9168;
+  --chart-income-4: #7fb89a;
+  --chart-income-5: #d5ebde;
+
+  /* 補足の箱（推定で補った項目・前提の説明など）。判定ではないので茶にしない */
+  --color-info-bg: var(--fa-surface-soft-blue);
+  --color-info-border: var(--fa-border);
+  --color-info-text: #2d527c;
 
   /* 面の切り替え */
   --color-tile-plain: var(--fa-white);
@@ -145,6 +172,11 @@
   --mk-amber-text: var(--fa-attention);
   --mk-amber-bg: var(--fa-attention-bg);
   --mk-amber-body: #795011;
+  /* 温かい灰（旧モックの紙色）も Fintech A の灰に寄せる。判定の「未算定」は記号とラベルで出る */
+  --mk-grey-bg: var(--fa-neutral-bg);
+  --mk-grey-border: #b5c4d4;
+  --mk-green-mid: #3f9168;
+  --mk-green-light: #7fb89a;
 
   background: var(--color-surface-subtle);
   color: var(--color-text);
