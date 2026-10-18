@@ -394,6 +394,20 @@
   }
 }
 
+/*
+  375px 前後で「約6,200万〜1億600万円」が2行に折れ、前提の「働かない場合」が最初の2画面（1688px）から
+  押し出されていた（2026-10-18・UX 31回目）。24px なら 375・390px で1行に収まる
+*/
+@media (max-width: 389px) {
+  .mainValue {
+    font-size: 24px;
+    letter-spacing: -0.01em;
+  }
+  .personHead {
+    gap: 4px;
+  }
+}
+
 .nowrap {
   white-space: nowrap;
 }
