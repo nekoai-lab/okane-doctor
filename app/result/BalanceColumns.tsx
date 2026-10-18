@@ -37,7 +37,7 @@ function Column({
   top,
 }: {
   head: string;
-  total: string;
+  total: ReactNode;
   items: BalanceItem[];
   kind: "out" | "in";
   scaleMax: number;
@@ -175,7 +175,8 @@ export function BalanceColumns({
           total={formatMan(expenseTotal)}
         />
         <Column
-          head="入ってくるお金"
+          // 不足の世帯では、右の列に足りない分も積むので、収入に読まれないよう列の名前で言う（UX 33回目）
+          head={short ? "収入・資産と、足りない分" : "入ってくるお金"}
           items={income}
           kind="in"
           scaleMax={scaleMax}
@@ -190,7 +191,19 @@ export function BalanceColumns({
               </div>
             ) : null
           }
-          total={formatMan(incomeTotal)}
+          // 列の名前に合わせ、合計も「収入・資産 ＋ 足りない分」と2つに分けて書く（UX 33回目）
+          total={
+            short ? (
+              <>
+                <RangeText text={formatMan(incomeTotal)} /> ＋{" "}
+                <span className={r.eqGap}>
+                  <RangeText text={fmt(rawNeed)} />
+                </span>
+              </>
+            ) : (
+              formatMan(incomeTotal)
+            )
+          }
         />
       </div>
       <p className={r.note}>

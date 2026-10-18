@@ -155,8 +155,9 @@
   margin: 0 0 12px;
 }
 
+/* 指で押せる高さ 44px（UX 33回目） */
 .tab {
-  min-height: 36px;
+  min-height: 44px;
   font: inherit;
   font-size: 13px;
   font-weight: var(--font-weight-bold);
@@ -200,7 +201,6 @@
   line-height: 1.4;
   font-weight: var(--font-weight-bold);
   margin: 0 0 6px;
-  white-space: nowrap;
 }
 
 .stack {
@@ -544,4 +544,11 @@
   stroke: var(--color-surface);
   stroke-width: 4px;
   stroke-linejoin: round;
+}
+
+/* 選んでいる側の札。色だけに頼らず「✓ 選択中」の字でも示す（UX 33回目） */
+.tabState {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
 }

@@ -48,6 +48,7 @@ export function CaseTabs({ tabs, label }: { tabs: CaseTab[]; label: string }) {
             type="button"
           >
             {t.label}
+            {i === current && <span className={r.tabState}>✓ 選択中</span>}
           </button>
         ))}
       </div>

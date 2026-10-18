@@ -105,6 +105,7 @@ export function NeedBand({
   const later = laterIndex > 0 ? points[laterIndex] : null;
   const maxHigh = Math.max(...points.map((p) => p.high));
   const showChart = n >= 2 && maxHigh > 0;
+  const hasCoverageLine = coverage !== null && coverage > 0;
   const scale = linearScale(0, Math.max(maxHigh, coverage ?? 0));
   const years = points.map((p) => p.year);
   const indexOf = (year: number) => years.indexOf(year);
@@ -175,6 +176,14 @@ export function NeedBand({
         )}
       </div>
 
+      {/*
+        いまの保障の線は、契約がその年まで続くと読まれないよう、図の前後で前提を言う（UX 33回目。ラボと同じ誤読）
+      */}
+      {showChart && hasCoverageLine && (
+        <p className={r.note}>
+          いまの保障は、今の額のまま続くものとして横線で描いています。
+        </p>
+      )}
       {showChart && (
         <ChartFrame
           labelEvery={n > 25 ? 10 : 5}
@@ -244,6 +253,7 @@ export function NeedBand({
           {drops.length > 0 ? "点線：公的年金が変わる年。" : ""}
           {uni.length > 0 ? "灰色：大学の学費の時期。" : ""}
           縦の線：その年の幅。
+          {hasCoverageLine && "いまの保障額を一定として表示。満期・更新は反映していません。"}
         </p>
       )}
 
