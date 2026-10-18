@@ -4,7 +4,7 @@
 
 - 更新日: 2026-10-18
 - 担当エージェント: Claude Code
-- レビュー: ADR-030 の文面をオーナーに確認中 → PR → request-qa・UX（Mac mini の Codex）
+- レビュー: ADR-030 はオーナー確認済み（2026-10-18）→ PR → request-qa・UX（Mac mini の Codex）
 - ブランチ: `claude/project-thread-v8blbx`（遺族の就労収入を60歳まで見込む・ADR-030）
 
 <!-- 上限で交代するときは、次のエージェントがこのファイルだけ読めば続きができるように書く -->
@@ -65,7 +65,7 @@
 
 ## 次の1手
 
-- `claude/project-thread-v8blbx`（ADR-030）：ADR の文面のオーナー確認 → `docs/ADR.md` に追記 → PR → request-qa・UX（Mac mini の Codex）→ CI → マージ → ラボのスレッドに注記の撤去を伝える
+- `claude/project-thread-v8blbx`（ADR-030）：PR → request-qa・UX（Mac mini の Codex）→ CI → マージ → ラボのスレッドに注記の撤去を伝える
 - PR #1（9eafaf8）・PR #2（もしもラボ）・PR #4（Fintech A のテーマ）・PR #6（ラボの見た目）・PR #8（トップ LP）は 2026-10-17 にマージ済み（main = 0db01ff）。取り込みの衝突は app/lab/Lab.tsx のバッジだけで、main の VerdictBadge を採った
 - PR #5（`feat/result-first-screens`）：main 取り込みのため request-qa をやり直す → ChatGPT の UX レビュー（画像：Mac mini のデスクトップ `okane-doctor-ux-review-pr5/`）→ ux-pass → マージ → G-0 のセットアップ → 初回デプロイ
 
