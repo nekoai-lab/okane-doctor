@@ -902,3 +902,21 @@
   color: var(--color-text);
 }
 
+
+/*
+  390px 未満（320〜389px）では、カードの内側の余白を詰め、図はカードの余白まではみ出させて幅を取る。
+  それでも 1 単位が 1px を下回るので、図の中の字を一段大きくする（2026-10-18・PR #22 の UX レビューで残った約9.4px の字）。
+*/
+@media (max-width: 389px) {
+  .caseCard {
+    padding: var(--space-3);
+  }
+  .chartSvg {
+    width: calc(100% + 2 * var(--space-3));
+    max-width: none;
+    margin-inline: calc(-1 * var(--space-3));
+  }
+  .chartSvg text {
+    font-size: 14.5px;
+  }
+}
