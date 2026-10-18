@@ -78,6 +78,11 @@ function AppliedNote({ changes }: { changes: LabChanges }) {
   );
 }
 
+/** 目盛りの数字（万円・単位は軸の上に1回だけ）。「1億5,000万円」のような長い目盛りが描く幅を食っていた */
+function tickMan(yen: number): string {
+  return Math.round(yen / 10_000).toLocaleString("ja-JP");
+}
+
 /** lab.html の帯・中央線・差の塗り・選択線を移植。座標だけ回答データに結び付ける。 */
 function Curve({
   points,
@@ -91,11 +96,14 @@ function Curve({
   mobile?: boolean;
 }) {
   const scale = linearScale(0, Math.max(coverage ?? 0, ...points.map((p) => p.high)));
-  const left = mobile ? 92 : 80;
-  // 両端の目盛り文字が viewBox からはみ出さない余白（390px で「1億5,000万円」「2050年」が切れた）
-  const right = mobile ? 230 : 620;
+  /*
+   * 描く幅を広げる（2026-10-18・Codex の UX 再判定）。目盛りを「万円」の数字だけにして単位は軸の上に1回置き、
+   * 両端の年齢は内側にそろえて余白を削った。390px で描画域が 304px 中 161px（53%）しかなかった
+   */
+  const left = mobile ? 46 : 56;
+  const right = mobile ? 254 : 648;
   const bottom = mobile ? 276 : 200;
-  const font = mobile ? 13 : 12;
+  const font = mobile ? 13 : 12.5;
   const x = (age: number) =>
     left +
     ((age - points[0].age) / Math.max(1, points[points.length - 1].age - points[0].age)) *
@@ -120,10 +128,14 @@ function Curve({
             fontSize={font}
             fill="var(--color-text-muted)"
           >
-            {t === 0 ? "0円" : formatMan(t)}
+            {tickMan(t)}
           </text>
         </g>
       ))}
+      {/* 目盛りの単位。数字だけの目盛りの桁が分かるよう、軸の上に1回だけ置く */}
+      <text x={left - 4} y={28} textAnchor="end" fontSize={font} fill="var(--color-text-muted)">
+        万円
+      </text>
       {coverage !== null && (
         <polygon
           points={`${coords(points, () => coverage)} ${coords([...points].reverse(), (p) => Math.min(coverage, p.high))}`}
@@ -206,23 +218,57 @@ function Curve({
         strokeWidth="2"
       />
       <line x1={left} x2={right} y1={bottom} y2={bottom} stroke="var(--color-border)" />
+      {/* 途中の年齢にも目盛り（5歳ごと）。スマホは年齢だけ、両端だけ西暦も添える（2026-10-18・Codex） */}
       {points
-        .filter(
-          (p, i) =>
-            i === 0 ||
-            i === points.length - 1 ||
-            (!mobile && p.age % 5 === 0 && i > 1 && i < points.length - 2),
-        )
-        .map((p, i) => (
-          <g key={p.age} textAnchor="middle" fill="var(--color-text-muted)">
-            <text x={x(p.age)} y={bottom + 18} fontSize={font}>
-              {i === 0 ? `いま（${p.age}歳）` : `${p.age}歳`}
-            </text>
-            <text x={x(p.age)} y={bottom + 34} fontSize={font}>
-              {p.year}年
-            </text>
-          </g>
+        .filter((p, i) => i > 0 && i < points.length - 1 && p.age % 5 === 0)
+        .map((p) => (
+          <line
+            key={`t${p.age}`}
+            x1={x(p.age)}
+            x2={x(p.age)}
+            y1={bottom}
+            y2={bottom + 5}
+            stroke="var(--color-border)"
+          />
         ))}
+      {(() => {
+        const label = (p: LabPoint, i: number) => (i === 0 ? `いま（${p.age}歳）` : `${p.age}歳`);
+        // 文字幅の見積もり（数字は全角の約0.6）。重なる途中の年齢は出さない（目盛りの線は残す）
+        const width = (text: string) =>
+          [...text].reduce((w, c) => w + (/[0-9]/.test(c) ? 0.6 : 1), 0) * font;
+        const first = points[0];
+        const last = points[points.length - 1];
+        const firstEnd = x(first.age) + width(label(first, 0)) + 6;
+        const lastStart = x(last.age) - width(label(last, 1)) - 6;
+        const middle: LabPoint[] = [];
+        for (const p of points.slice(1, -1)) {
+          if (p.age % 5 !== 0) continue;
+          const half = width(label(p, 1)) / 2;
+          const prev = middle[middle.length - 1];
+          if (x(p.age) - half < firstEnd || x(p.age) + half > lastStart) continue;
+          if (prev && x(p.age) - half < x(prev.age) + width(label(prev, 1)) / 2 + 6) continue;
+          middle.push(p);
+        }
+        const shown = [first, ...middle, ...(points.length > 1 ? [last] : [])];
+        return shown.map((p, i) => {
+          const isFirst = i === 0;
+          const isLast = i === shown.length - 1 && points.length > 1;
+          // 両端は内側にそろえる（中央ぞろえだと viewBox からはみ出すので、そのぶん余白が要った）
+          const anchor = isFirst ? "start" : isLast ? "end" : "middle";
+          return (
+            <g key={p.age} textAnchor={anchor} fill="var(--color-text-muted)">
+              <text x={x(p.age)} y={bottom + 18} fontSize={font}>
+                {label(p, isFirst ? 0 : 1)}
+              </text>
+              {(!mobile || isFirst || isLast) && (
+                <text x={x(p.age)} y={bottom + 34} fontSize={font}>
+                  {p.year}年
+                </text>
+              )}
+            </g>
+          );
+        });
+      })()}
     </svg>
   );
 }
