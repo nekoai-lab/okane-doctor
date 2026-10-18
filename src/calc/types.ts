@@ -49,6 +49,17 @@ export interface Person {
    * **公務員は年金では `employee` だが、雇用保険の対象外**なので、ここで分けて持つ（2026-10-16）。
    */
   unemploymentInsured?: boolean;
+  /**
+   * 遺族になったときに就労収入を見込む年齢の上限（この年齢になった年から入れない）。
+   * 省略時は params の `survivorWorkEndAge`（当社基準・既定60歳・ADR-030）。
+   * 結果画面の「65歳まで働く場合」の比較だけが `pensionAge` を入れる
+   */
+  workEndAge?: number;
+  /**
+   * 遺族になったあと働かないことを**明示**したか（もしもラボの「ゼロ」・感度の「働けない場合」）。
+   * true なら当社基準の下限（独立後 年100万円）も置かない。年収0円の回答とは意味が違う
+   */
+  noWork?: boolean;
 }
 
 export interface Housing {

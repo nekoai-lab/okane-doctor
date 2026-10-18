@@ -22,6 +22,8 @@ export function labInput(input: DiagnoseInput, age: number, work: WorkLevel): Di
           ...input.spouse,
           age: input.spouse.age + elapsed,
           income: Math.round(input.spouse.income * factor),
+          // 「ゼロ」は働かないことの明示。当社基準の下限（独立後 年100万円）も外す（work.ts）
+          ...(work === "zero" ? { noWork: true } : {}),
         }
       : null,
     children: input.children.map((a) => a + elapsed),

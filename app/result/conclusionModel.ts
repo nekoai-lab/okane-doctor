@@ -159,6 +159,30 @@ export function personRows(f: ResultFigures): PersonRow[] {
 }
 
 /**
+ * 就労収入の終わりの年齢と、65歳まで働く場合の必要額（2026-10-18・ADR-030）。
+ *
+ * 既定は60歳（就労収入を少なめに見込む当社の備え方）なので、**ラボを開かない人にも最初の画面で**
+ * 65歳まで働く場合の必要額を並べる（Codex の設計レビューの採用条件）。金額は2組の `ResultFigures` から取るだけ。
+ * 必要額が動かない人は書かない（同じ幅を2回並べない）。誰も動かなければ null
+ */
+export function workEndSentence(
+  f: ResultFigures,
+  until65: ResultFigures,
+  endAge: number,
+  pensionAge: number,
+): string | null {
+  const moved = people(f).flatMap((x) => {
+    const y = x.who === "self" ? until65.self : until65.spouse;
+    if (!y || (y.need.low === x.need.low && y.need.high === x.need.high)) return [];
+    return [
+      `${x.who === "self" ? "あなた" : "配偶者"}に万一のとき${formatRange(y.need.low, y.need.high)}`,
+    ];
+  });
+  if (moved.length === 0) return null;
+  return `就労収入は、遺されたご家族が${endAge}歳になるまでを見込んでいます（少なめに見込む当社の前提で、法律で決まった退職年齢ではありません）。${pensionAge}歳まで働く場合の必要額は、${moved.join("、")}です。`;
+}
+
+/**
  * 減らせる箇所が1つも無いときの1文（CLAUDE.md「出力に必ず含めること」）。
  * 減らせる人がいれば、その差の幅は人ごとの行の主金額として出ているので null（同じ事実を2回出さない）。
  */

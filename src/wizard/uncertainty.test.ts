@@ -16,8 +16,11 @@ import { toCompleteSelections } from "./complete.js";
 import { LIVING_LEVELS } from "./dial.js";
 import { bandInputs, crossingDrivers, normalizeEnds } from "./uncertainty.js";
 import { decodeSelections } from "./url.js";
+import { withWorkEndAtPension } from "../calc/__fixtures__/workEndAtPension.js";
 
 const P = loadParams("2026-08");
+/** 被験体を保つための、就労の終わりが65歳の params（ADR-030 前の前提・`__fixtures__/workEndAtPension.ts`） */
+const P65 = withWorkEndAtPension(P);
 const AS_OF = new Date("2026-08-01T00:00:00+09:00");
 
 /** 子2人・専業主婦・賃貸。生活費は区分で回答（＝連動しない） */
@@ -212,9 +215,10 @@ describe("実例世帯：跨ぎの種類ごとに1つ", () => {
     childrenBirthYears: [2021, 2024],
   };
 
+  // 2つとも被験体を保つため就労の終わりを65歳に固定（ADR-030 で60歳にすると跨ぎの種類が変わる）
   it("**sufficient ⇄ shortage** を跨ぐ世帯（専業・子1・年収 lt800）", () => {
-    const e = normalizeEnds(P, 専業子1, AS_OF);
-    const r = envelope(P, [e.loose, e.strict, ...e.extra], AS_OF);
+    const e = normalizeEnds(P65, 専業子1, AS_OF);
+    const r = envelope(P65, [e.loose, e.strict, ...e.extra], AS_OF);
     expect(r.crossed).toBe(true);
     expect(r.verdictLoose).toBe("sufficient");
     expect(r.verdictStrict).toBe("shortage");
@@ -235,8 +239,8 @@ describe("実例世帯：跨ぎの種類ごとに1つ", () => {
       educationPlan: "private",
       livingCost: "lt35",
     };
-    const e = normalizeEnds(P, sel, AS_OF);
-    const r = envelope(P, [e.loose, e.strict, ...e.extra], AS_OF);
+    const e = normalizeEnds(P65, sel, AS_OF);
+    const r = envelope(P65, [e.loose, e.strict, ...e.extra], AS_OF);
     expect(r.crossed).toBe(true);
     expect(r.verdictLoose).toBe("ample");
     expect(r.verdictStrict).toBe("sufficient");

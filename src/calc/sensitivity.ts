@@ -21,6 +21,7 @@ import { envelope } from "./envelope.js";
 import { type DiagnoseInput, diagnose } from "./index.js";
 import type { Verdict3 } from "./verdict3.js";
 import { verdict3 } from "./verdict3.js";
+import { survivorWorkPlan, survivorWorkYears } from "./work.js";
 
 /** どちらのケースの感度を測るか。`self` は本人が亡くなるケース */
 export type DeathCase = "self" | "spouse";
@@ -53,9 +54,12 @@ export interface SurvivorIncomeSensitivity {
   halfNet: number;
   /** 末子独立後に使っている年額（円・手取り）。`annualNet` と違うと単純な掛け算にならない */
   netAfter: number;
+  /** 就労収入を入れた年数（終わりの年齢まで・`work.ts`）。算定期間の年数とは違う */
   yearsDependent: number;
   yearsAlone: number;
   yearsTotal: number;
+  /** 就労収入を見込む年齢の上限 */
+  workEndAge: number;
   needNow: Range;
   needAtHalf: Range;
   needAtZero: Range;
@@ -101,11 +105,18 @@ export function survivorIncomeSensitivity(
   const coverage = who === "self" ? input.coverageSelf : input.coverageSpouse;
   if (!survivor || survivor.income <= 0) return null;
 
-  /** 遺族の年収だけを差し替えた入力。目盛りなど他の前提は入力のまま */
+  /**
+   * 遺族の年収だけを差し替えた入力。目盛りなど他の前提は入力のまま。
+   * **0 は「働けない」の明示**なので `noWork` も立てる。年収0円を入れただけだと
+   * 当社基準の下限（独立後 年100万円）が残り、「働けない場合」が働けない場合にならない（2026-10-18）
+   */
   const withSurvivorIncome = (x: DiagnoseInput, f: (income: number) => number): DiagnoseInput => {
-    if (who === "self")
-      return x.spouse ? { ...x, spouse: { ...x.spouse, income: f(x.spouse.income) } } : x;
-    return { ...x, self: { ...x.self, income: f(x.self.income) } };
+    const swap = <T extends { income: number }>(person: T): T => {
+      const income = f(person.income);
+      return income === 0 ? { ...person, income, noWork: true } : { ...person, income };
+    };
+    if (who === "self") return x.spouse ? { ...x, spouse: swap(x.spouse) } : x;
+    return { ...x, self: swap(x.self) };
   };
   const caseOf = (x: DiagnoseInput) => {
     const d = diagnose(p, x, asOf);
@@ -141,6 +152,8 @@ export function survivorIncomeSensitivity(
 
   const ratio = v(p, "netIncomeRatio");
   const annualNet = survivor.income * ratio;
+  const plan = survivorWorkPlan(p, survivor);
+  const workYears = survivorWorkYears(plan, survivor.age, now.years.dependent, now.years.total);
 
   return {
     branch: pickBranch(verdictNow, verdictAtHalf, verdictAtZero),
@@ -151,10 +164,11 @@ export function survivorIncomeSensitivity(
     annualGross: survivor.income,
     annualNet,
     halfNet: halfGross * ratio,
-    netAfter: Math.max(annualNet, v(p, "postIndepMinIncome")),
-    yearsDependent: now.years.dependent,
-    yearsAlone: now.years.alone,
-    yearsTotal: now.years.total,
+    netAfter: plan.netAfter,
+    yearsDependent: workYears.dependent,
+    yearsAlone: workYears.alone,
+    yearsTotal: workYears.dependent + workYears.alone,
+    workEndAge: plan.endAge,
     needNow,
     needAtHalf,
     needAtZero,

@@ -370,6 +370,12 @@ export function Lab({
                       "いまの保険が不明のため、差は未算定です。"
                     ) : difference.verdict === "uncertain" ? (
                       "いまの前提では、いまの保険は必要額の幅の中に収まる可能性があります。"
+                    ) : difference.verdict !== "shortage" &&
+                      difference.low === point.low &&
+                      difference.high === point.high ? (
+                      // 必要額の両端の和がいまの保険と同じだと、差の幅が必要額の幅と同じ数字になる。
+                      // 別の事実でも同じ額が2回並ぶと読み違えるので、額は繰り返さず同じ幅だと言う（e2e lab-copy）
+                      "いまの前提では、いまの保険が必要額を上回る可能性があります。上回る幅は、必要額の幅と同じです。"
                     ) : (
                       <>
                         いまの前提では、

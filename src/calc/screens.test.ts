@@ -18,8 +18,11 @@ import { diagnose } from "./index.js";
 import { projectDeath } from "./projection.js";
 import { simulate } from "./simulate.js";
 import { householdSummary, verdict3 } from "./verdict3.js";
+import { withWorkEndAtPension } from "./__fixtures__/workEndAtPension.js";
 
 const P = loadParams("2026-08");
+/** 被験体を保つための、就労の終わりが65歳の params（ADR-030 前の前提・`__fixtures__/workEndAtPension.ts`） */
+const P65 = withWorkEndAtPension(P);
 const AS_OF = new Date("2026-08-01T00:00:00+09:00");
 
 function project(input: (typeof GOLDEN)[number]["input"]) {
@@ -169,12 +172,13 @@ describe("#4 前提トグル：3目盛りで整合する", () => {
     expect(highs[1]).toBeLessThan(highs[2]);
   });
 
+  // 被験体を保つため就労の終わりを65歳に固定（ADR-030 で60歳にすると、目盛りによって ample を外れる）
   it("**`ample` 世帯では必要額が動かない**（床に張り付くのが正しい挙動）", () => {
-    const ample = GOLDEN.find((x) => diagnose(P, x.input, AS_OF).self.verdict === "ample");
+    const ample = GOLDEN.find((x) => diagnose(P65, x.input, AS_OF).self.verdict === "ample");
     expect(ample).toBeDefined();
     const highs = LEVELS.map((livingLevel) => {
       const r = simulate(
-        P,
+        P65,
         { answers: ample!.input, asOf: AS_OF, assumptions: { livingLevel } },
         "death",
       );

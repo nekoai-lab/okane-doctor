@@ -19,6 +19,7 @@ import { survivorIncomeSensitivity } from "../../src/calc/sensitivity.js";
 import { dialFor, simulateAll } from "../../src/calc/simulate.js";
 import type { DeathResult, EducationPlan } from "../../src/calc/types.js";
 import { verdict3 } from "../../src/calc/verdict3.js";
+import { workingUntil } from "../../src/calc/work.js";
 import { formatMan, formatManApprox, formatRange } from "../../src/design/tokens.js";
 import { narrate, placeholderValues } from "../../src/narrate/narrate.js";
 import { ownStandardValueText } from "../../src/params/display.js";
@@ -46,6 +47,7 @@ import {
   noReducibleSentence,
   personRows,
   reviewReasonSentence,
+  workEndSentence,
 } from "./conclusionModel.js";
 import { ownStandardEstimates, workDeductionSource } from "./estimates.js";
 import { Fold } from "./Fold.js";
@@ -425,6 +427,17 @@ export default async function ResultPage({
    * 支出・収入・年数（内訳）だけが代表値のまま残る。
    */
   const figures = resultFigures(params, input, ri.bands, asOfDate);
+  /**
+   * 遺族が65歳まで働く場合の同じ1組（ADR-030）。既定の60歳は当社の前提なので、比較を最初の画面に並べる。
+   * 回答の幅（bands）にも同じ年齢を入れる。代表値だけで回すと、比べる2つのレンジの作り方が違ってしまう
+   */
+  const until65 = v(params, "pensionAge");
+  const figuresUntil65 = resultFigures(
+    params,
+    workingUntil(input, until65),
+    ri.bands.map((b) => workingUntil(b, until65)),
+    asOfDate,
+  );
   const result = figures.diagnosis;
   const envFor = (who: "self" | "spouse") => {
     const f = who === "self" ? figures.self : figures.spouse;
@@ -935,6 +948,12 @@ export default async function ResultPage({
               noReducible={noReducibleSentence(figures)}
               partialNote={partialNote(figures)}
               premise={premise}
+              workEnd={workEndSentence(
+                figures,
+                figuresUntil65,
+                v(params, "survivorWorkEndAge"),
+                until65,
+              )}
               premiseFmt={(yen) => formatManApprox(yen, roundUnit)}
               reason={conclusionReason(figures)}
               reviewYear={watchYear}

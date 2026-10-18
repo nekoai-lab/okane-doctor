@@ -202,6 +202,7 @@ export function Conclusion({
   reviewReason,
   bookmarkHint,
   premise,
+  workEnd,
   premiseFmt,
 }: {
   caption: string;
@@ -226,6 +227,8 @@ export function Conclusion({
   /** 見返す方法（ブックマーク）をここで言うか。お知らせ（保存）が動いているときは、その導線のカードが言う */
   bookmarkHint: boolean;
   premise: KeyPremise | null;
+  /** 就労収入の終わりの年齢と、65歳まで働く場合の必要額（`workEndSentence`）。動かなければ null */
+  workEnd: string | null;
   /** 前提の図の金額の書式（内訳と同じ丸め単位） */
   premiseFmt: (yen: number) => string;
 }) {
@@ -288,6 +291,13 @@ export function Conclusion({
 
         <PeopleLine fmt={fmt} rows={rows} />
 
+        {/* 就労収入の前提カードが無い世帯だけ、ここに置く（下の「この結論を決めている前提」を参照） */}
+        {workEnd && premise?.kind !== "work" && (
+          <p className={s.note}>
+            <WithAmounts text={workEnd} />
+          </p>
+        )}
+
         {noReducible && (
           <p className={s.note}>
             <WithAmounts text={noReducible} />
@@ -340,6 +350,16 @@ export function Conclusion({
             <WithAmounts text={premise.text} />
           </p>
           <PremiseFigure fmt={premiseFmt} p={premise} />
+          {/*
+            60歳は当社の既定なので、65歳まで働く場合の必要額を初期表示に並べる（ADR-030）。
+            就労収入の前提の話なのでこのカードに置く。結論のカードに置くと、不足の世帯で
+            このカードが最初の2画面から押し出された（e2e の #key-premise）
+          */}
+          {workEnd && premise.kind === "work" && (
+            <p className={s.note}>
+              <WithAmounts text={workEnd} />
+            </p>
+          )}
         </section>
       )}
     </>

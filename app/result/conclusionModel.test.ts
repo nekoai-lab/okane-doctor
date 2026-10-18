@@ -18,7 +18,9 @@ import {
   noReducibleSentence,
   personRows,
   reviewReasonSentence,
+  workEndSentence,
 } from "./conclusionModel.js";
+import { workingUntil } from "../../src/calc/work.js";
 import { ownStandardEstimates } from "./estimates.js";
 import { DEATH_LABEL } from "./verdictLabels.js";
 
@@ -228,5 +230,40 @@ describe("次の見直しのめやすの理由", () => {
   it("起点と算定の終端の注記は理由に使わない", () => {
     const t = reviewReasonSentence(["診断の起点", "算定はここまで（配偶者65歳）"]);
     expect(t).toBe("遺族年金の額が変わる年なので、あなたに万一のときの必要額が変わります。");
+  });
+});
+
+describe("就労収入の終わりの年齢と、65歳まで働く場合の必要額（ADR-030）", () => {
+  const until65 = (q: string) => {
+    const { ri, f } = fromQuery(q);
+    const g = resultFigures(
+      P,
+      workingUntil(ri.input, 65),
+      ri.bands.map((b) => workingUntil(b, 65)),
+      AS_OF,
+    );
+    return { f, g, text: workEndSentence(f, g, 60, 65) };
+  };
+
+  it("不足世帯：2人とも必要額が動くので、2人分の65歳の幅をエンジンの値から書く", () => {
+    const { g, text } = until65(SHORT);
+    expect(text).toContain("60歳になるまでを見込んでいます");
+    expect(text).toContain("法律で決まった退職年齢ではありません");
+    expect(text).toContain(`あなたに万一のとき${formatRange(g.self.need.low, g.self.need.high)}`);
+    expect(text).toContain(
+      `配偶者に万一のとき${formatRange(g.spouse!.need.low, g.spouse!.need.high)}`,
+    );
+  });
+
+  it("65歳まで働けば必要額は増えない（就労収入を減らすと必要額は減らない、の裏返し）", () => {
+    for (const q of [SHORT, REBALANCE]) {
+      const { f, g } = until65(q);
+      expect(g.self.need.high).toBeLessThanOrEqual(f.self.need.high);
+      expect(g.self.need.low).toBeLessThanOrEqual(f.self.need.low);
+    }
+  });
+
+  it("単身世帯：遺族がいないので書かない", () => {
+    expect(until65(SINGLE).text).toBeNull();
   });
 });

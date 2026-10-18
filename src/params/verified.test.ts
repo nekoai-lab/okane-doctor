@@ -178,6 +178,8 @@ describe("当社基準の在庫を動かすと、算定結果が動く（直書�
 
     const q = structuredClone(loadParams());
     q.constants.pensionAge = 70;
+    // 就労の終わり（ADR-030）も同じ年齢にそろえる。60歳のままだと GT-01 が ample を外れ、前提が載らない
+    q.ownStandard.survivorWorkEndAge = { ...q.ownStandard.survivorWorkEndAge, value: 70 };
     const d = diagnose(q, gt("GT-01"), AS_OF).self;
     const end = d.assumptions.find((a) => a.field === "period.end");
     expect(end?.label).toBe("対象は70歳まで");
