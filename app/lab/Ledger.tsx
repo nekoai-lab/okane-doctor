@@ -1,10 +1,13 @@
 // 死亡保障の「この金額の内訳」（サンプル v2・2026-10-18 オーナー指摘と Codex の死亡内訳レビュー）。
 // 金額はすべて labDeath の ledger（diagnose の内訳）から。画面で足し引きしない。
 // 内訳と上の幅を「＝」で結ばない：幅は答えた区分の候補ぜんぶの包絡で、内訳は代表条件の1例だから
+
+import type { ReactNode } from "react";
 import type { LabData, LabPoint } from "../../src/calc/lab.js";
 import type { RangeVerdict, Verdict } from "../../src/calc/types.js";
-import { formatMan, formatRange } from "../../src/design/tokens.js";
+import { formatMan } from "../../src/design/tokens.js";
 import { Fold } from "../result/Fold.js";
+import { Amount, AmountRange } from "./AmountRange.js";
 import s from "./page.module.css";
 
 /** 上の金額の呼び名（必要額の判定・ニーズ軸）。長い説明は内訳の折りたたみが持つ */
@@ -67,11 +70,36 @@ export function Ledger({
         : sw.continuing
           ? `選んだ年収のまま、配偶者が${sw.endAge}歳になるまで見込んでいます（当社基準）。`
           : `配偶者が${sw.endAge}歳になるまで見込んでいます（当社基準）。`;
-  const range = formatRange(point.low, point.high);
-  const steps = [
-    `回答の代表条件での差し引き：${b.rawNeed > 0 ? `不足分 ${yen(b.rawNeed)}` : "不足分なし"}`,
-    `その条件で出す額：${formatRange(b.repRange.low, b.repRange.high)}。${REP_REASON[b.repVerdict]}です。`,
-    `答えた区分の中の候補をぜんぶ計算し、いちばん低い額から高い額までを幅にしたもの：${range}（上の金額）`,
+  const steps: [string, ReactNode][] = [
+    [
+      "diff",
+      <>
+        回答の代表条件での差し引き：
+        {b.rawNeed > 0 ? (
+          <>
+            不足分 <Amount value={b.rawNeed} />
+          </>
+        ) : (
+          "不足分なし"
+        )}
+      </>,
+    ],
+    [
+      "rep",
+      <>
+        その条件で出す額：
+        <AmountRange low={b.repRange.low} high={b.repRange.high} />。{REP_REASON[b.repVerdict]}
+        です。
+      </>,
+    ],
+    [
+      "range",
+      <>
+        答えた区分の中の候補をぜんぶ計算し、いちばん低い額から高い額までを幅にしたもの：
+        <AmountRange low={point.low} high={point.high} />
+        （上の金額）
+      </>,
+    ],
   ];
   const detail: [string, number][] = [
     [`子が独立するまでの生活費（${b.years.dependent}年）`, e.livingChild],
@@ -147,8 +175,8 @@ export function Ledger({
         count={`（${steps.length + (b.rangeVerdict === "mixed" ? 1 : 0)}項目）`}
       >
         <ul>
-          {steps.map((t) => (
-            <li key={t}>{t}</li>
+          {steps.map(([k, t]) => (
+            <li key={k}>{t}</li>
           ))}
           {b.rangeVerdict === "mixed" && (
             <li>答えた区分によって、不足分の場合と、葬儀・予備費などの目安の場合があります。</li>

@@ -20,8 +20,9 @@ import { linearScale } from "../result/chartScale.js";
 import { Fold } from "../result/Fold.js";
 import { HERO_BADGE } from "../result/Hero.js";
 import { SAVINGS_LABEL as SAVINGS_VERDICT } from "../result/verdictLabels.js";
-import s from "./page.module.css";
+import { AmountRange } from "./AmountRange.js";
 import { Ledger, NEED_LABEL } from "./Ledger.js";
+import s from "./page.module.css";
 import { Words } from "./Words.js";
 import { workPlanNote, zeroIncomeNote } from "./workNote.js";
 
@@ -51,23 +52,6 @@ function incomeText(yen: number): string {
   return yen === 0 ? "0円" : `約${formatMan(yen)}`;
 }
 
-function AmountRange({ low, high }: { low: number; high: number }) {
-  const [start, end] = formatRange(low, high).split("〜");
-  return (
-    <span className={s.amountRange}>
-      <span className={s.amountEnd}>
-        {start}
-        {end !== undefined && "〜"}
-      </span>
-      {end !== undefined && (
-        <>
-          <wbr />
-          <span className={s.amountEnd}>{end}</span>
-        </>
-      )}
-    </span>
-  );
-}
 function Comparison({ point }: { point: LabPoint }) {
   return (
     <span className={s.verdictBadge}>
