@@ -561,22 +561,42 @@ export function Lab({
                 <p className={s.note}>選んだ働き方で、上の「死亡保障」の金額と図が変わります。</p>
               </>
             )}
-            <Fold label="就労の試算の前提" count="（3項目）">
-              <ul>
-                <li>
-                  試算する年収は{incomeText(scenario.now.annualIncome ?? 0)}
-                  です。回答額・半分・ゼロを比較します。
-                </li>
-                <li>
-                  区分の年収は代表値で表示します。必要額には回答帯の幅も反映します。死亡の場合だけに適用し、生活費は固定します。
-                </li>
-                <li>
-                  末子独立後は最低でも年約{formatMan(data.postIndepMinIncome)}
-                  の手取り就労収入を、配偶者が{data.survivorWorkEndAge}
-                  歳になるまで推定します（当社基準）。「ゼロ」ではこの推定も外します。
-                </li>
-              </ul>
-            </Fold>
+            {spouseIncomeIsZero ? (
+              // 切り替えが無いので、比べる説明は出さず、いまの前提だけを書く（UX 40回目）
+              <Fold label="就労の試算の前提" count="（2項目）">
+                <ul>
+                  <li>配偶者の回答の年収は0円です。</li>
+                  <li>
+                    {data.work[0].now.spouseWorkCounted ? (
+                      <>
+                        末子独立後は年約{formatMan(data.postIndepMinIncome)}
+                        の手取り就労収入を、配偶者が{data.survivorWorkEndAge}
+                        歳になるまで見込みます（当社基準）。
+                      </>
+                    ) : (
+                      "就労収入は見込んでいません。"
+                    )}
+                  </li>
+                </ul>
+              </Fold>
+            ) : (
+              <Fold label="就労の試算の前提" count="（3項目）">
+                <ul>
+                  <li>
+                    試算する年収は{incomeText(scenario.now.annualIncome ?? 0)}
+                    です。回答額・半分・ゼロを比較します。
+                  </li>
+                  <li>
+                    区分の年収は代表値で表示します。必要額には回答帯の幅も反映します。死亡の場合だけに適用し、生活費は固定します。
+                  </li>
+                  <li>
+                    末子独立後は最低でも年約{formatMan(data.postIndepMinIncome)}
+                    の手取り就労収入を、配偶者が{data.survivorWorkEndAge}
+                    歳になるまで推定します（当社基準）。「ゼロ」ではこの推定も外します。
+                  </li>
+                </ul>
+              </Fold>
+            )}
           </section>
         )}
         <section className={s.card}>
