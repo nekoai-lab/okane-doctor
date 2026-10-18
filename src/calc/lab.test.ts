@@ -188,3 +188,29 @@ describe("ラボの表示用導出", () => {
     expect(labRisingIntervals(points)).toContainEqual({ from: 61, to: 62, cause });
   });
 });
+
+/** 内訳は diagnose の内訳をそのまま読む（2026-10-18 オーナー指摘：内訳が必要額だけで、年金・就労収入が見えなかった） */
+describe("ラボの内訳（ledger）", () => {
+  const sel = toCompleteSelections(
+    decodeSelections(
+      "v=1&sb=1989&emp=employee&sp=1&spb=1991&spe=employee&ch=2024&edu=public&inc=lt600&sinc=lt400&as=lt500&liv=lt30&ho=own_loan&loan=lt3000&dan=yes&cvs=m2000&cvsp=none",
+    ),
+  );
+  const ends = normalizeEnds(p, sel!, date);
+  const data = calculateLab(p, ends.point.input, bandInputs(p, sel!, date, 1), date);
+  it("かかるお金 − 支えに数えたお金 ＝ 不足分（不足があるとき）", () => {
+    for (const w of data.work)
+      for (const pt of w.points) {
+        const b = pt.ledger;
+        if (b.rawNeed > 0) expect(b.rawNeed).toBeCloseTo(b.expense.total - b.income.total, 0);
+        else expect(b.margin).toBeCloseTo(b.income.total - b.expense.total, 0);
+      }
+  });
+  it("働き方で動くのは家族の就労収入だけ（かかるお金は同じ）", () => {
+    const [answer, half, zero] = data.work.map((w) => w.points[0].ledger);
+    expect(half.expense).toEqual(answer.expense);
+    expect(zero.expense).toEqual(answer.expense);
+    expect(half.income.survivorWork).toBeLessThan(answer.income.survivorWork);
+    expect(zero.income.survivorWork).toBe(0);
+  });
+});

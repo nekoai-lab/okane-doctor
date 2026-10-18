@@ -2,7 +2,7 @@
 import { type ParamSet, assertUsable, v } from "../params/index.js";
 import { jstYear } from "../time/jstYear.js";
 import { type DiagnoseInput, diagnose } from "./index.js";
-import { envelope, crossingNote } from "./envelope.js";
+import { envelope, crossingNote, rangeVerdict } from "./envelope.js";
 import { needForSickness } from "./scenarios.js";
 import { householdSummary, verdict3, verdictBySavings } from "./verdict3.js";
 import { survivorWorkPlan } from "./work.js";
@@ -81,6 +81,22 @@ export function labDeath(
      * 端の2つ（いちばん軽い・重い）だけだと、中の候補が切り替わって下端が上がる年を拾えない
      */
     needVerdicts: range.ends.map((e) => e.verdict),
+    /**
+     * 回答の代表条件で見た収支（ラボの「この金額の内訳」）。式は diagnose のまま、内訳を読むだけ。
+     * 2026-10-18 オーナー指摘：内訳が「必要額」だけで、遺族年金・寡婦加算・就労収入が見えなかった
+     */
+    ledger: {
+      expense: d.expense,
+      income: d.income,
+      years: d.years,
+      rawNeed: d.rawNeed,
+      margin: d.margin,
+      /** 代表条件の幅と、その幅の作り方（必要額の判定・ニーズ軸） */
+      repRange: d.range,
+      repVerdict: d.verdict,
+      /** 包絡した幅（上の金額）の呼び名。候補ぜんぶの必要額の判定（ニーズ軸） */
+      rangeVerdict: rangeVerdict(d.verdict, range),
+    },
   };
 }
 
@@ -170,6 +186,7 @@ export function calculateLab(
     coverage: input.coverageSelf,
     hasSpouse: input.spouse !== null,
     employee: input.self.employment === "employee",
+    selfEmployed: input.self.employment === "self",
     minAge,
     spouseWork: spouseWorkFacts(p, input),
     maxBenefitMonths: p.shobyoTeate.maxMonths,
