@@ -60,6 +60,52 @@ describe("narrate（T-07 スタブ）", () => {
     }
   });
 
+  it.each([
+    "目安は参千萬円です",
+    "参千萬圓",
+    "壹阡萬圓",
+    "弐百万円",
+    "さんぜんまんえん",
+    "サンゼンマン円",
+    "ｻﾝｾﾞﾝﾏﾝｴﾝ",
+    "さん ぜん まん えん",
+    "にひゃくえん",
+    "ろっぴゃく円",
+    "さんねん",
+    "about thirty million yen",
+    "THIRTY MILLION YEN",
+    "twenty-five years",
+    "three",
+    "三 千 万 円",
+    "参\t千\n萬　圓",
+    "③⓪⓪⓪",
+    "ⅢⅩ百",
+    "𝟑𝟎𝟎𝟎",
+    "٣٠٠٠",
+    "Ⅲ",
+    "½",
+    "半年分",
+    "三カ月",
+    "三ヶ月",
+    "三ヵ月",
+    "目安は{{selfRange}}ですが参千萬圓も必要です",
+  ])("G-1：表記が異なる生の数量を拒否する：%s", (template) => {
+    expect(hasNoRawNumbers(template)).toBe(false);
+  });
+
+  it.each([
+    "万一のときに",
+    "一方で",
+    "十分な備え",
+    "一度見直す",
+    "目安は{{selfRange}}です",
+    "お子さんに必要な備えです",
+    "いっしょに見直しましょう",
+    "someone can save money",
+  ])("G-1：数量でない表現とプレースホルダを許可する：%s", (template) => {
+    expect(hasNoRawNumbers(template)).toBe(true);
+  });
+
   it("差し込みは算定結果の値を入れ、プレースホルダを残さない", () => {
     const d = diagnose(P, GOLDEN[1].input, AS_OF); // GT-02
     const text = fillPlaceholders("目安は {{selfRange}} です", d);

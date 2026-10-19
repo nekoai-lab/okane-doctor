@@ -75,8 +75,15 @@ export function fillPlaceholders(template: string, d: HouseholdDiagnosis): strin
  */
 export function hasNoRawNumbers(template: string): boolean {
   const withoutPlaceholders = template.replace(/\{\{[a-zA-Z]+\}\}/g, "");
-  if (/[0-9０-９]/.test(withoutPlaceholders)) return false;
-  return !KANJI_NUMBER.some((re) => re.test(withoutPlaceholders));
+  // ローマ数字は NFKC で英字になるため、Unicode の数値文字は正規化前に止める。
+  if (/\p{N}/u.test(withoutPlaceholders)) return false;
+  const normalized = withoutPlaceholders.normalize("NFKC");
+  if (ENGLISH_NUMBER.test(normalized)) return false;
+  // 半角カナ・濁点・空白による表記の違いで数量が検査をすり抜けないようにする。
+  const japanese = normalized
+    .replace(/[ァ-ヴ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60))
+    .replace(/\s+/gu, "");
+  return !KANJI_NUMBER.some((re) => re.test(japanese)) && !KANA_NUMBER.test(japanese);
 }
 
 /**
@@ -84,16 +91,27 @@ export function hasNoRawNumbers(template: string): boolean {
  *
  * **「万一」「一方」「十分」は数量ではない**ので、漢数字が1文字あるだけでは止めない。
  * 数量と言えるのは次のどれか（取りこぼすより、止めて定型文に退避するほうが安全）：
- *  - 数字＋位（三千・五百・一万・二十）
+ *  - 数字＋位（三千・五百・一万・二十。大字も含む）
  *  - 「数」＋位（数百万・数千）
  *  - 漢数字の並び＋単位（百万円・三年・十歳・二割・五倍・三か月）
  * 検査はストリームの累積に掛かるので、チャンクをまたいで割れた金額も合流した時点で止まる。
  */
 const KANJI_NUMBER: RegExp[] = [
-  /[〇一二三四五六七八九][十百千万億]/,
-  /数[十百千万億]/,
-  /[〇一二三四五六七八九十百千万億]+(?:円|億|年|歳|割|倍|％|%|か月|ヶ月|カ月|ヵ月)/,
+  /[〇零一壱壹二弐貳三参參四肆五伍六陸七漆柒八捌九玖][十拾百佰陌千仟阡万萬億兆]/,
+  /数[十拾百佰陌千仟阡万萬億兆]/,
+  /[〇零一壱壹二弐貳三参參四肆五伍六陸七漆柒八捌九玖十拾百佰陌千仟阡万萬億兆]+(?:円|圓|えん|億|年|歳|割|倍|%|か月|ヶ月|ヵ月|人|個)/,
+  // 「半年分」もエンジン由来でない具体的な期間なので、退避文に回す。
+  /半(?:年|月|日|歳|割|分|か月|ヶ月|ヵ月)/,
 ];
+
+// 「さん」「に」だけでは通常の日本語に当たるため、位か単位が続く数量を止める。
+const KANA_NUMBER =
+  /(?:ぜろ|れい|まる|いち|いっ|に|さん|し|よん|ご|ろく|ろっ|しち|なな|はち|はっ|く|きゅう|じゅう|じゅっ|じっ|ひゃく|びゃく|ぴゃく|せん|ぜん|まん|おく|ちょう|すう|はん)(?:じゅう|じゅっ|じっ|ひゃく|びゃく|ぴゃく|せん|ぜん|まん|おく|ちょう|円|圓|えん|年|ねん|歳|さい|割|わり|倍|ばい|か月|かげつ|個|こ|人|にん|ぱーせんと)/;
+
+// 英語は単語単位で止める（someone / money などの語の一部には一致させない）。
+// 数詞だけでも数量なので単位を要求せず、大文字・ハイフン区切りも検査する。
+const ENGLISH_NUMBER =
+  /\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion|trillion|half)\b/i;
 
 /**
  * {{selfRange}} の呼び名は verdict で変える。**同じ数字ではないから。**
