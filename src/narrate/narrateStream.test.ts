@@ -58,6 +58,20 @@ describe("narrateStreamEvents（T-07 ストリーミングの検査）", () => {
     expect(events[0]).toMatchObject({ type: "fallback", reason: "unknown_placeholder" });
   });
 
+  it.each([
+    ["参", "千萬圓"],
+    ["さん", "ぜんまんえん"],
+    ["サン", "ゼンマン円"],
+    ["about thir", "ty million yen"],
+    ["三 ", "千 万 円"],
+    ["目安は", "ⅢⅩ百"],
+  ])("表記違いもチャンクの合流時に G-1 で退避する：%s / %s", async (first, second) => {
+    const events = await run([first, second, "続きの文。"]);
+    expect(events).toHaveLength(2);
+    expect(events[0]).toEqual({ type: "chunk", text: first });
+    expect(events[1]).toMatchObject({ type: "fallback", reason: "g1_raw_number" });
+  });
+
   it("全文がそろってから禁止語・結論の矛盾を見て退避する（G-2/G-4/G-6）", async () => {
     const events = await run(["いまの前提では、{{conclusion}}。", "今すぐ見直してください。"]);
     expect(events.map((e) => e.type)).toEqual(["chunk", "chunk", "fallback"]);
