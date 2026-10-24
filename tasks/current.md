@@ -11,7 +11,7 @@
 
 ## 現状
 
-- #47（2026-10-24・Codex／`fix/guard-overblock-kana`）：かな1文字の数詞・助数詞による誤検出を除き、位との複合（にひゃく等）は維持。指定4文を含む許可側60例・拒否側9例を追加し、#36 の既存拒否例を含む npm test（63ファイル・1,092件）・typecheck・lint 成功。build は Google Fonts の名前解決失敗（ENOTFOUND）で未完了。実 AI 0回（0円）、未コミット。次の1手：Claude がレビュー・build 再確認・コミット。
+- PR #48（2026-10-24・Codex／`fix/guard-overblock-kana`）：QA blocking を修正し、かな数量の単位は「こ」だけを除外、に・し・ご・く＋他の単位の拒否を復元。拒否側16例は修正前に全件失敗→修正後成功、指定4文・許可側60例も成功。npm test（63ファイル・1,108件）・typecheck・lint 成功。実 AI 0回（0円）、未コミット。次の1手：Claude が差分レビュー・コミット・再QA（build は前回 Google Fonts の ENOTFOUND で未完了）。
 - #36：G-1 は正規化前の Unicode 数値文字（`\p{N}`）、NFKC・カナと空白の正規化後の大字・かな数量、単語単位の英語数詞を拒否する。半年分も具体的な期間として拒否。表記の違いを検査用の文字列で吸収し、出力テンプレ自体は変えない。
 - 受け入れ条件：依頼の全拒否例・全許可例の回帰テスト、test・typecheck・lint・build の成功。追加でチャンクをまたぐ表記違いの退避を固定。test は 63 ファイル・1,015 件成功、typecheck・lint 成功。実 AI は 0 回（0 円）。
 - 制約・やり残し：Codex のサンドボックスでは build（Google Fonts の取得）と git の書き込みができなかったので、Claude が手元で test・typecheck・lint・build を確かめてコミットした。次の1手：request-qa（実装 Codex → レビュー Claude）
