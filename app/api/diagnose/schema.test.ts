@@ -41,4 +41,11 @@ describe("POST /api/diagnose の入力検証と算定", () => {
     const { self: _self, ...withoutSelf } = gt01.input;
     expect(DiagnoseRequestSchema.safeParse(withoutSelf).success).toBe(false);
   });
+
+  it("安全に扱えない大きさの金額（2^53 超）は検証で弾く（zod 4 の int は安全な整数だけ）", () => {
+    const bad = { ...gt01.input, assets: Number.MAX_SAFE_INTEGER + 2 };
+    expect(DiagnoseRequestSchema.safeParse(bad).success).toBe(false);
+    const ok = { ...gt01.input, assets: Number.MAX_SAFE_INTEGER };
+    expect(DiagnoseRequestSchema.safeParse(ok).success).toBe(true);
+  });
 });
