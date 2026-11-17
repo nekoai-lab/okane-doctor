@@ -26,13 +26,15 @@ const nextConfig = {
     "/lab": ["./params/**"],
     "/api/lab/words": ["./params/**"],
   },
-  // src/ は .ts を .js 拡張子で import する（bundler 解決前提）。
-  // webpack は .js→.ts の読み替えをしないので、明示する。src/ 側は触らない。
-  webpack: (config) => {
-    config.resolve.extensionAlias = {
-      ".js": [".ts", ".tsx", ".js"],
-    };
-    return config;
+  // 相対 .js import はローダーで .ts → .tsx → .js の順に解決する。
+  // resolveAlias は相対 import の extensionAlias の代わりにはならない。
+  turbopack: {
+    rules: {
+      "*.{ts,tsx}": {
+        condition: { not: "foreign" },
+        loaders: ["./scripts/typescript-extension-loader.cjs"],
+      },
+    },
   },
 };
 
