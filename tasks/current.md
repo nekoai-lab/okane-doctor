@@ -11,6 +11,7 @@
 
 ## 現状
 
+- 2026-11-17（Codex・PR #51 Next 16 対応、未コミット）：受け入れ条件は src/ の既存 import・standalone・params 同梱を保ち、Turbopack で lint/typecheck/test/build を通すこと。webpack 設定を Turbopack のローダーに置換し、相対 .js のモジュール指定だけを実在する .ts → .tsx → .js の順で読み替える。標準解決・resolveAlias のワイルドカードでは相対 .js が解決されないことを実測。lint・typecheck 成功、npm test は64ファイル・1,110件成功。build は未確認：ローダー追加前は Google Fonts 2書体の取得失敗（ネット不可）と import 解決失敗、追加後はコンパイルから進まず中断（exit 130）。この環境では 127.0.0.1 の listen も EPERM で、ローダーの IPC 制限が疑われる。実 AI 0回（0円）。次の1手：Claude がネット・ローカル IPC の使える環境で npm run build、standalone の params 同梱を確認し、差分レビュー・コミット・QA。Codex 自身によるコードレビューは未実施。 → 同日 Claude（kage-mini）：next 16.4.3 は GHSA-mfr8-8qww-v76h で next build 自体が止まるため next を ^16.4.6 に上げた。ローダーありで build 成功・.next/standalone/params あり、ローダーなし（turbopack: {}）では相対 .js の解決失敗 129 件を確認。tsconfig.json は next build が自動で書き換えた分（jsx: react-jsx・.next/dev/types）。
 - 2026-11-08（`claude/project-thread-kud084`）：ハッカソン版 okane-kenko の公開 URL を閉じるので、`params/watch-sources.yaml` のデモ用の罠ページ（`demoTrap`）の取り先を okane-kenko の URL から okane-doctor 自身の `/demo/trap` に替えた（チェックリスト G-0 の残り1件）。本番の定期巡回には入らない watch なので、診断と金額には影響しない。paramwatch のテスト 73 件成功。次の1手：request-qa
 - PR #48（2026-10-24・Codex／`fix/guard-overblock-kana`）：QA blocking を修正し、かな数量の単位は「こ」だけを除外、に・し・ご・く＋他の単位の拒否を復元。拒否側16例は修正前に全件失敗→修正後成功、指定4文・許可側60例も成功。npm test（63ファイル・1,108件）・typecheck・lint 成功。実 AI 0回（0円）、未コミット。次の1手：Claude が差分レビュー・コミット・再QA（build は前回 Google Fonts の ENOTFOUND で未完了）。
 - #36：G-1 は正規化前の Unicode 数値文字（`\p{N}`）、NFKC・カナと空白の正規化後の大字・かな数量、単語単位の英語数詞を拒否する。半年分も具体的な期間として拒否。表記の違いを検査用の文字列で吸収し、出力テンプレ自体は変えない。
